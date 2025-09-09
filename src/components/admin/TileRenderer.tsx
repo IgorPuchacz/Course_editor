@@ -45,7 +45,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
     switch (tile.type) {
       case 'text':
         const textTile = tile as TextTile;
-        console.log('Rendering text tile:', textTile.id, 'richText:', textTile.content.richText);
+        console.log('Rendering text tile:', textTile.id, 'richText:', textTile.content.richText, 'updated_at:', textTile.updated_at);
         return (
           <>
             <div
@@ -61,14 +61,14 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
               }}
             >
               <div 
-                className="break-words flex-1 rich-text-content"
+                className="break-words flex-1 rich-text-content tile-formatted-text"
                 style={{
                   width: '100%',
                   minHeight: '1em',
                   outline: 'none'
                 }}
                 dangerouslySetInnerHTML={{
-                  __html: textTile.content.richText || `<p>${textTile.content.text || 'Kliknij dwukrotnie, aby edytować'}</p>`
+                  __html: textTile.content.richText || `<p style="margin: 0;">${textTile.content.text || 'Kliknij dwukrotnie, aby edytować'}</p>`
                 }}
               />
             </div>

@@ -3,46 +3,57 @@
 @tailwind utilities;
 
 /* Ensure rich text formatting displays correctly in tiles */
-.rich-text-content {
+.rich-text-content,
+.tile-formatted-text {
   line-height: 1.5;
 }
 
-.rich-text-content p {
+.rich-text-content p,
+.tile-formatted-text p {
   margin: 0;
   line-height: 1.4;
 }
 
 .rich-text-content strong,
-.rich-text-content b {
+.rich-text-content b,
+.tile-formatted-text strong,
+.tile-formatted-text b {
   font-weight: bold !important;
 }
 
 .rich-text-content em,
-.rich-text-content i {
+.rich-text-content i,
+.tile-formatted-text em,
+.tile-formatted-text i {
   font-style: italic !important;
 }
 
-.rich-text-content u {
+.rich-text-content u,
+.tile-formatted-text u {
   text-decoration: underline !important;
 }
 
-/* Preserve inline styles for rich text formatting */
-.rich-text-content [style*="color"] {
-  color: inherit;
+/* Force inline styles to work in tiles */
+.tile-formatted-text * {
+  font-weight: inherit;
+  font-style: inherit;
+  text-decoration: inherit;
 }
 
-.rich-text-content span[style*="color"] {
-  /* Allow color styles to override default text color */
+.tile-formatted-text [style*="color"] {
+  /* Preserve color styles */
 }
 
-.rich-text-content * {
-  /* Preserve all inline styles */
-  color: inherit;
+.tile-formatted-text [style*="font-weight"] {
+  /* Preserve font-weight styles */
 }
 
-/* Specific overrides for formatted text */
-.rich-text-content span[style] {
-  /* Don't override inline styles */
+.tile-formatted-text [style*="font-style"] {
+  /* Preserve font-style styles */
+}
+
+.tile-formatted-text [style*="text-decoration"] {
+  /* Preserve text-decoration styles */
 }
 
 /* Ensure proper text rendering */

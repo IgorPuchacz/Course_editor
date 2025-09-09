@@ -192,7 +192,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
         const updatedTile = { 
           ...tile, 
           ...updates, 
-          updated_at: new Date().toISOString() 
+          updated_at: updates.updated_at || new Date().toISOString()
         };
         
         // Special handling for text tiles to ensure rich text is preserved

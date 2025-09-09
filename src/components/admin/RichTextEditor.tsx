@@ -25,8 +25,9 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const handleInput = () => {
     if (editorRef.current) {
       console.log('Rich text content updated:', editorRef.current.innerHTML);
-      // Clean up the HTML and ensure proper formatting
-      const cleanedHTML = cleanHTML(editorRef.current.innerHTML);
+      const content = editorRef.current.innerHTML;
+      const cleanedHTML = cleanHTML(content);
+      console.log('Cleaned HTML:', cleanedHTML);
       onChange(cleanedHTML);
     }
   };

@@ -93,11 +93,21 @@ export const TextTileEditor: React.FC<TextTileEditorProps> = ({
                 content={textTile.content.richText || textTile.content.text}
                 onChange={(richText) => {
                   console.log('Updating richText:', richText);
-                  handleContentUpdate('richText', richText);
-                  // Also update plain text as fallback
+                  
+                  // Update both richText and plain text
                   const tempDiv = document.createElement('div');
                   tempDiv.innerHTML = richText;
-                  handleContentUpdate('text', tempDiv.textContent || tempDiv.innerText || '');
+                  const plainText = tempDiv.textContent || tempDiv.innerText || '';
+                  
+                  // Update tile with both formats and force re-render
+                  onUpdateTile(tile.id, {
+                    content: {
+                      ...textTile.content,
+                      richText: richText,
+                      text: plainText
+                    },
+                    updated_at: new Date().toISOString()
+                  });
                 }}
               />
             </div>
