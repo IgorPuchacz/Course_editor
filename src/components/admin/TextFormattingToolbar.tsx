@@ -256,26 +256,3 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
     </div>
   );
 };
-              {predefinedColors.map((color) => (
-                <button
-                  key={color}
-                  onClick={() => handleColorSelect(color)}
-                  className="w-7 h-7 rounded border-2 border-gray-300 hover:border-gray-500 transition-all hover:scale-105 shadow-sm"
-                  style={{ backgroundColor: color }}
-                  title={color}
-                />
-              ))}
-            </div>
-            <input
-              type="color"
-              value={selectedColor}
-              onChange={(e) => handleColorSelect(e.target.value)}
-              className="w-full h-8 border border-gray-300 rounded cursor-pointer"
-              title="Wybierz własny kolor"
-            />
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
