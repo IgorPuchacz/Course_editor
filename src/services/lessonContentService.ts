@@ -149,7 +149,7 @@ export class LessonContentService {
         caption: 'Opis obrazu',
         position: { x: 0, y: 0 },
         scale: 1,
-        objectFit: 'cover'
+        objectFit: 'contain'
       },
       created_at: now,
       updated_at: now,

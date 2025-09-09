@@ -66,15 +66,24 @@ export const ImageUploadComponent: React.FC<ImageUploadComponentProps> = ({
     setUploadError(null);
 
     try {
-      // Create object URL for preview
-      const objectUrl = URL.createObjectURL(file);
-      
-      // Auto-scale the image to fit container on upload
-      // Pass a flag to indicate this is a new upload that needs auto-scaling
-      onImageSelect(objectUrl, file, true);
+      // Convert file to base64 data URL for reliable display
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result as string;
+        if (dataUrl) {
+          console.log('File converted to data URL, length:', dataUrl.length);
+          // Auto-scale the image to fit container on upload
+          onImageSelect(dataUrl, file, true);
+        }
+      };
+      reader.onerror = () => {
+        setUploadError('Błąd podczas wczytywania pliku');
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
     } catch (error) {
+      console.error('Error processing file:', error);
       setUploadError('Błąd podczas wczytywania pliku');
-    } finally {
       setIsUploading(false);
     }
   }, [onImageSelect]);

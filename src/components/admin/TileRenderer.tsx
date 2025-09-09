@@ -98,7 +98,11 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                   maxHeight: 'none'
                 }}
                 onError={(e) => {
+                  console.error('Image failed to load:', imageTile.content.url.substring(0, 100));
                   (e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400';
+                }}
+                onLoad={() => {
+                  console.log('Image loaded successfully');
                 }}
               />
             </div>

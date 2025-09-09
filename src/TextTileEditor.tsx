@@ -66,6 +66,12 @@ export const TextTileEditor: React.FC<TextTileEditorProps> = ({
         handleContentUpdate('position', { x: centerX, y: centerY });
         handleContentUpdate('scale', fitScale);
       };
+      img.onerror = (error) => {
+        console.error('Error loading image for auto-scaling:', error);
+        // Fallback to default positioning if image fails to load
+        handleContentUpdate('position', { x: 0, y: 0 });
+        handleContentUpdate('scale', 1);
+      };
       img.src = url;
     }
   };

@@ -30,9 +30,16 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
 
   // Load image to get natural dimensions
   useEffect(() => {
+    if (!imageUrl) return;
+    
     const img = new Image();
     img.onload = () => {
+      console.log('Image loaded in position control:', img.naturalWidth, 'x', img.naturalHeight);
       setImageSize({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.onerror = (error) => {
+      console.error('Error loading image in position control:', error);
+      setImageSize({ width: 400, height: 300 }); // Fallback dimensions
     };
     img.src = imageUrl;
   }, [imageUrl]);
@@ -177,6 +184,13 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
             }}
             onMouseDown={handleMouseDown}
             draggable={false}
+            onError={(e) => {
+              console.error('Preview image failed to load');
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
+            onLoad={() => {
+              console.log('Preview image loaded successfully');
+            }}
           />
           
           {/* Grid overlay */}
