@@ -55,10 +55,12 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
     const scaledWidth = imageSize.width * scale;
     const scaledHeight = imageSize.height * scale;
     
-    const minX = Math.min(0, containerWidth - scaledWidth);
-    const maxX = Math.max(0, containerWidth - scaledWidth);
-    const minY = Math.min(0, containerHeight - scaledHeight);
-    const maxY = Math.max(0, containerHeight - scaledHeight);
+    // Allow some movement outside bounds but limit it
+    const buffer = Math.min(scaledWidth * 0.1, scaledHeight * 0.1, 50); // 10% buffer or 50px max
+    const minX = Math.min(-buffer, containerWidth - scaledWidth + buffer);
+    const maxX = Math.max(buffer, containerWidth - scaledWidth - buffer);
+    const minY = Math.min(-buffer, containerHeight - scaledHeight + buffer);
+    const maxY = Math.max(buffer, containerHeight - scaledHeight - buffer);
 
     const boundedX = Math.max(minX, Math.min(maxX, newX));
     const boundedY = Math.max(minY, Math.min(maxY, newY));
@@ -84,17 +86,20 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
 
   const handleScaleChange = (newScale: number) => {
     const clampedScale = Math.max(0.1, Math.min(3, newScale));
+    
+    // Calculate new position to keep image centered during scaling
+    if (imageSize.width && imageSize.height) {
+      const scaleDiff = clampedScale - scale;
+      const imageCenterX = position.x + (imageSize.width * scale) / 2;
+      const imageCenterY = position.y + (imageSize.height * scale) / 2;
+      
+      const newX = imageCenterX - (imageSize.width * clampedScale) / 2;
+      const newY = imageCenterY - (imageSize.height * clampedScale) / 2;
+      
+      onPositionChange({ x: newX, y: newY });
+    }
+    
     onScaleChange(clampedScale);
-    
-    // Adjust position to keep image centered when scaling
-    const scaleDiff = clampedScale - scale;
-    const centerX = containerWidth / 2;
-    const centerY = containerHeight / 2;
-    
-    const newX = position.x - (imageSize.width * scaleDiff) / 2;
-    const newY = position.y - (imageSize.height * scaleDiff) / 2;
-    
-    onPositionChange({ x: newX, y: newY });
   };
 
   const handleFitToContainer = () => {

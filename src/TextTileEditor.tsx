@@ -52,12 +52,16 @@ export const TextTileEditor: React.FC<TextTileEditorProps> = ({
   };
 
   const handleContentUpdate = (field: string, value: any) => {
-    onUpdateTile(tile.id, {
+    const updates = {
       content: {
         ...tile.content,
         [field]: value
-      }
-    });
+      },
+      updated_at: new Date().toISOString()
+    };
+    
+    console.log('Updating image tile content:', field, value, updates);
+    onUpdateTile(tile.id, updates);
   };
 
   const handlePositionUpdate = (field: 'x' | 'y', value: number) => {
@@ -431,33 +435,41 @@ export const TextTileEditor: React.FC<TextTileEditorProps> = ({
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <div className="flex">
-          {[
-            { id: 'content', label: 'Zawartość', description: 'Tekst i formatowanie fragmentów' },
-            { id: 'style', label: 'Styl', description: 'Wygląd całego kafelka' }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 px-6 py-4 text-left border-b-2 transition-colors ${
-                activeTab === tab.id
-                  ? 'border-blue-500 text-blue-600 bg-blue-50'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <div className="font-medium text-sm">{tab.label}</div>
-              <div className="text-xs text-gray-500 mt-1">{tab.description}</div>
-            </button>
-          ))}
+      {/* Tabs - Only show for text tiles */}
+      {tile.type === 'text' && (
+        <div className="border-b border-gray-200">
+          <div className="flex">
+            {[
+              { id: 'content', label: 'Zawartość', description: 'Tekst i formatowanie fragmentów' },
+              { id: 'style', label: 'Styl', description: 'Wygląd całego kafelka' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex-1 px-6 py-4 text-left border-b-2 transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-blue-500 text-blue-600 bg-blue-50'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="font-medium text-sm">{tab.label}</div>
+                <div className="text-xs text-gray-500 mt-1">{tab.description}</div>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Properties Panel */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {activeTab === 'content' && renderContentEditor()}
-        {activeTab === 'style' && renderStyleEditor()}
+        {tile.type === 'text' ? (
+          <>
+            {activeTab === 'content' && renderContentEditor()}
+            {activeTab === 'style' && renderStyleEditor()}
+          </>
+        ) : (
+          renderContentEditor()
+        )}
       </div>
 
       {/* Footer */}
