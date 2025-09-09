@@ -447,7 +447,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
         </div>
 
         {/* Main Canvas Area */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 max-w-none" style={{ width: 'calc(100% - 32rem)' }}>
           {/* Canvas Toolbar - Mobile Responsive */}
           <div className="bg-white border-b border-gray-200 px-4 lg:px-6 py-3">
             <div className="flex items-center justify-between">
@@ -479,17 +479,34 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
           </div>
         </div>
 
-        {/* Right Panel - Tile Properties (when tile is selected) */}
-        {editorState.selectedTileId && (
-          <div className="w-64 lg:w-80 bg-white shadow-lg border-l border-gray-200 flex-shrink-0">
+        {/* Right Panel - Always Present */}
+        <div className="w-64 lg:w-80 bg-white shadow-lg border-l border-gray-200 flex-shrink-0">
+          {editorState.selectedTileId ? (
             <TextTileEditor
               tile={lessonContent.tiles.find(t => t.id === editorState.selectedTileId) as TextTile}
               onUpdateTile={handleUpdateTile}
               onStopEditing={handleStopEditing}
               isEditing={editorState.isEditing}
             />
-          </div>
-        )}
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Settings className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Wybierz kafelek
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Kliknij na kafelek na planszy, aby edytować jego właściwości
+              </p>
+              <div className="text-xs text-gray-500 space-y-1">
+                <p>💡 Podwójne kliknięcie - edycja treści</p>
+                <p>🎯 Pojedyncze kliknięcie - wybór kafelka</p>
+                <p>🗑️ Delete - usuń wybrany kafelek</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
