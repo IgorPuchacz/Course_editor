@@ -187,19 +187,36 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
 
     console.log('Updating tile:', tileId, 'with updates:', updates);
 
-    const updatedTiles = lessonContent.tiles.map(tile => 
-      tile.id === tileId 
-        ? { ...tile, ...updates, updated_at: new Date().toISOString() }
-        : tile
-    );
+    const updatedTiles = lessonContent.tiles.map(tile => {
+      if (tile.id === tileId) {
+        const updatedTile = { 
+          ...tile, 
+          ...updates, 
+          updated_at: new Date().toISOString() 
+        };
+        
+        // Special handling for text tiles to ensure rich text is preserved
+        if (tile.type === 'text' && updates.content) {
+          updatedTile.content = {
+            ...tile.content,
+            ...updates.content
+          };
+        }
+        
+        return updatedTile;
+      }
+      return tile;
+    });
 
     console.log('Updated tiles:', updatedTiles.find(t => t.id === tileId));
 
-    setLessonContent({
+    const newContent = {
       ...lessonContent,
       tiles: updatedTiles,
       updated_at: new Date().toISOString()
-    });
+    };
+    
+    setLessonContent(newContent);
 
     setEditorState(prev => ({ ...prev, hasUnsavedChanges: true }));
   };

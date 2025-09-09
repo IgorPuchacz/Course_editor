@@ -91,7 +91,7 @@ export class LessonContentService {
       gridPosition: gridPos,
       content: {
         text: 'Nowy tekst',
-        richText: '<p>Nowy tekst</p>',
+        richText: '<p style="margin: 0;">Nowy tekst</p>',
         fontFamily: 'Inter, system-ui, sans-serif',
         fontSize: 16,
         textAlign: 'left',

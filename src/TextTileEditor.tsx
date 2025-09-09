@@ -382,7 +382,18 @@ export const TextTileEditor: React.FC<TextTileEditorProps> = ({
             <input
               type="checkbox"
               checked={textTile.content.showBorder}
-              onChange={(e) => handleContentUpdate('showBorder', e.target.checked)}
+                const plainText = tempDiv.textContent || tempDiv.innerText || '';
+                handleContentUpdate('text', plainText);
+                
+                // Force re-render of the tile by updating timestamp
+                onUpdateTile(tile.id, {
+                  content: {
+                    ...textTile.content,
+                    richText: richText,
+                    text: plainText
+                  },
+                  updated_at: new Date().toISOString()
+                });
               className="w-5 h-5 text-blue-600"
             />
             <div>

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Bold, Palette } from 'lucide-react';
+import { TextFormattingToolbar } from './TextFormattingToolbar';
 
 interface RichTextEditorProps {
   content: string;
@@ -15,27 +15,60 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const editorRef = useRef<HTMLDivElement>(null);
   const [showToolbar, setShowToolbar] = useState(false);
   const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
-  const [selectedColor, setSelectedColor] = useState('#000000');
-  const [showColorPicker, setShowColorPicker] = useState(false);
 
   useEffect(() => {
     if (editorRef.current) {
       editorRef.current.innerHTML = content;
     }
-  }, []);
+  }, [content]);
 
   const handleInput = () => {
     if (editorRef.current) {
       console.log('Rich text content updated:', editorRef.current.innerHTML);
-      onChange(editorRef.current.innerHTML);
+      // Clean up the HTML and ensure proper formatting
+      const cleanedHTML = cleanHTML(editorRef.current.innerHTML);
+      onChange(cleanedHTML);
     }
   };
 
+  const cleanHTML = (html: string): string => {
+    // Remove unnecessary attributes and clean up the HTML
+    let cleaned = html
+      .replace(/style="[^"]*"/g, (match) => {
+        // Keep only color styles and other important formatting
+        const colorMatch = match.match(/color:\s*([^;]+)/);
+        const fontWeightMatch = match.match(/font-weight:\s*([^;]+)/);
+        const fontStyleMatch = match.match(/font-style:\s*([^;]+)/);
+        const textDecorationMatch = match.match(/text-decoration:\s*([^;]+)/);
+        
+        let styles = [];
+        if (colorMatch) styles.push(`color: ${colorMatch[1]}`);
+        if (fontWeightMatch) styles.push(`font-weight: ${fontWeightMatch[1]}`);
+        if (fontStyleMatch) styles.push(`font-style: ${fontStyleMatch[1]}`);
+        if (textDecorationMatch) styles.push(`text-decoration: ${textDecorationMatch[1]}`);
+        
+        return styles.length > 0 ? `style="${styles.join('; ')}"` : '';
+      })
+      .replace(/\s+style=""/g, '') // Remove empty style attributes
+      .replace(/<div>/g, '<p>') // Convert divs to paragraphs
+      .replace(/<\/div>/g, '</p>');
+    
+    return cleaned;
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Handle Ctrl+B for bold
+    // Handle keyboard shortcuts
     if (e.ctrlKey && e.key === 'b') {
       e.preventDefault();
       applyFormat('bold');
+    }
+    if (e.ctrlKey && e.key === 'i') {
+      e.preventDefault();
+      applyFormat('italic');
+    }
+    if (e.ctrlKey && e.key === 'u') {
+      e.preventDefault();
+      applyFormat('underline');
     }
   };
 
@@ -58,20 +91,13 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const applyFormat = (command: string, value?: string) => {
     document.execCommand(command, false, value);
     if (editorRef.current) {
+      // Force update after formatting
+      const event = new Event('input', { bubbles: true });
+      editorRef.current.dispatchEvent(event);
       onChange(editorRef.current.innerHTML);
     }
   };
 
-  const applyColor = (colorValue: string) => {
-    applyFormat('foreColor', colorValue);
-    setSelectedColor(colorValue);
-  };
-
-  const predefinedColors = [
-    '#000000', '#333333', '#666666', '#999999',
-    '#FF0000', '#00FF00', '#0000FF', '#FFFF00',
-    '#FF00FF', '#00FFFF', '#FFA500', '#800080'
-  ];
 
   return (
     <div className="relative">
@@ -82,66 +108,16 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         onMouseUp={handleSelectionChange}
         onKeyUp={handleSelectionChange}
         onKeyDown={handleKeyDown}
-        className={`w-full h-full p-3 outline-none overflow-hidden border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${className}`}
+        className={`w-full h-full p-3 outline-none overflow-auto border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent rich-text-content ${className}`}
         style={{ minHeight: '120px' }}
         suppressContentEditableWarning={true}
       />
 
-      {/* Floating Toolbar */}
-      {showToolbar && (
-        <div
-          className="fixed bg-white border border-gray-300 rounded-lg shadow-lg p-2 flex items-center space-x-1 z-50 pointer-events-auto"
-          style={{
-            top: toolbarPosition.top,
-            left: toolbarPosition.left,
-            transform: 'translateX(-50%)'
-          }}
-        >
-          <button
-            onClick={() => applyFormat('bold')}
-            className="p-2 hover:bg-gray-100 rounded transition-colors"
-            title="Pogrub"
-          >
-            <Bold className="w-4 h-4" />
-          </button>
-          
-          <div className="w-px h-6 bg-gray-300 mx-1"></div>
-
-          {/* Color Picker */}
-          <div className="relative">
-            <button 
-              className="p-2 hover:bg-gray-100 rounded transition-colors flex items-center space-x-1"
-              onMouseEnter={() => setShowColorPicker(true)}
-            >
-              <Palette className="w-4 h-4" />
-              <div 
-                className="w-3 h-3 rounded border border-gray-300"
-                style={{ backgroundColor: selectedColor }}
-              ></div>
-            </button>
-            
-            {showColorPicker && (
-              <div 
-                className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-3 pointer-events-auto"
-                onMouseEnter={() => setShowColorPicker(true)}
-                onMouseLeave={() => setShowColorPicker(false)}
-              >
-              <div className="grid grid-cols-4 gap-1">
-                {predefinedColors.map((colorValue) => (
-                  <button
-                    key={colorValue}
-                    onClick={() => applyColor(colorValue)}
-                    className="w-7 h-7 rounded border-2 border-gray-300 hover:border-gray-500 transition-all hover:scale-105 shadow-sm"
-                    style={{ backgroundColor: colorValue }}
-                    title={colorValue}
-                  />
-                ))}
-              </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <TextFormattingToolbar
+        onFormat={applyFormat}
+        position={toolbarPosition}
+        visible={showToolbar}
+      />
     </div>
   );
 };

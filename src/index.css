@@ -26,11 +26,35 @@
   text-decoration: underline !important;
 }
 
-/* Ensure text colors display correctly */
+/* Preserve inline styles for rich text formatting */
 .rich-text-content [style*="color"] {
-  color: inherit !important;
+  color: inherit;
 }
 
+.rich-text-content span[style*="color"] {
+  /* Allow color styles to override default text color */
+}
+
+.rich-text-content * {
+  /* Preserve all inline styles */
+  color: inherit;
+}
+
+/* Specific overrides for formatted text */
 .rich-text-content span[style] {
-  color: inherit !important;
+  /* Don't override inline styles */
+}
+
+/* Ensure proper text rendering */
+.tile-text-content {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.tile-text-content * {
+  /* Preserve formatting */
+  font-weight: inherit;
+  font-style: inherit;
+  text-decoration: inherit;
 }

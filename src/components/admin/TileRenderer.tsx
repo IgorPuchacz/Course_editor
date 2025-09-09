@@ -49,7 +49,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         return (
           <>
             <div
-              className="w-full h-full p-3 overflow-hidden"
+              className="w-full h-full p-3 overflow-hidden tile-text-content"
               style={{
                 backgroundColor: textTile.content.backgroundColor,
                 fontSize: `${textTile.content.fontSize}px`,
@@ -61,7 +61,12 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
               }}
             >
               <div 
-                className="whitespace-pre-wrap break-words flex-1 rich-text-content"
+                className="break-words flex-1 rich-text-content"
+                style={{
+                  width: '100%',
+                  minHeight: '1em',
+                  outline: 'none'
+                }}
                 dangerouslySetInnerHTML={{
                   __html: textTile.content.richText || `<p>${textTile.content.text || 'Kliknij dwukrotnie, aby edytować'}</p>`
                 }}
