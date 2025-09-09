@@ -30,6 +30,46 @@ export const TextTileEditor: React.FC<TextTileEditorProps> = ({
     );
   }
 
+  // Auto-scale image to fit container when new image is selected
+  const handleImageSelectWithAutoScale = (url: string, file?: File, shouldAutoScale?: boolean) => {
+    console.log('Image selected:', url, 'shouldAutoScale:', shouldAutoScale);
+    
+    // Update the image URL first
+    handleContentUpdate('url', url);
+    
+    // If this is a new upload/selection, auto-scale to fit
+    if (shouldAutoScale && tile.type === 'image') {
+      // Load the image to get its natural dimensions
+      const img = new Image();
+      img.onload = () => {
+        const containerWidth = tile.size.width;
+        const containerHeight = tile.size.height;
+        
+        // Calculate scale to fit (use the more restrictive dimension)
+        const scaleX = containerWidth / img.naturalWidth;
+        const scaleY = containerHeight / img.naturalHeight;
+        const fitScale = Math.min(scaleX, scaleY);
+        
+        console.log('Auto-scaling image:', {
+          naturalSize: { width: img.naturalWidth, height: img.naturalHeight },
+          containerSize: { width: containerWidth, height: containerHeight },
+          calculatedScale: fitScale
+        });
+        
+        // Center the image and apply fit scale
+        const scaledWidth = img.naturalWidth * fitScale;
+        const scaledHeight = img.naturalHeight * fitScale;
+        const centerX = (containerWidth - scaledWidth) / 2;
+        const centerY = (containerHeight - scaledHeight) / 2;
+        
+        // Update position and scale
+        handleContentUpdate('position', { x: centerX, y: centerY });
+        handleContentUpdate('scale', fitScale);
+      };
+      img.src = url;
+    }
+  };
+
   const getTileIcon = () => {
     switch (tile.type) {
       case 'text': return Type;
@@ -132,7 +172,7 @@ export const TextTileEditor: React.FC<TextTileEditorProps> = ({
             {/* Image Selection */}
             <ImageUploadComponent
               currentUrl={imageTile.content.url}
-              onImageSelect={(url) => handleContentUpdate('url', url)}
+              onImageSelect={handleImageSelectWithAutoScale}
             />
             
             {/* Image Positioning - only show if image is loaded */}

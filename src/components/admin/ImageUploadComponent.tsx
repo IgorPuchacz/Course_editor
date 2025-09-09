@@ -3,7 +3,7 @@ import { Upload, Link, Image as ImageIcon, X, Check, AlertCircle } from 'lucide-
 
 interface ImageUploadComponentProps {
   currentUrl: string;
-  onImageSelect: (url: string, file?: File) => void;
+  onImageSelect: (url: string, file?: File, shouldAutoScale?: boolean) => void;
   className?: string;
 }
 
@@ -68,7 +68,10 @@ export const ImageUploadComponent: React.FC<ImageUploadComponentProps> = ({
     try {
       // Create object URL for preview
       const objectUrl = URL.createObjectURL(file);
-      onImageSelect(objectUrl, file);
+      
+      // Auto-scale the image to fit container on upload
+      // Pass a flag to indicate this is a new upload that needs auto-scaling
+      onImageSelect(objectUrl, file, true);
     } catch (error) {
       setUploadError('Błąd podczas wczytywania pliku');
     } finally {
@@ -78,12 +81,14 @@ export const ImageUploadComponent: React.FC<ImageUploadComponentProps> = ({
 
   const handleUrlSubmit = () => {
     if (urlInput.trim()) {
-      onImageSelect(urlInput.trim());
+      // Auto-scale URL images as well
+      onImageSelect(urlInput.trim(), undefined, true);
     }
   };
 
   const handleStockImageSelect = (url: string) => {
-    onImageSelect(url);
+    // Auto-scale stock images
+    onImageSelect(url, undefined, true);
   };
 
   const handleDrop = useCallback((event: React.DragEvent) => {

@@ -210,14 +210,14 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
               type="range"
               min="0.1"
               max="3"
-              step="0.1"
+              step="0.01"
               value={scale}
               onChange={(e) => handleScaleChange(parseFloat(e.target.value))}
               className="flex-1"
             />
             
             <button
-              onClick={() => handleScaleChange(scale + 0.1)}
+              onClick={() => handleScaleChange(scale + 0.01)}
               className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
               title="Powiększ"
             >
