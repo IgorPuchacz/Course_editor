@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ensure rich text formatting displays correctly in tiles */
+.rich-text-content {
+  line-height: 1.5;
+}
+
+.rich-text-content p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.rich-text-content strong,
+.rich-text-content b {
+  font-weight: bold !important;
+}
+
+.rich-text-content em,
+.rich-text-content i {
+  font-style: italic !important;
+}
+
+.rich-text-content u {
+  text-decoration: underline !important;
+}
+
+/* Ensure text colors display correctly */
+.rich-text-content [style*="color"] {
+  color: inherit !important;
+}
+
+.rich-text-content span[style] {
+  color: inherit !important;
+}
