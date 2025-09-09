@@ -47,6 +47,9 @@ export interface ImageTile extends LessonTile {
     url: string;
     alt: string;
     caption?: string;
+    position?: { x: number; y: number };
+    scale?: number;
+    objectFit?: 'cover' | 'contain' | 'fill' | 'custom';
   };
 }
 

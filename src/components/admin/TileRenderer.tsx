@@ -77,16 +77,38 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 
       case 'image':
         const imageTile = tile as ImageTile;
+        const imagePosition = imageTile.content.position || { x: 0, y: 0 };
+        const imageScale = imageTile.content.scale || 1;
+        
         return (
           <div className="w-full h-full bg-gray-100 rounded-lg overflow-hidden relative">
-            <img
-              src={imageTile.content.url}
-              alt={imageTile.content.alt}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400';
-              }}
-            />
+            {imageTile.content.objectFit === 'custom' ? (
+              <div className="w-full h-full relative overflow-hidden">
+                <img
+                  src={imageTile.content.url}
+                  alt={imageTile.content.alt}
+                  className="absolute"
+                  style={{
+                    left: imagePosition.x,
+                    top: imagePosition.y,
+                    transform: `scale(${imageScale})`,
+                    transformOrigin: '0 0'
+                  }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400';
+                  }}
+                />
+              </div>
+            ) : (
+              <img
+                src={imageTile.content.url}
+                alt={imageTile.content.alt}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400';
+                }}
+              />
+            )}
             {imageTile.content.caption && (
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent text-white text-xs p-3 rounded-b-lg">
                 {imageTile.content.caption}

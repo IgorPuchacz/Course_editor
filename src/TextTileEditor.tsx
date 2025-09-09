@@ -3,6 +3,8 @@ import { Type, AlignLeft, AlignCenter, AlignRight, AlignLeft as AlignTop, AlignC
 import { TextTile, ImageTile, InteractiveTile, VisualizationTile, QuizTile, LessonTile } from '../types/lessonEditor';
 import { FontSelector } from './components/admin/FontSelector';
 import { RichTextEditor } from './components/admin/RichTextEditor';
+import { ImageUploadComponent } from './components/admin/ImageUploadComponent';
+import { ImagePositionControl } from './components/admin/ImagePositionControl';
 
 interface TextTileEditorProps {
   tile: LessonTile | undefined;
@@ -123,18 +125,25 @@ export const TextTileEditor: React.FC<TextTileEditorProps> = ({
         const imageTile = tile as ImageTile;
         return (
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                URL obrazu
-              </label>
-              <input
-                type="url"
-                value={imageTile.content.url}
-                onChange={(e) => handleContentUpdate('url', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                placeholder="https://example.com/image.jpg"
+            {/* Image Selection */}
+            <ImageUploadComponent
+              currentUrl={imageTile.content.url}
+              onImageSelect={(url) => handleContentUpdate('url', url)}
+            />
+            
+            {/* Image Positioning - only show if image is loaded */}
+            {imageTile.content.url && (
+              <ImagePositionControl
+                imageUrl={imageTile.content.url}
+                position={imageTile.content.position || { x: 0, y: 0 }}
+                scale={imageTile.content.scale || 1}
+                onPositionChange={(position) => handleContentUpdate('position', position)}
+                onScaleChange={(scale) => handleContentUpdate('scale', scale)}
+                containerWidth={tile.size.width}
+                containerHeight={tile.size.height}
               />
-            </div>
+            )}
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Tekst alternatywny

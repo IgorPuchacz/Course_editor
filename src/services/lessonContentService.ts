@@ -146,7 +146,10 @@ export class LessonContentService {
       content: {
         url: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400',
         alt: 'Przykładowy obraz',
-        caption: 'Opis obrazu'
+        caption: 'Opis obrazu',
+        position: { x: 0, y: 0 },
+        scale: 1,
+        objectFit: 'cover'
       },
       created_at: now,
       updated_at: now,
