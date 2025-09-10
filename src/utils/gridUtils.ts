@@ -1,7 +1,7 @@
 import { Position, Size, GridPosition, CanvasSettings } from '../types/lessonEditor';
 
 export class GridUtils {
-  static readonly GRID_COLUMNS = 5;
+  static readonly GRID_COLUMNS = 6;
   static readonly GRID_CELL_SIZE = 120;
   static readonly GRID_GAP = 8;
 

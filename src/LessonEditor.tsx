@@ -438,16 +438,32 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
 
       {/* Editor Content */}
       <div className="flex-1 flex min-h-0">
-        {/* Left Panel - Tile Palette */}
-        <div className="w-64 lg:w-80 bg-white shadow-lg border-r border-gray-200 flex-shrink-0">
-          <TilePalette
-            onAddTile={handleAddTile}
-            selectedTileId={editorState.selectedTileId}
-          />
+        {/* Context-Sensitive Left Panel */}
+        <div className="w-64 lg:w-80 bg-white shadow-lg border-r border-gray-200 flex-shrink-0 transition-all duration-300">
+          {editorState.selectedTileId ? (
+            // Editing Panel - when tile is selected
+            <div className="h-full">
+              <TextTileEditor
+                tile={lessonContent.tiles.find(t => t.id === editorState.selectedTileId) as TextTile}
+                onUpdateTile={handleUpdateTile}
+                onStopEditing={handleStopEditing}
+                isEditing={editorState.isEditing}
+                onSelectTile={handleSelectTile}
+              />
+            </div>
+          ) : (
+            // Tile Palette - when no tile is selected
+            <div className="h-full">
+              <TilePalette
+                onAddTile={handleAddTile}
+                selectedTileId={editorState.selectedTileId}
+              />
+            </div>
+          )}
         </div>
 
-        {/* Main Canvas Area */}
-        <div className="flex-1 flex flex-col min-w-0 max-w-none" style={{ width: 'calc(100% - 32rem)' }}>
+        {/* Expanded Canvas Area */}
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Canvas Toolbar - Mobile Responsive */}
           <div className="bg-white border-b border-gray-200 px-4 lg:px-6 py-3">
             <div className="flex items-center justify-between">
@@ -458,6 +474,24 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
                 <span className="text-gray-600 hidden sm:inline">
                   Siatka: {GridUtils.GRID_COLUMNS} × {lessonContent.canvas_settings.height}
                 </span>
+                <span className="text-gray-600 hidden md:inline">
+                  {editorState.selectedTileId ? 'Tryb edycji' : 'Tryb dodawania'}
+                </span>
+              </div>
+              
+              {/* Context indicator */}
+              <div className="flex items-center space-x-2 text-xs text-gray-500">
+                {editorState.selectedTileId ? (
+                  <>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <span>Edytujesz kafelek</span>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Dodaj nowy kafelek</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -477,35 +511,6 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
               showGrid={editorState.showGrid}
             />
           </div>
-        </div>
-
-        {/* Right Panel - Always Present */}
-        <div className="w-64 lg:w-80 bg-white shadow-lg border-l border-gray-200 flex-shrink-0">
-          {editorState.selectedTileId ? (
-            <TextTileEditor
-              tile={lessonContent.tiles.find(t => t.id === editorState.selectedTileId) as TextTile}
-              onUpdateTile={handleUpdateTile}
-              onStopEditing={handleStopEditing}
-              isEditing={editorState.isEditing}
-            />
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center p-6 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Settings className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Wybierz kafelek
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Kliknij na kafelek na planszy, aby edytować jego właściwości
-              </p>
-              <div className="text-xs text-gray-500 space-y-1">
-                <p>💡 Podwójne kliknięcie - edycja treści</p>
-                <p>🎯 Pojedyncze kliknięcie - wybór kafelka</p>
-                <p>🗑️ Delete - usuń wybrany kafelek</p>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

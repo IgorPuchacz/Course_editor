@@ -1,5 +1,5 @@
 import React from 'react';
-import { Type, Image, Puzzle, BarChart3, HelpCircle } from 'lucide-react';
+import { Type, Image, Puzzle, BarChart3, HelpCircle, Plus } from 'lucide-react';
 import { TilePaletteItem } from '../../types/lessonEditor';
 
 interface TilePaletteProps {
@@ -72,7 +72,15 @@ export const TilePalette: React.FC<TilePaletteProps> = ({
     <div className="h-full flex flex-col bg-white">
       {/* Header */}
       <div className="p-6 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Paleta kafelków</h3>
+        <div className="flex items-center space-x-3 mb-2">
+          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+            <Plus className="w-5 h-5 text-green-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Dodaj kafelek</h3>
+            <p className="text-xs text-gray-500">Tryb dodawania aktywny</p>
+          </div>
+        </div>
         <p className="text-sm text-gray-600">
           Przeciągnij kafelki na planszę lub kliknij, aby dodać
         </p>
@@ -118,6 +126,15 @@ export const TilePalette: React.FC<TilePaletteProps> = ({
 
       {/* Instructions */}
       <div className="p-4 border-t border-gray-200 bg-gray-50">
+        <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center space-x-2 mb-2">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <span className="text-sm font-medium text-blue-800">Wskazówka</span>
+          </div>
+          <p className="text-xs text-blue-700">
+            Po wybraniu kafelka ten panel zmieni się na edytor właściwości
+          </p>
+        </div>
         <div className="text-xs text-gray-600 space-y-2">
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
@@ -129,7 +146,7 @@ export const TilePalette: React.FC<TilePaletteProps> = ({
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-            <span>Przeciągnij rogi, aby zmienić rozmiar</span>
+            <span>Kliknij kafelek, aby go edytować</span>
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Type, AlignLeft, AlignCenter, AlignRight, AlignLeft as AlignTop, AlignCenterVertical, PanelBottom as AlignBottom, Plus, Trash2, Edit3 } from 'lucide-react';
+import { Type, AlignLeft, AlignCenter, AlignRight, AlignLeft as AlignTop, AlignCenterVertical, PanelBottom as AlignBottom, Plus, Trash2, Edit3, X } from 'lucide-react';
 import { TextTile, ImageTile, InteractiveTile, VisualizationTile, QuizTile, LessonTile } from '../types/lessonEditor';
 import { FontSelector } from './components/admin/FontSelector';
 import { RichTextEditor } from './components/admin/RichTextEditor';
@@ -11,21 +11,30 @@ interface TextTileEditorProps {
   onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
   onStopEditing: () => void;
   isEditing: boolean;
+  onSelectTile?: (tileId: string | null) => void;
 }
 
 export const TextTileEditor: React.FC<TextTileEditorProps> = ({
   tile,
   onUpdateTile,
   onStopEditing,
-  isEditing
+  isEditing,
+  onSelectTile
 }) => {
   const [activeTab, setActiveTab] = useState<'content' | 'style'>('content');
 
   if (!tile) {
     return (
-      <div className="p-6 text-center text-gray-500">
-        <Type className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-        <p>Wybierz kafelek, aby edytować jego właściwości</p>
+      <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+          <Type className="w-8 h-8 text-gray-400" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          Brak wybranego kafelka
+        </h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Ten panel powinien wyświetlać paletę kafelków
+        </p>
       </div>
     );
   }
@@ -470,7 +479,27 @@ export const TextTileEditor: React.FC<TextTileEditorProps> = ({
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              {React.createElement(getTileIcon(), { className: "w-5 h-5 text-blue-600" })}
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">{getTileTitle()}</h3>
+              <p className="text-sm text-gray-600">Dostosuj właściwości kafelka</p>
+            </div>
+          </div>
+          <button
+            onClick={() => handleSelectTile(null)}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Zamknij edytor (powrót do dodawania)"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        {/* Context indicator */}
+        <div className="mt-3 flex items-center space-x-2 text-xs text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
             {React.createElement(getTileIcon(), { className: "w-5 h-5 text-blue-600" })}
           </div>
@@ -478,6 +507,8 @@ export const TextTileEditor: React.FC<TextTileEditorProps> = ({
             <h3 className="text-lg font-semibold text-gray-900">{getTileTitle()}</h3>
             <p className="text-sm text-gray-600">Dostosuj właściwości kafelka</p>
           </div>
+          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+          <span>Tryb edycji aktywny</span>
         </div>
       </div>
 
