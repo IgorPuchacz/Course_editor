@@ -122,33 +122,6 @@ export const TilePalette: React.FC<TilePaletteProps> = ({
           );
         })}
       </div>
-
-      {/* Instructions */}
-      <div className="p-4 border-t border-gray-200 bg-gray-50">
-        <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="flex items-center space-x-2 mb-2">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <span className="text-sm font-medium text-blue-800">Wskazówka</span>
-          </div>
-          <p className="text-xs text-blue-700">
-            Po wybraniu kafelka ten panel zmieni się na edytor właściwości
-          </p>
-        </div>
-        <div className="text-xs text-gray-600 space-y-2">
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <span>Przeciągnij kafelek na planszę</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span>Kliknij, aby dodać w lewym górnym rogu</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-            <span>Kliknij kafelek, aby go edytować</span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
