@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bold, Italic, Underline, Palette, Type, Pipette } from 'lucide-react';
+import { Bold, Italic, Underline, Palette, Pipette } from 'lucide-react';
 
 interface TextFormattingToolbarProps {
   onFormat: (command: string, value?: string) => void;
@@ -18,10 +18,10 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
   const toolbarRef = useRef<HTMLDivElement>(null);
 
   const predefinedColors = [
-    '#000000', '#333333', '#666666', '#999999',
-    '#FF0000', '#00FF00', '#0000FF', '#FFFF00',
-    '#FF00FF', '#00FFFF', '#FFA500', '#800080',
-    '#8B4513', '#006400', '#4B0082', '#DC143C'
+    '#000000', '#494949', '#9c9c9c', '#ffffff',
+    '#a10000', '#ff0000', '#ffa500', '#FFFF00',
+    '#710071', '#be00ff', '#f700ff', '#e580ff',
+    '#00277a', '#0051ff', '#3561ff', '#00fff6'
   ];
 
   // Convert hex to RGB
@@ -98,8 +98,8 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
       ref={toolbarRef}
       className="fixed bg-white border border-gray-300 rounded-lg shadow-lg p-2 flex items-center space-x-1 z-50"
       style={{
-        top: position.top - 50,
-        left: position.left,
+        top: position.top - 25,
+        left: position.left + 150,
         transform: 'translateX(-50%)'
       }}
     >
@@ -194,50 +194,15 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
               </div>
             </div>
 
-            {/* RGB Inputs */}
-            <div className="mb-4">
-              <div className="text-xs text-gray-600 mb-2 font-medium">Wartości RGB</div>
-              <div className="grid grid-cols-3 gap-2">
-                {(['r', 'g', 'b'] as const).map((channel) => (
-                  <div key={channel} className="text-center">
-                    <label className="block text-xs text-gray-500 mb-1 uppercase font-medium">
-                      {channel}
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="255"
-                      value={rgbValues[channel]}
-                      onChange={(e) => handleRgbChange(channel, e.target.value)}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center font-mono"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Hex Input */}
-            <div className="mb-4">
-              <div className="text-xs text-gray-600 mb-2 font-medium">Kod HEX</div>
-              <input
-                type="text"
-                value={selectedColor}
-                onChange={(e) => handleHexChange(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
-                placeholder="#000000"
-                maxLength={7}
-              />
-            </div>
-
             {/* Color Picker Input */}
             <div>
-              <div className="text-xs text-gray-600 mb-2 font-medium">Wybierz wizualnie</div>
+              <div className="text-xs text-gray-600 mb-2 font-medium">Wybierz inny kolor</div>
               <input
                 type="color"
                 value={selectedColor}
                 onChange={(e) => handleColorSelect(e.target.value)}
                 className="w-full h-10 border border-gray-300 rounded-md cursor-pointer"
-                title="Wybierz kolor wizualnie"
+                title="Wybierz inny kolor"
               />
             </div>
 
