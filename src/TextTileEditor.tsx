@@ -490,7 +490,7 @@ export const TextTileEditor: React.FC<TextTileEditorProps> = ({
             </div>
           </div>
           <button
-            onClick={() => handleSelectTile(null)}
+            onClick={() => onSelectTile?.(null)}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             title="Zamknij edytor (powrót do dodawania)"
           >
