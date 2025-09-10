@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Type, AlignLeft, AlignCenter, AlignRight, AlignLeft as AlignTop, AlignCenterVertical, PanelBottom as AlignBottom, Plus, Trash2, Edit3, X } from 'lucide-react';
+import { Type, AlignLeft, AlignCenter, AlignRight, ArrowUpToLine, MoveVertical, ArrowDownToLine, Plus, Trash2, Edit3, X } from 'lucide-react';
 import { TextTile, ImageTile, InteractiveTile, VisualizationTile, QuizTile, LessonTile } from '../types/lessonEditor';
 import { FontSelector } from './components/admin/FontSelector';
 import { RichTextEditor } from './components/admin/RichTextEditor';
@@ -358,16 +358,6 @@ export const TextTileEditor: React.FC<TextTileEditorProps> = ({
     
     return (
       <div className="space-y-6">
-        {/* Global Styling Header */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <div className="flex items-center space-x-2 mb-2">
-            <Type className="w-4 h-4 text-gray-600" />
-            <h4 className="font-medium text-gray-900">Styl całego kafelka</h4>
-          </div>
-          <p className="text-sm text-gray-600">
-            Te ustawienia wpływają na cały tekst w kafelku. Formatowanie fragmentów tekstu znajdziesz w zakładce "Zawartość".
-          </p>
-        </div>
 
         {/* Font Selection */}
         <FontSelector
@@ -423,9 +413,9 @@ export const TextTileEditor: React.FC<TextTileEditorProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-3">Wyrównanie pionowe</label>
           <div className="flex space-x-1">
             {[
-              { value: 'top', icon: AlignTop, label: 'Do góry' },
-              { value: 'center', icon: AlignCenterVertical, label: 'Do środka' },
-              { value: 'bottom', icon: AlignBottom, label: 'Do dołu' }
+              { value: 'top', icon: ArrowUpToLine, label: 'Do góry' },
+              { value: 'center', icon: MoveVertical, label: 'Do środka' },
+              { value: 'bottom', icon: ArrowDownToLine, label: 'Do dołu' }
             ].map(({ value, icon: Icon, label }) => (
               <button
                 key={value}
@@ -496,19 +486,6 @@ export const TextTileEditor: React.FC<TextTileEditorProps> = ({
           >
             <X className="w-5 h-5" />
           </button>
-        </div>
-        
-        {/* Context indicator */}
-        <div className="mt-3 flex items-center space-x-2 text-xs text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
-          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-            {React.createElement(getTileIcon(), { className: "w-5 h-5 text-blue-600" })}
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">{getTileTitle()}</h3>
-            <p className="text-sm text-gray-600">Dostosuj właściwości kafelka</p>
-          </div>
-          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-          <span>Tryb edycji aktywny</span>
         </div>
       </div>
 

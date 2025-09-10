@@ -1,5 +1,5 @@
 import React from 'react';
-import { Type, Image, Puzzle, BarChart3, HelpCircle, Plus } from 'lucide-react';
+import { Type, Image, Puzzle, Eye, HelpCircle, Plus } from 'lucide-react';
 import { TilePaletteItem } from '../../types/lessonEditor';
 
 interface TilePaletteProps {
@@ -25,8 +25,8 @@ const TILE_TYPES: TilePaletteItem[] = [
   {
     type: 'visualization',
     title: 'Wizualizacja',
-    description: 'Dodaj wykres lub wideo',
-    icon: 'BarChart3',
+    description: 'Dodaj zapętlone wideo',
+    icon: 'Eye',
     defaultSize: { col: 0, row: 0, colSpan: 3, rowSpan: 3 }
   },
   {
@@ -43,7 +43,7 @@ const getIcon = (iconName: string) => {
     case 'Type': return Type;
     case 'Image': return Image;
     case 'Puzzle': return Puzzle;
-    case 'BarChart3': return BarChart3;
+    case 'Eye': return Eye;
     case 'HelpCircle': return HelpCircle;
     default: return Type;
   }
@@ -77,12 +77,11 @@ export const TilePalette: React.FC<TilePaletteProps> = ({
             <Plus className="w-5 h-5 text-green-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Dodaj kafelek</h3>
-            <p className="text-xs text-gray-500">Tryb dodawania aktywny</p>
+            <h3 className="text-2xl font-semibold text-gray-900">Dodaj kafelek</h3>
           </div>
         </div>
         <p className="text-sm text-gray-600">
-          Przeciągnij kafelki na planszę lub kliknij, aby dodać
+          Przeciągnij kafelki na planszę lub kliknij
         </p>
       </div>
 
