@@ -122,5 +122,6 @@ export const TilePalette: React.FC<TilePaletteProps> = ({
           );
         })}
       </div>
+    </div>
   );
 };
