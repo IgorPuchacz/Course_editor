@@ -151,6 +151,15 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
     console.log('🖱️ Setting isDraggingImage to true in LessonCanvas, current position:', imagePosition);
     
     console.log('🖱️ About to update editor state with isDraggingImage: true');
+    
+    // Add immediate test listener to see if mouseup works at all
+    const testMouseUp = (testEvent: MouseEvent) => {
+      console.log('🧪 TEST MOUSEUP DETECTED!', testEvent.button, testEvent.type);
+      document.removeEventListener('mouseup', testMouseUp);
+    };
+    document.addEventListener('mouseup', testMouseUp);
+    console.log('🧪 Added test mouseup listener');
+    
     onUpdateEditorState(prev => ({
       ...prev,
       dragState: {
@@ -358,11 +367,20 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
     
     if (shouldAddListeners) {
       console.log('🖱️ Adding mouse event listeners - isDraggingImage:', editorState.dragState.isDraggingImage);
+      
+      // Test if listeners are actually being added
+      const testListener = () => console.log('🧪 Test listener works!');
+      document.addEventListener('click', testListener);
+      setTimeout(() => document.removeEventListener('click', testListener), 1000);
+      
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
       
       // Test if listeners are actually added
       console.log('🔧 Event listeners added to document');
+      
+      // Verify listeners are there
+      console.log('🔧 Document has mousemove listeners:', document.getEventListeners ? 'checking...' : 'cannot check');
     } else {
       console.log('🖱️ Not adding listeners - no active dragging');
     }
