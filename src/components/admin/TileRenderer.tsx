@@ -50,6 +50,31 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
     onImageMouseDown(e, imageTile);
   };
 
+  const handleImageWheel = (e: React.WheelEvent, imageTile: ImageTile) => {
+    // Only handle wheel events when tile is selected and in editing mode
+    if (!isSelected || !isEditing) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('🎯 Image wheel event - deltaY:', e.deltaY);
+    
+    const currentScale = imageTile.content.scale || 1;
+    const zoomSpeed = 0.1;
+    const zoomDirection = e.deltaY > 0 ? -1 : 1; // Negative deltaY = zoom in, positive = zoom out
+    const newScale = Math.max(0.1, Math.min(3, currentScale + (zoomDirection * zoomSpeed)));
+    
+    console.log('🎯 Zoom - current:', currentScale, 'new:', newScale, 'direction:', zoomDirection);
+    
+    // Update the tile with new scale
+    onUpdateTile(tile.id, {
+      content: {
+        ...imageTile.content,
+        scale: newScale
+      }
+    });
+  };
+
   const renderTileContent = () => {
     switch (tile.type) {
       case 'text':
@@ -114,6 +139,9 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                 }}
                 onMouseDown={isSelected && isEditing ? (e) => {
                   handleImageDragStart(e, imageTile);
+                } : undefined}
+                onWheel={isSelected && isEditing ? (e) => {
+                  handleImageWheel(e, imageTile);
                 } : undefined}
                 draggable={false}
                 onError={(e) => {
