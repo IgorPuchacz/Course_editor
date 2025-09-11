@@ -26,6 +26,8 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   showGrid
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const [imageDragStart, setImageDragStart] = useState({ x: 0, y: 0, imageX: 0, imageY: 0 });
 
   // Check if this is a frameless text tile
   const isFramelessTextTile = tile.type === 'text' && !(tile as TextTile).content.showBorder;
@@ -41,6 +43,58 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
     document.dispatchEvent(resizeEvent);
   };
 
+  const handleImageDragStart = (e: React.MouseEvent, imageTile: ImageTile) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const imagePosition = imageTile.content.position || { x: 0, y: 0 };
+    
+    setIsDraggingImage(true);
+    setImageDragStart({
+      x: e.clientX,
+      y: e.clientY,
+      imageX: imagePosition.x,
+      imageY: imagePosition.y
+    });
+    
+    console.log('Started dragging image:', imageTile.id, 'from position:', imagePosition);
+  };
+
+  // Handle image dragging
+  React.useEffect(() => {
+    if (!isDraggingImage || tile.type !== 'image') return;
+
+    const handleImageDrag = (e: MouseEvent) => {
+      const deltaX = e.clientX - imageDragStart.x;
+      const deltaY = e.clientY - imageDragStart.y;
+      
+      const newPosition = {
+        x: imageDragStart.imageX + deltaX,
+        y: imageDragStart.imageY + deltaY
+      };
+      
+      // Update image position
+      onUpdateTile(tile.id, {
+        content: {
+          ...tile.content,
+          position: newPosition
+        }
+      });
+    };
+
+    const handleImageDragEnd = () => {
+      setIsDraggingImage(false);
+      console.log('Finished dragging image');
+    };
+
+    document.addEventListener('mousemove', handleImageDrag);
+    document.addEventListener('mouseup', handleImageDragEnd);
+
+    return () => {
+      document.removeEventListener('mousemove', handleImageDrag);
+      document.removeEventListener('mouseup', handleImageDragEnd);
+    };
+  }, [isDraggingImage, imageDragStart, tile.id, tile.content, onUpdateTile]);
   const renderTileContent = () => {
     switch (tile.type) {
       case 'text':
@@ -84,11 +138,16 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         
         return (
           <div className="w-full h-full bg-gray-100 rounded-lg overflow-hidden relative">
-            <div className="w-full h-full relative overflow-hidden">
+            <div 
+              className="w-full h-full relative overflow-hidden"
+              style={{ cursor: isSelected && isEditing ? 'grab' : 'default' }}
+            >
               <img
                 src={imageTile.content.url}
                 alt={imageTile.content.alt}
-                className="absolute"
+                className={`absolute select-none ${
+                  isSelected && isEditing ? 'cursor-grab active:cursor-grabbing' : ''
+                }`}
                 style={{
                   left: imagePosition.x,
                   top: imagePosition.y,
@@ -97,6 +156,8 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                   maxWidth: 'none',
                   maxHeight: 'none'
                 }}
+                onMouseDown={isSelected && isEditing ? (e) => handleImageDragStart(e, imageTile) : undefined}
+                draggable={false}
                 onError={(e) => {
                   console.error('Image failed to load:', imageTile.content.url.substring(0, 100));
                   (e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400';
@@ -234,7 +295,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         width: tile.size.width,
         height: tile.size.height
       }}
-      onMouseDown={onMouseDown}
+      onMouseDown={isDraggingImage ? undefined : onMouseDown}
       onDoubleClick={onDoubleClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -271,6 +332,14 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
           >
             <Trash2 className="w-3 h-3" />
           </button>
+        </div>
+      )}
+
+      {/* Image Editing Indicator */}
+      {isSelected && isEditing && tile.type === 'image' && (
+        <div className="absolute -top-8 left-0 flex items-center space-x-1 bg-blue-100 rounded-md shadow-md border border-blue-300 px-2 py-1">
+          <Move className="w-3 h-3 text-blue-600" />
+          <span className="text-xs text-blue-700 font-medium">Przeciągnij obraz aby zmienić pozycję</span>
         </div>
       )}
 

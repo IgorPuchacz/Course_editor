@@ -330,6 +330,9 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Powiększenie
           </label>
+          <div className="mb-2 text-xs text-blue-600 bg-blue-50 p-2 rounded">
+            💡 Wskazówka: Możesz przeciągać obraz bezpośrednio na kafelku, aby zmienić jego pozycję
+          </div>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => handleScaleChange(scale - 0.1)}
