@@ -231,6 +231,43 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
       transform: `scale(${scale})`
     };
   }, [position, imageSize, previewScaleFactor, scale]);
+
+  // Calculate preview container dimensions based on tile aspect ratio
+  const previewContainerDimensions = useMemo(() => {
+    const aspectRatio = containerWidth / containerHeight;
+    const maxWidth = 320; // Maximum width for the preview
+    const maxHeight = 240; // Maximum height for the preview
+    
+    let width, height;
+    
+    if (aspectRatio >= 1) {
+      // Landscape or square - limit by width
+      width = Math.min(maxWidth, containerWidth * 0.8);
+      height = width / aspectRatio;
+      
+      // If height exceeds max, scale down
+      if (height > maxHeight) {
+        height = maxHeight;
+        width = height * aspectRatio;
+      }
+    } else {
+      // Portrait - limit by height
+      height = Math.min(maxHeight, containerHeight * 0.8);
+      width = height * aspectRatio;
+      
+      // If width exceeds max, scale down
+      if (width > maxWidth) {
+        width = maxWidth;
+        height = width / aspectRatio;
+      }
+    }
+    
+    return {
+      width: Math.round(width),
+      height: Math.round(height)
+    };
+  }, [containerWidth, containerHeight]);
+  
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Preview Container */}
@@ -238,7 +275,7 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-sm font-medium text-gray-700">Pozycjonowanie obrazu</h4>
           <div className="text-xs text-gray-500">
-            {Math.round(scale * 100)}% | {containerWidth}×{containerHeight}px | Preview: {Math.round(previewScaleFactor * 100)}%
+            {Math.round(scale * 100)}% | {containerWidth}×{containerHeight}px | Podgląd: {previewContainerDimensions.width}×{previewContainerDimensions.height}px
           </div>
         </div>
         
@@ -246,9 +283,8 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
           ref={previewRef}
           className="relative bg-white border-2 border-gray-200 rounded-lg overflow-hidden cursor-move"
           style={{ 
-            width: 300, 
-            height: 200,
-            aspectRatio: `${containerWidth}/${containerHeight}`
+            width: previewContainerDimensions.width, 
+            height: previewContainerDimensions.height
           }}
         >
           <img
