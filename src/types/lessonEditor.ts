@@ -108,6 +108,8 @@ export interface DragState {
   dragOffset: Position;
   isFromPalette: boolean;
   previewPosition?: GridPosition;
+  isDraggingImage: boolean;
+  imageDragStart: { x: number; y: number; imageX: number; imageY: number } | null;
 }
 
 export interface ResizeState {

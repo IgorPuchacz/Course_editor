@@ -128,9 +128,44 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
           x: e.nativeEvent.offsetX,
           y: e.nativeEvent.offsetY
         },
-        isFromPalette: false
+        isFromPalette: false,
+        isDraggingImage: false,
+        imageDragStart: null
+        isDraggingImage: false,
+        imageDragStart: null
       }
     }));
+  };
+
+  // Handle image mouse down (start image dragging)
+  const handleImageMouseDown = (e: React.MouseEvent, tile: LessonTile) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('🖱️ Image drag start in LessonCanvas - clientX:', e.clientX, 'clientY:', e.clientY);
+    
+    if (tile.type !== 'image') return;
+    
+    const imageTile = tile as any; // ImageTile
+    const imagePosition = imageTile.content.position || { x: 0, y: 0 };
+    
+    console.log('🖱️ Setting isDraggingImage to true in LessonCanvas, current position:', imagePosition);
+    
+    onUpdateEditorState(prev => ({
+      ...prev,
+      dragState: {
+        ...prev.dragState,
+        isDraggingImage: true,
+        imageDragStart: {
+          x: e.clientX,
+          y: e.clientY,
+          imageX: imagePosition.x,
+          imageY: imagePosition.y
+        }
+      }
+    }));
+    
+    console.log('🖱️ Image drag state set in LessonCanvas');
   };
 
   // Handle tile resize start
@@ -194,6 +229,32 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
         }
       }
       
+      // Handle image dragging
+      if (dragState.isDraggingImage && dragState.imageDragStart) {
+        console.log('🖱️ Image drag move in LessonCanvas - clientX:', e.clientX, 'clientY:', e.clientY);
+        
+        const deltaX = e.clientX - dragState.imageDragStart.x;
+        const deltaY = e.clientY - dragState.imageDragStart.y;
+        
+        const newPosition = {
+          x: dragState.imageDragStart.imageX + deltaX,
+          y: dragState.imageDragStart.imageY + deltaY
+        };
+        
+        console.log('🖱️ New image position in LessonCanvas:', newPosition, 'delta:', { deltaX, deltaY });
+        
+        // Find the tile being dragged (should be the selected one)
+        const draggedTile = content.tiles.find(t => t.id === editorState.selectedTileId);
+        if (draggedTile && draggedTile.type === 'image') {
+          onUpdateTile(draggedTile.id, {
+            content: {
+              ...draggedTile.content,
+              position: newPosition
+            }
+          });
+        }
+      }
+      
       // Handle tile resizing
       if (resizeState.isResizing && resizeState.resizingTileId) {
         const tile = content.tiles.find(t => t.id === resizeState.resizingTileId);
@@ -238,14 +299,17 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
     };
 
     const handleMouseUp = () => {
-      if (editorState.dragState.isDragging || editorState.resizeState.isResizing) {
+      if (editorState.dragState.isDragging || editorState.dragState.isDraggingImage || editorState.resizeState.isResizing) {
+        console.log('🖱️ Mouse up in LessonCanvas - cleaning up drag states');
         onUpdateEditorState(prev => ({
           ...prev,
           dragState: {
             isDragging: false,
             draggedTile: null,
             dragOffset: { x: 0, y: 0 },
-            isFromPalette: false
+            isFromPalette: false,
+            isDraggingImage: false,
+            imageDragStart: null
           },
           resizeState: {
             isResizing: false,
@@ -260,7 +324,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
       }
     };
 
-    if (editorState.dragState.isDragging || editorState.resizeState.isResizing) {
+    if (editorState.dragState.isDragging || editorState.dragState.isDraggingImage || editorState.resizeState.isResizing) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
     }
@@ -269,7 +333,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [editorState.dragState, editorState.resizeState, content, onUpdateTile, onUpdateEditorState, ref]);
+  }, [editorState.dragState, editorState.resizeState, content, onUpdateTile, onUpdateEditorState, ref, editorState.selectedTileId]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -360,6 +424,8 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
             isSelected={editorState.selectedTileId === tile.id}
             isEditing={editorState.isEditing && editorState.selectedTileId === tile.id}
             onMouseDown={(e) => handleTileMouseDown(e, tile)}
+            onImageMouseDown={(e) => handleImageMouseDown(e, tile)}
+            isDraggingImage={editorState.dragState.isDraggingImage}
             onDoubleClick={() => onStartEditing(tile.id)}
             onUpdateTile={onUpdateTile}
             onDelete={onDeleteTile}
