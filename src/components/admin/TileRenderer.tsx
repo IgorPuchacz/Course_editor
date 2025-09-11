@@ -27,7 +27,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
-  const [imageDragStart, setImageDragStart] = useState({ x: 0, y: 0, imageX: 0, imageY: 0 });
+  const [imageDragStart, setImageDragStart] = useState<{ x: number; y: number; imageX: number; imageY: number } | null>(null);
 
   // Check if this is a frameless text tile
   const isFramelessTextTile = tile.type === 'text' && !(tile as TextTile).content.showBorder;
@@ -47,6 +47,8 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
     e.preventDefault();
     e.stopPropagation();
     
+    console.log('🖱️ Image drag start');
+    
     const imagePosition = imageTile.content.position || { x: 0, y: 0 };
     
     setIsDraggingImage(true);
@@ -57,14 +59,21 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       imageY: imagePosition.y
     });
     
-    console.log('Started dragging image:', imageTile.id, 'from position:', imagePosition);
+    console.log('🖱️ Image drag state set:', { isDragging: true, position: imagePosition });
   };
 
   // Handle image dragging
   React.useEffect(() => {
-    if (!isDraggingImage || tile.type !== 'image') return;
+    if (!isDraggingImage || tile.type !== 'image' || !imageDragStart) {
+      return;
+    }
+
+    console.log('🖱️ Setting up image drag listeners');
 
     const handleImageDrag = (e: MouseEvent) => {
+      e.preventDefault();
+      console.log('🖱️ Image drag move');
+      
       const deltaX = e.clientX - imageDragStart.x;
       const deltaY = e.clientY - imageDragStart.y;
       
@@ -72,6 +81,8 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         x: imageDragStart.imageX + deltaX,
         y: imageDragStart.imageY + deltaY
       };
+      
+      console.log('🖱️ New image position:', newPosition);
       
       // Update image position
       onUpdateTile(tile.id, {
@@ -83,8 +94,9 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
     };
 
     const handleImageDragEnd = () => {
+      console.log('🖱️ Image drag end');
       setIsDraggingImage(false);
-      console.log('Finished dragging image');
+      setImageDragStart(null);
     };
 
     document.addEventListener('mousemove', handleImageDrag);
@@ -94,7 +106,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       document.removeEventListener('mousemove', handleImageDrag);
       document.removeEventListener('mouseup', handleImageDragEnd);
     };
-  }, [isDraggingImage, imageDragStart, tile.id, tile.content, onUpdateTile]);
+  }, [isDraggingImage, imageDragStart, tile.id, tile.type, onUpdateTile]);
   const renderTileContent = () => {
     switch (tile.type) {
       case 'text':
@@ -154,9 +166,13 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                   transform: `scale(${imageScale})`,
                   transformOrigin: '0 0',
                   maxWidth: 'none',
-                  maxHeight: 'none'
+                  maxHeight: 'none',
+                  cursor: isSelected && isEditing ? (isDraggingImage ? 'grabbing' : 'grab') : 'default'
                 }}
-                onMouseDown={isSelected && isEditing ? (e) => handleImageDragStart(e, imageTile) : undefined}
+                onMouseDown={isSelected && isEditing ? (e) => {
+                  console.log('🖱️ Image mousedown event');
+                  handleImageDragStart(e, imageTile);
+                } : undefined}
                 draggable={false}
                 onError={(e) => {
                   console.error('Image failed to load:', imageTile.content.url.substring(0, 100));
