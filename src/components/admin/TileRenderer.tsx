@@ -283,13 +283,6 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         height: tile.size.height
       }}
       onMouseDown={isDraggingImage ? undefined : onMouseDown}
-      onMouseUp={(e) => {
-        // Don't interfere with image dragging
-        if (isDraggingImage) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }}
       onDoubleClick={onDoubleClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
