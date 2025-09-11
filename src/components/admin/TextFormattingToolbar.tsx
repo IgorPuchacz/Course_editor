@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef } from 'react';
 import { Bold, Italic, Underline, Palette, Pipette } from 'lucide-react';
 
 interface TextFormattingToolbarProps {
@@ -8,15 +8,15 @@ interface TextFormattingToolbarProps {
   onToolbarInteraction?: () => void;
 }
 
-export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
+export const TextFormattingToolbar = forwardRef<HTMLDivElement, TextFormattingToolbarProps>(({
   onFormat,
   position,
   visible,
   onToolbarInteraction
-}) => {
+}, ref) => {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [selectedColor, setSelectedColor] = useState('#000000');
-  const toolbarRef = useRef<HTMLDivElement>(null);
+  const colorPickerRef = useRef<HTMLDivElement>(null);
 
   // Debug effect to monitor state changes
   useEffect(() => {
@@ -49,7 +49,7 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (toolbarRef.current && !toolbarRef.current.contains(event.target as Node)) {
+      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
         setShowColorPicker(false);
       }
     };
@@ -119,7 +119,7 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
 
   return (
     <div
-      ref={toolbarRef}
+      ref={ref}
       className="fixed bg-white border border-gray-300 rounded-lg shadow-lg p-2 flex items-center space-x-1 z-50"
       style={{
         top: position.top - 25,
@@ -201,6 +201,7 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
           <>
             {console.log('🎨 Rendering color picker, showColorPicker:', showColorPicker)}
           <div 
+            ref={colorPickerRef}
             className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl p-4 min-w-[280px]"
             style={{
               zIndex: 9999,
@@ -282,4 +283,6 @@ export const TextFormattingToolbar: React.FC<TextFormattingToolbarProps> = ({
       </div>
     </div>
   );
-};
+});
+
+TextFormattingToolbar.displayName = 'TextFormattingToolbar';

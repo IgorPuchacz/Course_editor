@@ -13,6 +13,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   className = ''
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
   const [showToolbar, setShowToolbar] = useState(false);
   const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
   const [savedSelection, setSavedSelection] = useState<Range | null>(null);
@@ -156,7 +157,11 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   // Handle clicks outside editor to hide toolbar
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (editorRef.current && !editorRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const isOutsideEditor = editorRef.current && !editorRef.current.contains(target);
+      const isOutsideToolbar = toolbarRef.current && !toolbarRef.current.contains(target);
+      
+      if (isOutsideEditor && isOutsideToolbar) {
         setShowToolbar(false);
         setSavedSelection(null);
         setIsFormattingActive(false);
@@ -312,6 +317,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       />
 
       <TextFormattingToolbar
+        ref={toolbarRef}
         onFormat={applyFormat}
         position={toolbarPosition}
         visible={showToolbar}
