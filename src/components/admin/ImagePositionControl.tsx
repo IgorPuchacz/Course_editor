@@ -25,9 +25,36 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const [previewDimensions, setPreviewDimensions] = useState({ width: 0, height: 0 });
   const previewRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
+  // Update preview dimensions when container is rendered
+  useEffect(() => {
+    const updatePreviewDimensions = () => {
+      if (previewRef.current) {
+        const rect = previewRef.current.getBoundingClientRect();
+        setPreviewDimensions({
+          width: rect.width,
+          height: rect.height
+        });
+        console.log('Preview dimensions updated:', { width: rect.width, height: rect.height });
+      }
+    };
+
+    // Update dimensions on mount and when container size might change
+    updatePreviewDimensions();
+    
+    // Add resize observer to handle dynamic size changes
+    const resizeObserver = new ResizeObserver(updatePreviewDimensions);
+    if (previewRef.current) {
+      resizeObserver.observe(previewRef.current);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
   // Load image to get natural dimensions
   useEffect(() => {
     if (!imageUrl) return;
@@ -44,19 +71,53 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
     img.src = imageUrl;
   }, [imageUrl]);
 
+  // Calculate accurate preview scale factor
+  const previewScaleFactor = useMemo(() => {
+    if (previewDimensions.width === 0 || previewDimensions.height === 0) {
+      return 1; // Fallback when dimensions aren't available yet
+    }
+    
+    const scaleX = previewDimensions.width / containerWidth;
+    const scaleY = previewDimensions.height / containerHeight;
+    
+    // Use the same scale for both dimensions to maintain aspect ratio of the container
+    const uniformScale = Math.min(scaleX, scaleY);
+    
+    console.log('Preview scale calculation:', {
+      previewDimensions,
+      containerSize: { width: containerWidth, height: containerHeight },
+      scaleX,
+      scaleY,
+      uniformScale
+    });
+    
+    return uniformScale;
+  }, [previewDimensions, containerWidth, containerHeight]);
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
+    
+    // Calculate drag start relative to the preview scale
+    const previewPosition = {
+      x: position.x * previewScaleFactor,
+      y: position.y * previewScaleFactor
+    };
+    
     setDragStart({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y
+      x: e.clientX - previewPosition.x,
+      y: e.clientY - previewPosition.y
     });
   };
 
   const handleMouseMove = (e: MouseEvent) => {
     if (!isDragging) return;
 
-    const newX = e.clientX - dragStart.x;
-    const newY = e.clientY - dragStart.y;
+    // Calculate new position in preview coordinates
+    const previewX = e.clientX - dragStart.x;
+    const previewY = e.clientY - dragStart.y;
+    
+    // Convert back to actual container coordinates
+    const newX = previewX / previewScaleFactor;
+    const newY = previewY / previewScaleFactor;
 
     // Calculate bounds to prevent image from moving too far
     const scaledWidth = imageSize.width * scale;
@@ -89,7 +150,7 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, dragStart, position, scale, imageSize, containerWidth, containerHeight]);
+  }, [isDragging, dragStart, position, scale, imageSize, containerWidth, containerHeight, previewScaleFactor]);
 
   const handleScaleChange = (newScale: number) => {
     const clampedScale = Math.max(0.1, Math.min(3, newScale));
@@ -150,6 +211,26 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
     onPositionChange({ x: 0, y: 0 });
   };
 
+  // Calculate preview image properties
+  const previewImageProps = useMemo(() => {
+    if (!imageSize.width || !imageSize.height || previewScaleFactor === 0) {
+      return {
+        left: 0,
+        top: 0,
+        width: 0,
+        height: 0,
+        transform: 'scale(1)'
+      };
+    }
+
+    return {
+      left: position.x * previewScaleFactor,
+      top: position.y * previewScaleFactor,
+      width: imageSize.width * previewScaleFactor,
+      height: imageSize.height * previewScaleFactor,
+      transform: `scale(${scale})`
+    };
+  }, [position, imageSize, previewScaleFactor, scale]);
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Preview Container */}
@@ -157,7 +238,7 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-sm font-medium text-gray-700">Pozycjonowanie obrazu</h4>
           <div className="text-xs text-gray-500">
-            {Math.round(scale * 100)}% | {containerWidth}×{containerHeight}px
+            {Math.round(scale * 100)}% | {containerWidth}×{containerHeight}px | Preview: {Math.round(previewScaleFactor * 100)}%
           </div>
         </div>
         
@@ -165,8 +246,8 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
           ref={previewRef}
           className="relative bg-white border-2 border-gray-200 rounded-lg overflow-hidden cursor-move"
           style={{ 
-            width: Math.min(300, containerWidth), 
-            height: Math.min(200, containerHeight),
+            width: 300, 
+            height: 200,
             aspectRatio: `${containerWidth}/${containerHeight}`
           }}
         >
@@ -176,10 +257,12 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
             alt="Podgląd pozycjonowania"
             className="absolute select-none"
             style={{
-              left: position.x * (Math.min(300, containerWidth) / containerWidth),
-              top: position.y * (Math.min(200, containerHeight) / containerHeight),
-              width: imageSize.width * scale * (Math.min(300, containerWidth) / containerWidth),
-              height: imageSize.height * scale * (Math.min(200, containerHeight) / containerHeight),
+              left: previewImageProps.left,
+              top: previewImageProps.top,
+              width: previewImageProps.width,
+              height: previewImageProps.height,
+              transform: previewImageProps.transform,
+              transformOrigin: '0 0',
               cursor: isDragging ? 'grabbing' : 'grab'
             }}
             onMouseDown={handleMouseDown}
