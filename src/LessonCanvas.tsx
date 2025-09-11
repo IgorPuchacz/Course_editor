@@ -140,6 +140,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
     e.preventDefault();
     e.stopPropagation();
     
+    console.log('🖱️ handleImageMouseDown called in LessonCanvas');
     console.log('🖱️ Image drag start in LessonCanvas - clientX:', e.clientX, 'clientY:', e.clientY);
     
     if (tile.type !== 'image') return;
@@ -149,6 +150,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
     
     console.log('🖱️ Setting isDraggingImage to true in LessonCanvas, current position:', imagePosition);
     
+    console.log('🖱️ About to update editor state with isDraggingImage: true');
     onUpdateEditorState(prev => ({
       ...prev,
       dragState: {
@@ -164,6 +166,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
     }));
     
     console.log('🖱️ Image drag state set in LessonCanvas');
+    console.log('🖱️ Editor state should now have isDraggingImage: true');
   };
 
   // Handle tile resize start
@@ -192,6 +195,12 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
 
   // Handle mouse move (dragging)
   useEffect(() => {
+    console.log('🔧 useEffect triggered - dragState:', {
+      isDragging: editorState.dragState.isDragging,
+      isDraggingImage: editorState.dragState.isDraggingImage,
+      isResizing: editorState.resizeState.isResizing
+    });
+
     const handleMouseMove = (e: MouseEvent) => {
       const { dragState, resizeState } = editorState;
       
@@ -300,6 +309,12 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
     };
 
     const handleMouseUp = () => {
+      console.log('🖱️ GLOBAL mouseup triggered - current states:', {
+        isDragging: editorState.dragState.isDragging,
+        isDraggingImage: editorState.dragState.isDraggingImage,
+        isResizing: editorState.resizeState.isResizing
+      });
+      
       console.log('🖱️ Mouse up in LessonCanvas - current dragState:', {
         isDragging: editorState.dragState.isDragging,
         isDraggingImage: editorState.dragState.isDraggingImage,
@@ -335,10 +350,19 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
 
     const shouldAddListeners = editorState.dragState.isDragging || editorState.dragState.isDraggingImage || editorState.resizeState.isResizing;
     
+    console.log('🔧 Should add listeners?', shouldAddListeners, {
+      isDragging: editorState.dragState.isDragging,
+      isDraggingImage: editorState.dragState.isDraggingImage,
+      isResizing: editorState.resizeState.isResizing
+    });
+    
     if (shouldAddListeners) {
       console.log('🖱️ Adding mouse event listeners - isDraggingImage:', editorState.dragState.isDraggingImage);
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
+      
+      // Test if listeners are actually added
+      console.log('🔧 Event listeners added to document');
     } else {
       console.log('🖱️ Not adding listeners - no active dragging');
     }
@@ -347,6 +371,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
       console.log('🖱️ Cleaning up mouse event listeners');
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      console.log('🔧 Event listeners removed from document');
     };
   }, [editorState.dragState, editorState.resizeState, content, onUpdateTile, onUpdateEditorState, ref, editorState.selectedTileId]);
 

@@ -138,6 +138,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                   cursor: isSelected && isEditing ? (isDraggingImage ? 'grabbing' : 'grab') : 'default'
                 }}
                 onMouseDown={isSelected && isEditing ? (e) => {
+                  console.log('🖱️ Image onMouseDown triggered in TileRenderer');
                   handleImageDragStart(e, imageTile);
                 } : undefined}
                 onWheel={isSelected && isEditing ? (e) => {
