@@ -47,10 +47,11 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
     e.preventDefault();
     e.stopPropagation();
     
-    console.log('🖱️ Image drag start');
+    console.log('🖱️ Image drag start - clientX:', e.clientX, 'clientY:', e.clientY);
     
     const imagePosition = imageTile.content.position || { x: 0, y: 0 };
     
+    console.log('🖱️ Setting isDraggingImage to true, current position:', imagePosition);
     setIsDraggingImage(true);
     setImageDragStart({
       x: e.clientX,
@@ -59,20 +60,27 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       imageY: imagePosition.y
     });
     
-    console.log('🖱️ Image drag state set:', { isDragging: true, position: imagePosition });
+    console.log('🖱️ Image drag state set - isDragging: true, dragStart:', {
+      x: e.clientX,
+      y: e.clientY,
+      imageX: imagePosition.x,
+      imageY: imagePosition.y
+    });
   };
 
   // Handle image dragging
   React.useEffect(() => {
+    console.log('🔄 useEffect triggered - isDraggingImage:', isDraggingImage, 'imageDragStart:', imageDragStart);
+    
     if (!isDraggingImage || tile.type !== 'image' || !imageDragStart) {
+      console.log('🔄 Early return from useEffect');
       return;
     }
 
     console.log('🖱️ Setting up image drag listeners');
 
     const handleImageDrag = (e: MouseEvent) => {
-      e.preventDefault();
-      console.log('🖱️ Image drag move');
+      console.log('🖱️ Image drag move - clientX:', e.clientX, 'clientY:', e.clientY);
       
       const deltaX = e.clientX - imageDragStart.x;
       const deltaY = e.clientY - imageDragStart.y;
@@ -82,7 +90,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         y: imageDragStart.imageY + deltaY
       };
       
-      console.log('🖱️ New image position:', newPosition);
+      console.log('🖱️ New image position:', newPosition, 'delta:', { deltaX, deltaY });
       
       // Update image position
       onUpdateTile(tile.id, {
@@ -94,15 +102,17 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
     };
 
     const handleImageDragEnd = () => {
-      console.log('🖱️ Image drag end');
+      console.log('🖱️ Image drag end - cleaning up state');
       setIsDraggingImage(false);
       setImageDragStart(null);
     };
 
+    console.log('🖱️ Adding event listeners to document');
     document.addEventListener('mousemove', handleImageDrag);
     document.addEventListener('mouseup', handleImageDragEnd);
 
     return () => {
+      console.log('🖱️ Removing event listeners from document');
       document.removeEventListener('mousemove', handleImageDrag);
       document.removeEventListener('mouseup', handleImageDragEnd);
     };
