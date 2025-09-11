@@ -131,8 +131,6 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
         isFromPalette: false,
         isDraggingImage: false,
         imageDragStart: null
-        isDraggingImage: false,
-        imageDragStart: null
       }
     }));
   };
