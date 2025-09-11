@@ -301,9 +301,11 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
             : 'bg-white border border-gray-200 shadow-sm rounded-lg'
         }`}
         style={isFramelessTextTile ? {
-          background: 'transparent',
+          cursor: isSelected && isEditing ? (isDraggingImage ? 'grabbing' : 'grab') : 'default',
+          userSelect: 'none'
           border: 'none',
           boxShadow: 'none',
+          console.log('🖱️ Image onMouseDown in TileRenderer - button:', e.button);
           borderRadius: '0'
         } : undefined}
       >
