@@ -13,6 +13,8 @@ interface LessonCanvasProps {
   onStartEditing: (tileId: string) => void;
   onDeleteTile: (tileId: string) => void;
   onAddTile: (tileType: string, position: { x: number; y: number }) => void;
+  onStartTextEditing: (tileId: string) => void;
+  onFinishTextEditing: () => void;
   onUpdateEditorState: (updater: (prev: EditorState) => EditorState) => void;
   showGrid?: boolean;
 }
@@ -25,6 +27,8 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
   onStartEditing,
   onDeleteTile,
   onAddTile,
+  onStartTextEditing,
+  onFinishTextEditing,
   onUpdateEditorState,
   showGrid = true
 }, ref) => {
@@ -100,6 +104,11 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
 
   // Handle tile mouse down (start dragging)
   const handleTileMouseDown = (e: React.MouseEvent, tile: LessonTile) => {
+    // Don't allow dragging when editing text
+    if (editorState.isEditingText) {
+      return;
+    }
+    
     e.preventDefault();
     e.stopPropagation();
     
@@ -132,7 +141,11 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
         isDraggingImage: false,
         imageDragStart: null
       }
-    }));
+    if (tile.type === 'text') {
+      onStartTextEditing(tile.id);
+    } else {
+      onStartEditing(tile.id);
+    }
   };
 
   // Handle image mouse down (start image dragging)
@@ -481,12 +494,14 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
             tile={tile}
             isSelected={editorState.selectedTileId === tile.id}
             isEditing={editorState.isEditing && editorState.selectedTileId === tile.id}
+            isEditingText={editorState.isEditingText && editorState.selectedTileId === tile.id}
             onMouseDown={(e) => handleTileMouseDown(e, tile)}
             onImageMouseDown={(e) => handleImageMouseDown(e, tile)}
             isDraggingImage={editorState.dragState.isDraggingImage}
-            onDoubleClick={() => onStartEditing(tile.id)}
+            onDoubleClick={() => handleTileDoubleClick(tile)}
             onUpdateTile={onUpdateTile}
             onDelete={onDeleteTile}
+            onFinishTextEditing={onFinishTextEditing}
             showGrid={showGrid}
           />
         ))}

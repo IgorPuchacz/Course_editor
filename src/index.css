@@ -69,3 +69,55 @@
   font-style: inherit;
   text-decoration: inherit;
 }
+
+/* TipTap Editor Styles */
+.tiptap-editor {
+  font-family: inherit;
+}
+
+.tiptap-editor .ProseMirror {
+  outline: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  -webkit-font-variant-ligatures: none;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0;
+}
+
+.tiptap-editor .ProseMirror p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.tiptap-editor .ProseMirror strong,
+.tiptap-editor .ProseMirror b {
+  font-weight: bold;
+}
+
+.tiptap-editor .ProseMirror em,
+.tiptap-editor .ProseMirror i {
+  font-style: italic;
+}
+
+.tiptap-editor .ProseMirror ul,
+.tiptap-editor .ProseMirror ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.tiptap-editor .ProseMirror li {
+  margin: 0.25rem 0;
+}

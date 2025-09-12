@@ -124,6 +124,7 @@ export interface ResizeState {
 export interface EditorState {
   selectedTileId: string | null;
   isEditing: boolean;
+  isEditingText: boolean;
   dragState: DragState;
   resizeState: ResizeState;
   canvasSize: Size;

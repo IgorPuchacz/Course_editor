@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Type, Image, Puzzle, BarChart3, HelpCircle, Move, Trash2 } from 'lucide-react';
 import { LessonTile, TextTile, ImageTile, InteractiveTile, VisualizationTile, QuizTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
-import { RichTextEditor } from './RichTextEditor';
+import { TipTapEditor } from './TipTapEditor';
 
 interface TileRendererProps {
   tile: LessonTile;
@@ -11,9 +11,11 @@ interface TileRendererProps {
   onMouseDown: (e: React.MouseEvent) => void;
   onImageMouseDown: (e: React.MouseEvent) => void;
   isDraggingImage: boolean;
+  isEditingText: boolean;
   onDoubleClick: () => void;
   onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
   onDelete: (tileId: string) => void;
+  onFinishTextEditing: () => void;
   showGrid: boolean;
 }
 
@@ -24,9 +26,11 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   onMouseDown,
   onImageMouseDown,
   isDraggingImage,
+  isEditingText,
   onDoubleClick,
   onUpdateTile,
   onDelete,
+  onFinishTextEditing,
   showGrid
 }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -80,6 +84,38 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       case 'text':
         const textTile = tile as TextTile;
         console.log('Rendering text tile:', textTile.id, 'richText:', textTile.content.richText, 'updated_at:', textTile.updated_at);
+        
+        // If this text tile is being edited, show the TipTap editor
+        if (isEditingText && isSelected) {
+          return (
+            <div className="w-full h-full p-3 overflow-hidden">
+              <TipTapEditor
+                content={textTile.content.richText || `<p>${textTile.content.text || ''}</p>`}
+                onChange={(content) => {
+                  // Extract plain text for fallback
+                  const tempDiv = document.createElement('div');
+                  tempDiv.innerHTML = content;
+                  const plainText = tempDiv.textContent || tempDiv.innerText || '';
+                  
+                  onUpdateTile(tile.id, {
+                    content: {
+                      ...textTile.content,
+                      richText: content,
+                      text: plainText
+                    },
+                    updated_at: new Date().toISOString()
+                  });
+                }}
+                onBlur={onFinishTextEditing}
+                autoFocus={true}
+                placeholder="Wpisz tekst..."
+                className="w-full h-full"
+              />
+            </div>
+          );
+        }
+        
+        // Normal text tile display
         return (
           <>
             <div
@@ -295,7 +331,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
             : 'bg-white border border-gray-200 shadow-sm rounded-lg'
         }`}
         style={isFramelessTextTile ? {
-          cursor: isSelected && isEditing ? (isDraggingImage ? 'grabbing' : 'grab') : 'default',
+          cursor: isSelected && (isEditing || isEditingText) ? (isDraggingImage ? 'grabbing' : 'grab') : 'default',
           userSelect: 'none',
           border: 'none',
           boxShadow: 'none',
@@ -306,7 +342,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       </div>
 
       {/* Tile Controls */}
-      {(isSelected || isHovered) && !isEditing && (
+      {(isSelected || isHovered) && !isEditing && !isEditingText && (
         <div className="absolute -top-8 left-0 flex items-center space-x-1 bg-white rounded-md shadow-md border border-gray-200 px-2 py-1">
           <Move className="w-3 h-3 text-gray-500" />
           <span className="text-xs text-gray-600 capitalize">{tile.type}</span>
@@ -320,6 +356,14 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
           >
             <Trash2 className="w-3 h-3" />
           </button>
+        </div>
+      )}
+
+      {/* Text Editing Indicator */}
+      {isSelected && isEditingText && tile.type === 'text' && (
+        <div className="absolute -top-8 left-0 flex items-center space-x-1 bg-green-100 rounded-md shadow-md border border-green-300 px-2 py-1">
+          <Type className="w-3 h-3 text-green-600" />
+          <span className="text-xs text-green-700 font-medium">Edytujesz tekst - kliknij poza kafelkiem aby zakończyć</span>
         </div>
       )}
 
@@ -340,7 +384,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       )}
 
       {/* Resize Handles - Always Available When Selected */}
-      {renderResizeHandles()}
+      {!isEditingText && renderResizeHandles()}
     </div>
   );
 };
