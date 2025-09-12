@@ -19,7 +19,8 @@ interface LessonCanvasProps {
   showGrid?: boolean;
 }
 
-export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
+export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>((props, ref) => {
+  const {
   content,
   editorState,
   onUpdateTile,
@@ -30,8 +31,8 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
   onStartTextEditing,
   onFinishTextEditing,
   onUpdateEditorState,
-  showGrid = true
-}, ref) => {
+    showGrid = true
+  } = props;
   const [dragPreview, setDragPreview] = useState<GridPosition | null>(null);
   const [resizePreview, setResizePreview] = useState<{ tileId: string; gridPosition: GridPosition } | null>(null);
 
