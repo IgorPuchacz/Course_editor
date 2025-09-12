@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Move, RotateCcw, ZoomIn, ZoomOut, Maximize, Minimize } from 'lucide-react';
 
 interface ImagePositionControlProps {
@@ -25,9 +25,36 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const [previewDimensions, setPreviewDimensions] = useState({ width: 0, height: 0 });
   const previewRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
+  // Update preview dimensions when container is rendered
+  useEffect(() => {
+    const updatePreviewDimensions = () => {
+      if (previewRef.current) {
+        const rect = previewRef.current.getBoundingClientRect();
+        setPreviewDimensions({
+          width: rect.width,
+          height: rect.height
+        });
+        console.log('Preview dimensions updated:', { width: rect.width, height: rect.height });
+      }
+    };
+
+    // Update dimensions on mount and when container size might change
+    updatePreviewDimensions();
+    
+    // Add resize observer to handle dynamic size changes
+    const resizeObserver = new ResizeObserver(updatePreviewDimensions);
+    if (previewRef.current) {
+      resizeObserver.observe(previewRef.current);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
   // Load image to get natural dimensions
   useEffect(() => {
     if (!imageUrl) return;
@@ -44,19 +71,53 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
     img.src = imageUrl;
   }, [imageUrl]);
 
+  // Calculate accurate preview scale factor
+  const previewScaleFactor = useMemo(() => {
+    if (previewDimensions.width === 0 || previewDimensions.height === 0) {
+      return 1; // Fallback when dimensions aren't available yet
+    }
+    
+    const scaleX = previewDimensions.width / containerWidth;
+    const scaleY = previewDimensions.height / containerHeight;
+    
+    // Use the same scale for both dimensions to maintain aspect ratio of the container
+    const uniformScale = Math.min(scaleX, scaleY);
+    
+    console.log('Preview scale calculation:', {
+      previewDimensions,
+      containerSize: { width: containerWidth, height: containerHeight },
+      scaleX,
+      scaleY,
+      uniformScale
+    });
+    
+    return uniformScale;
+  }, [previewDimensions, containerWidth, containerHeight]);
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
+    
+    // Calculate drag start relative to the preview scale
+    const previewPosition = {
+      x: position.x * previewScaleFactor,
+      y: position.y * previewScaleFactor
+    };
+    
     setDragStart({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y
+      x: e.clientX - previewPosition.x,
+      y: e.clientY - previewPosition.y
     });
   };
 
   const handleMouseMove = (e: MouseEvent) => {
     if (!isDragging) return;
 
-    const newX = e.clientX - dragStart.x;
-    const newY = e.clientY - dragStart.y;
+    // Calculate new position in preview coordinates
+    const previewX = e.clientX - dragStart.x;
+    const previewY = e.clientY - dragStart.y;
+    
+    // Convert back to actual container coordinates
+    const newX = previewX / previewScaleFactor;
+    const newY = previewY / previewScaleFactor;
 
     // Calculate bounds to prevent image from moving too far
     const scaledWidth = imageSize.width * scale;
@@ -89,7 +150,7 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, dragStart, position, scale, imageSize, containerWidth, containerHeight]);
+  }, [isDragging, dragStart, position, scale, imageSize, containerWidth, containerHeight, previewScaleFactor]);
 
   const handleScaleChange = (newScale: number) => {
     const clampedScale = Math.max(0.1, Math.min(3, newScale));
@@ -109,100 +170,70 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
     onScaleChange(clampedScale);
   };
 
-  const handleFitToContainer = () => {
-    if (!imageSize.width || !imageSize.height) return;
-
-    const scaleX = containerWidth / imageSize.width;
-    const scaleY = containerHeight / imageSize.height;
-    const fitScale = Math.min(scaleX, scaleY);
-    
-    onScaleChange(fitScale);
-    
-    // Center the image
-    const scaledWidth = imageSize.width * fitScale;
-    const scaledHeight = imageSize.height * fitScale;
-    const centerX = (containerWidth - scaledWidth) / 2;
-    const centerY = (containerHeight - scaledHeight) / 2;
-    
-    onPositionChange({ x: centerX, y: centerY });
-  };
-
-  const handleFillContainer = () => {
-    if (!imageSize.width || !imageSize.height) return;
-
-    const scaleX = containerWidth / imageSize.width;
-    const scaleY = containerHeight / imageSize.height;
-    const fillScale = Math.max(scaleX, scaleY);
-    
-    onScaleChange(fillScale);
-    
-    // Center the image
-    const scaledWidth = imageSize.width * fillScale;
-    const scaledHeight = imageSize.height * fillScale;
-    const centerX = (containerWidth - scaledWidth) / 2;
-    const centerY = (containerHeight - scaledHeight) / 2;
-    
-    onPositionChange({ x: centerX, y: centerY });
-  };
-
   const handleReset = () => {
     onScaleChange(1);
     onPositionChange({ x: 0, y: 0 });
   };
 
+  // Calculate preview image properties
+  const previewImageProps = useMemo(() => {
+    if (!imageSize.width || !imageSize.height || previewScaleFactor === 0) {
+      return {
+        left: 0,
+        top: 0,
+        width: 0,
+        height: 0,
+        transform: 'scale(1)'
+      };
+    }
+
+    return {
+      left: position.x * previewScaleFactor,
+      top: position.y * previewScaleFactor,
+      width: imageSize.width * previewScaleFactor,
+      height: imageSize.height * previewScaleFactor,
+      transform: `scale(${scale})`
+    };
+  }, [position, imageSize, previewScaleFactor, scale]);
+
+  // Calculate preview container dimensions based on tile aspect ratio
+  const previewContainerDimensions = useMemo(() => {
+    const aspectRatio = containerWidth / containerHeight;
+    const maxWidth = 320; // Maximum width for the preview
+    const maxHeight = 240; // Maximum height for the preview
+    
+    let width, height;
+    
+    if (aspectRatio >= 1) {
+      // Landscape or square - limit by width
+      width = Math.min(maxWidth, containerWidth * 0.8);
+      height = width / aspectRatio;
+      
+      // If height exceeds max, scale down
+      if (height > maxHeight) {
+        height = maxHeight;
+        width = height * aspectRatio;
+      }
+    } else {
+      // Portrait - limit by height
+      height = Math.min(maxHeight, containerHeight * 0.8);
+      width = height * aspectRatio;
+      
+      // If width exceeds max, scale down
+      if (width > maxWidth) {
+        width = maxWidth;
+        height = width / aspectRatio;
+      }
+    }
+    
+    return {
+      width: Math.round(width),
+      height: Math.round(height)
+    };
+  }, [containerWidth, containerHeight]);
+  
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Preview Container */}
-      <div className="bg-gray-50 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="text-sm font-medium text-gray-700">Pozycjonowanie obrazu</h4>
-          <div className="text-xs text-gray-500">
-            {Math.round(scale * 100)}% | {containerWidth}×{containerHeight}px
-          </div>
-        </div>
-        
-        <div
-          ref={previewRef}
-          className="relative bg-white border-2 border-gray-200 rounded-lg overflow-hidden cursor-move"
-          style={{ 
-            width: Math.min(300, containerWidth), 
-            height: Math.min(200, containerHeight),
-            aspectRatio: `${containerWidth}/${containerHeight}`
-          }}
-        >
-          <img
-            ref={imageRef}
-            src={imageUrl}
-            alt="Podgląd pozycjonowania"
-            className="absolute select-none"
-            style={{
-              left: position.x * (Math.min(300, containerWidth) / containerWidth),
-              top: position.y * (Math.min(200, containerHeight) / containerHeight),
-              width: imageSize.width * scale * (Math.min(300, containerWidth) / containerWidth),
-              height: imageSize.height * scale * (Math.min(200, containerHeight) / containerHeight),
-              cursor: isDragging ? 'grabbing' : 'grab'
-            }}
-            onMouseDown={handleMouseDown}
-            draggable={false}
-            onError={(e) => {
-              console.error('Preview image failed to load');
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-            onLoad={() => {
-              console.log('Preview image loaded successfully');
-            }}
-          />
-          
-          {/* Grid overlay */}
-          <div className="absolute inset-0 pointer-events-none opacity-20">
-            <div className="w-full h-full grid grid-cols-3 grid-rows-3 border border-gray-400">
-              {Array.from({ length: 9 }).map((_, i) => (
-                <div key={i} className="border border-gray-400"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Controls */}
       <div className="space-y-4">
@@ -211,6 +242,9 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Powiększenie
           </label>
+          <div className="mb-2 text-xs text-blue-600 bg-blue-50 p-2 rounded">
+            💡 Wskazówka: kliknij dwukrotnie kafelek aby wygodnie go edytować
+          </div>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => handleScaleChange(scale - 0.1)}
@@ -273,26 +307,7 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
 
         {/* Quick Actions */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Szybkie akcje
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={handleFitToContainer}
-              className="flex items-center justify-center space-x-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              <Minimize className="w-4 h-4" />
-              <span>Dopasuj</span>
-            </button>
-            
-            <button
-              onClick={handleFillContainer}
-              className="flex items-center justify-center space-x-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              <Maximize className="w-4 h-4" />
-              <span>Wypełnij</span>
-            </button>
-            
+          <div>
             <button
               onClick={handleReset}
               className="flex items-center justify-center space-x-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors col-span-2"
@@ -300,22 +315,6 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
               <RotateCcw className="w-4 h-4" />
               <span>Resetuj pozycję</span>
             </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Instructions */}
-      <div className="bg-blue-50 rounded-lg p-3">
-        <div className="flex items-start space-x-2">
-          <Move className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-          <div className="text-sm text-blue-800">
-            <p className="font-medium mb-1">Jak używać:</p>
-            <ul className="text-xs space-y-1">
-              <li>• Przeciągnij obraz w podglądzie, aby zmienić pozycję</li>
-              <li>• Użyj suwaka lub przycisków do zmiany powiększenia</li>
-              <li>• "Dopasuj" - cały obraz będzie widoczny</li>
-              <li>• "Wypełnij" - obraz wypełni cały kafelek</li>
-            </ul>
           </div>
         </div>
       </div>

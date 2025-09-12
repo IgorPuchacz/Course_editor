@@ -9,6 +9,8 @@ interface TileRendererProps {
   isSelected: boolean;
   isEditing: boolean;
   onMouseDown: (e: React.MouseEvent) => void;
+  onImageMouseDown: (e: React.MouseEvent) => void;
+  isDraggingImage: boolean;
   onDoubleClick: () => void;
   onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
   onDelete: (tileId: string) => void;
@@ -20,6 +22,8 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   isSelected,
   isEditing,
   onMouseDown,
+  onImageMouseDown,
+  isDraggingImage,
   onDoubleClick,
   onUpdateTile,
   onDelete,
@@ -39,6 +43,36 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       detail: { tileId: tile.id, handle, startEvent: e }
     });
     document.dispatchEvent(resizeEvent);
+  };
+
+  const handleImageDragStart = (e: React.MouseEvent, imageTile: ImageTile) => {
+    console.log('🖱️ Image drag start in TileRenderer - delegating to parent');
+    onImageMouseDown(e, imageTile);
+  };
+
+  const handleImageWheel = (e: React.WheelEvent, imageTile: ImageTile) => {
+    // Only handle wheel events when tile is selected and in editing mode
+    if (!isSelected || !isEditing) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('🎯 Image wheel event - deltaY:', e.deltaY);
+    
+    const currentScale = imageTile.content.scale || 1;
+    const zoomSpeed = 0.1;
+    const zoomDirection = e.deltaY > 0 ? -1 : 1; // Negative deltaY = zoom in, positive = zoom out
+    const newScale = Math.max(0.1, Math.min(3, currentScale + (zoomDirection * zoomSpeed)));
+    
+    console.log('🎯 Zoom - current:', currentScale, 'new:', newScale, 'direction:', zoomDirection);
+    
+    // Update the tile with new scale
+    onUpdateTile(tile.id, {
+      content: {
+        ...imageTile.content,
+        scale: newScale
+      }
+    });
   };
 
   const renderTileContent = () => {
@@ -84,19 +118,33 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         
         return (
           <div className="w-full h-full bg-gray-100 rounded-lg overflow-hidden relative">
-            <div className="w-full h-full relative overflow-hidden">
+            <div 
+              className="w-full h-full relative overflow-hidden"
+              style={{ cursor: isSelected && isEditing ? 'grab' : 'default' }}
+            >
               <img
                 src={imageTile.content.url}
                 alt={imageTile.content.alt}
-                className="absolute"
+                className={`absolute select-none ${
+                  isSelected && isEditing ? 'cursor-grab active:cursor-grabbing' : ''
+                }`}
                 style={{
                   left: imagePosition.x,
                   top: imagePosition.y,
                   transform: `scale(${imageScale})`,
                   transformOrigin: '0 0',
                   maxWidth: 'none',
-                  maxHeight: 'none'
+                  maxHeight: 'none',
+                  cursor: isSelected && isEditing ? (isDraggingImage ? 'grabbing' : 'grab') : 'default'
                 }}
+                onMouseDown={isSelected && isEditing ? (e) => {
+                  console.log('🖱️ Image onMouseDown triggered in TileRenderer');
+                  handleImageDragStart(e, imageTile);
+                } : undefined}
+                onWheel={isSelected && isEditing ? (e) => {
+                  handleImageWheel(e, imageTile);
+                } : undefined}
+                draggable={false}
                 onError={(e) => {
                   console.error('Image failed to load:', imageTile.content.url.substring(0, 100));
                   (e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400';
@@ -234,7 +282,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         width: tile.size.width,
         height: tile.size.height
       }}
-      onMouseDown={onMouseDown}
+      onMouseDown={isDraggingImage ? undefined : onMouseDown}
       onDoubleClick={onDoubleClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -247,7 +295,8 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
             : 'bg-white border border-gray-200 shadow-sm rounded-lg'
         }`}
         style={isFramelessTextTile ? {
-          background: 'transparent',
+          cursor: isSelected && isEditing ? (isDraggingImage ? 'grabbing' : 'grab') : 'default',
+          userSelect: 'none',
           border: 'none',
           boxShadow: 'none',
           borderRadius: '0'
@@ -271,6 +320,14 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
           >
             <Trash2 className="w-3 h-3" />
           </button>
+        </div>
+      )}
+
+      {/* Image Editing Indicator */}
+      {isSelected && isEditing && tile.type === 'image' && (
+        <div className="absolute -top-8 left-0 flex items-center space-x-1 bg-blue-100 rounded-md shadow-md border border-blue-300 px-2 py-1">
+          <Move className="w-3 h-3 text-blue-600" />
+          <span className="text-xs text-blue-700 font-medium">Przeciągnij obraz aby zmienić pozycję</span>
         </div>
       )}
 
