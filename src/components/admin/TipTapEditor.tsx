@@ -29,8 +29,6 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
         codeBlock: false,
         blockquote: false,
         horizontalRule: false,
-        dropcursor: false,
-        gapcursor: false,
       }),
       TextStyle,
       Color,
@@ -45,11 +43,10 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
     },
     editorProps: {
       attributes: {
-        class: `prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none ${className}`,
+        class: `focus:outline-none ${className}`,
         'data-placeholder': placeholder,
       },
     },
-    immediatelyRender: false,
   });
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Save, RotateCcw, Grid, Settings } from 'lucide-react';
+import { ArrowLeft, Save, RotateCcw, Grid, Settings, Edit } from 'lucide-react';
 import { Lesson } from './types/course';
 import { Course } from './types';
 import { LessonContent, LessonTile, TextTile, EditorState } from './types/lessonEditor';

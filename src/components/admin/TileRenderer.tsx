@@ -8,10 +8,10 @@ interface TileRendererProps {
   tile: LessonTile;
   isSelected: boolean;
   isEditing: boolean;
+  isEditingText: boolean;
   onMouseDown: (e: React.MouseEvent) => void;
   onImageMouseDown: (e: React.MouseEvent) => void;
   isDraggingImage: boolean;
-  isEditingText: boolean;
   onDoubleClick: () => void;
   onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
   onDelete: (tileId: string) => void;
