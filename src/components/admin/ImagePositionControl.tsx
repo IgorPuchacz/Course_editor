@@ -170,42 +170,6 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
     onScaleChange(clampedScale);
   };
 
-  const handleFitToContainer = () => {
-    if (!imageSize.width || !imageSize.height) return;
-
-    const scaleX = containerWidth / imageSize.width;
-    const scaleY = containerHeight / imageSize.height;
-    const fitScale = Math.min(scaleX, scaleY);
-    
-    onScaleChange(fitScale);
-    
-    // Center the image
-    const scaledWidth = imageSize.width * fitScale;
-    const scaledHeight = imageSize.height * fitScale;
-    const centerX = (containerWidth - scaledWidth) / 2;
-    const centerY = (containerHeight - scaledHeight) / 2;
-    
-    onPositionChange({ x: centerX, y: centerY });
-  };
-
-  const handleFillContainer = () => {
-    if (!imageSize.width || !imageSize.height) return;
-
-    const scaleX = containerWidth / imageSize.width;
-    const scaleY = containerHeight / imageSize.height;
-    const fillScale = Math.max(scaleX, scaleY);
-    
-    onScaleChange(fillScale);
-    
-    // Center the image
-    const scaledWidth = imageSize.width * fillScale;
-    const scaledHeight = imageSize.height * fillScale;
-    const centerX = (containerWidth - scaledWidth) / 2;
-    const centerY = (containerHeight - scaledHeight) / 2;
-    
-    onPositionChange({ x: centerX, y: centerY });
-  };
-
   const handleReset = () => {
     onScaleChange(1);
     onPositionChange({ x: 0, y: 0 });
@@ -270,58 +234,6 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
   
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Preview Container */}
-      <div className="bg-gray-50 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="text-sm font-medium text-gray-700">Pozycjonowanie obrazu</h4>
-          <div className="text-xs text-gray-500">
-            {Math.round(scale * 100)}% | {containerWidth}×{containerHeight}px | Podgląd: {previewContainerDimensions.width}×{previewContainerDimensions.height}px
-          </div>
-        </div>
-        
-        <div
-          ref={previewRef}
-          className="relative bg-white border-2 border-gray-200 rounded-lg overflow-hidden cursor-move"
-          style={{ 
-            width: previewContainerDimensions.width, 
-            height: previewContainerDimensions.height
-          }}
-        >
-          <img
-            ref={imageRef}
-            src={imageUrl}
-            alt="Podgląd pozycjonowania"
-            className="absolute select-none"
-            style={{
-              left: previewImageProps.left,
-              top: previewImageProps.top,
-              width: previewImageProps.width,
-              height: previewImageProps.height,
-              transform: previewImageProps.transform,
-              transformOrigin: '0 0',
-              cursor: isDragging ? 'grabbing' : 'grab'
-            }}
-            onMouseDown={handleMouseDown}
-            draggable={false}
-            onError={(e) => {
-              console.error('Preview image failed to load');
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-            onLoad={() => {
-              console.log('Preview image loaded successfully');
-            }}
-          />
-          
-          {/* Grid overlay */}
-          <div className="absolute inset-0 pointer-events-none opacity-20">
-            <div className="w-full h-full grid grid-cols-3 grid-rows-3 border border-gray-400">
-              {Array.from({ length: 9 }).map((_, i) => (
-                <div key={i} className="border border-gray-400"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Controls */}
       <div className="space-y-4">
@@ -331,7 +243,7 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
             Powiększenie
           </label>
           <div className="mb-2 text-xs text-blue-600 bg-blue-50 p-2 rounded">
-            💡 Wskazówka: Możesz przeciągać obraz bezpośrednio na kafelku, aby zmienić jego pozycję
+            💡 Wskazówka: kliknij dwukrotnie kafelek aby wygodnie go edytować
           </div>
           <div className="flex items-center space-x-2">
             <button
@@ -395,26 +307,7 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
 
         {/* Quick Actions */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Szybkie akcje
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={handleFitToContainer}
-              className="flex items-center justify-center space-x-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              <Minimize className="w-4 h-4" />
-              <span>Dopasuj</span>
-            </button>
-            
-            <button
-              onClick={handleFillContainer}
-              className="flex items-center justify-center space-x-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              <Maximize className="w-4 h-4" />
-              <span>Wypełnij</span>
-            </button>
-            
+          <div>
             <button
               onClick={handleReset}
               className="flex items-center justify-center space-x-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors col-span-2"
@@ -422,22 +315,6 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
               <RotateCcw className="w-4 h-4" />
               <span>Resetuj pozycję</span>
             </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Instructions */}
-      <div className="bg-blue-50 rounded-lg p-3">
-        <div className="flex items-start space-x-2">
-          <Move className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-          <div className="text-sm text-blue-800">
-            <p className="font-medium mb-1">Jak używać:</p>
-            <ul className="text-xs space-y-1">
-              <li>• Przeciągnij obraz w podglądzie, aby zmienić pozycję</li>
-              <li>• Użyj suwaka lub przycisków do zmiany powiększenia</li>
-              <li>• "Dopasuj" - cały obraz będzie widoczny</li>
-              <li>• "Wypełnij" - obraz wypełni cały kafelek</li>
-            </ul>
           </div>
         </div>
       </div>
