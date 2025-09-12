@@ -35,15 +35,6 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
   const [dragPreview, setDragPreview] = useState<GridPosition | null>(null);
   const [resizePreview, setResizePreview] = useState<{ tileId: string; gridPosition: GridPosition } | null>(null);
 
-  // Handle tile double click (start editing)
-  const handleTileDoubleClick = (tile: LessonTile) => {
-    if (tile.type === 'text') {
-      onStartTextEditing(tile.id);
-    } else {
-      onStartEditing(tile.id);
-    }
-  };
-
   // Handle canvas click (deselect tiles)
   const handleCanvasClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -150,6 +141,8 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
         isDraggingImage: false,
         imageDragStart: null
       }
+    }));
+    
     if (tile.type === 'text') {
       onStartTextEditing(tile.id);
     } else {
@@ -429,6 +422,15 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [editorState.selectedTileId, onDeleteTile, onSelectTile]);
+
+  // Handle tile double click
+  const handleTileDoubleClick = (tile: LessonTile) => {
+    if (tile.type === 'text') {
+      onStartTextEditing(tile.id);
+    } else {
+      onStartEditing(tile.id);
+    }
+  };
 
   // Calculate canvas dimensions
   const canvasStyle = {
