@@ -35,6 +35,15 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
   const [dragPreview, setDragPreview] = useState<GridPosition | null>(null);
   const [resizePreview, setResizePreview] = useState<{ tileId: string; gridPosition: GridPosition } | null>(null);
 
+  // Handle tile double click (start editing)
+  const handleTileDoubleClick = (tile: LessonTile) => {
+    if (tile.type === 'text') {
+      onStartTextEditing(tile.id);
+    } else {
+      onStartEditing(tile.id);
+    }
+  };
+
   // Handle canvas click (deselect tiles)
   const handleCanvasClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
