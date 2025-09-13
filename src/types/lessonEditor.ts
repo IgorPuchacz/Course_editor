@@ -102,31 +102,27 @@ export interface LessonContent {
   updated_at: string;
 }
 
-export interface DragState {
-  isDragging: boolean;
-  draggedTile: LessonTile | null;
-  dragOffset: Position;
-  isFromPalette: boolean;
-  previewPosition?: GridPosition;
-  isDraggingImage: boolean;
-  imageDragStart: { x: number; y: number; imageX: number; imageY: number } | null;
-}
+export type ResizeHandle = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w';
 
-export interface ResizeState {
-  isResizing: boolean;
-  resizingTileId: string | null;
-  resizeHandle: 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w' | null;
-  startPosition: Position;
-  startSize: Size;
-  startGridPosition: GridPosition;
-}
+export type EditorMode = 'idle' | 'editing' | 'textEditing';
+
+export type InteractionState =
+  | { type: 'idle' }
+  | { type: 'drag'; tile: LessonTile; offset: Position }
+  | { type: 'imageDrag'; start: { x: number; y: number; imageX: number; imageY: number } }
+  | {
+      type: 'resize';
+      tileId: string;
+      handle: ResizeHandle;
+      startPosition: Position;
+      startSize: Size;
+      startGridPosition: GridPosition;
+    };
 
 export interface EditorState {
   selectedTileId: string | null;
-  isEditing: boolean;
-  isEditingText: boolean;
-  dragState: DragState;
-  resizeState: ResizeState;
+  mode: EditorMode;
+  interaction: InteractionState;
   canvasSize: Size;
   hasUnsavedChanges: boolean;
   showGrid: boolean;

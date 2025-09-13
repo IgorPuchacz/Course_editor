@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Save, RotateCcw, Grid, Settings, Edit } from 'lucide-react';
 import { Lesson } from './types/course';
 import { Course } from './types';
-import { LessonContent, LessonTile, TextTile, EditorState } from './types/lessonEditor';
+import { LessonContent, LessonTile, TextTile } from './types/lessonEditor';
+import { useLessonEditor } from './hooks/useLessonEditor';
 import { LessonContentService } from './services/lessonContentService';
 import { TilePalette } from './components/admin/TilePalette';
 import { LessonCanvas } from './LessonCanvas';
@@ -30,28 +31,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   
-  // Editor state
-  const [editorState, setEditorState] = useState<EditorState>({
-    selectedTileId: null,
-    isEditing: false,
-    isEditingText: false,
-    dragState: {
-      isDragging: false,
-      draggedTile: null,
-      dragOffset: { x: 0, y: 0 },
-      isFromPalette: false
-    },
-    resizeState: {
-      isResizing: false,
-      resizingTileId: null,
-      resizeHandle: null,
-      startPosition: { x: 0, y: 0 },
-      startSize: { width: 0, height: 0 }
-    },
-    canvasSize: { width: 1000, height: 600 },
-    hasUnsavedChanges: false,
-    showGrid: true
-  });
+  const { editorState, dispatch } = useLessonEditor();
 
   // Confirmation dialog state
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -108,7 +88,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       setIsSaving(true);
       await LessonContentService.saveLessonContent(lessonContent);
       
-      setEditorState(prev => ({ ...prev, hasUnsavedChanges: false }));
+      dispatch({ type: 'clearUnsaved' });
       
       if (showNotification) {
         success('Zapisano', 'Zawartość lekcji została zapisana');
@@ -175,11 +155,8 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
     };
 
     setLessonContent(updatedContent);
-    setEditorState(prev => ({ 
-      ...prev, 
-      hasUnsavedChanges: true,
-      selectedTileId: newTile.id 
-    }));
+    dispatch({ type: 'markUnsaved' });
+    dispatch({ type: 'selectTile', tileId: newTile.id });
 
     logger.info(`Added new ${tileType} tile to lesson`);
   };
@@ -220,7 +197,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
     
     setLessonContent(newContent);
 
-    setEditorState(prev => ({ ...prev, hasUnsavedChanges: true }));
+    dispatch({ type: 'markUnsaved' });
   };
 
   const handleDeleteTile = (tileId: string) => {
@@ -242,12 +219,11 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
           updated_at: new Date().toISOString()
         });
 
-        setEditorState(prev => ({ 
-          ...prev, 
-          hasUnsavedChanges: true,
-          selectedTileId: prev.selectedTileId === tileId ? null : prev.selectedTileId,
-          isEditingText: prev.selectedTileId === tileId ? false : prev.isEditingText
-        }));
+        dispatch({ type: 'markUnsaved' });
+        if (editorState.selectedTileId === tileId) {
+          dispatch({ type: 'selectTile', tileId: null });
+          dispatch({ type: 'stopEditing' });
+        }
 
         setConfirmDialog(prev => ({ ...prev, isOpen: false }));
         success('Kafelek usunięty', 'Kafelek został pomyślnie usunięty');
@@ -256,49 +232,20 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
   };
 
   const handleSelectTile = (tileId: string | null) => {
-    setEditorState(prev => ({ 
-      ...prev, 
-      selectedTileId: tileId,
-      isEditing: false,
-      isEditingText: false
-    }));
+    dispatch({ type: 'selectTile', tileId });
   };
 
-  const handleStartEditing = (tileId: string) => {
-    setEditorState(prev => ({ 
-      ...prev, 
-      selectedTileId: tileId,
-      isEditing: true,
-      isEditingText: false
-    }));
-  };
-
-  const handleStartTextEditing = (tileId: string) => {
-    setEditorState(prev => ({ 
-      ...prev, 
-      selectedTileId: tileId,
-      isEditing: false,
-      isEditingText: true
-    }));
-  };
 
   const handleStopEditing = () => {
-    setEditorState(prev => ({ 
-      ...prev, 
-      isEditing: false,
-      isEditingText: false
-    }));
+    dispatch({ type: 'stopEditing' });
   };
 
   const handleFinishTextEditing = () => {
-    setEditorState(prev => ({ 
-      ...prev, 
-      isEditingText: false
-    }));
+    dispatch({ type: 'stopEditing' });
   };
 
   const handleToggleGrid = () => {
-    setEditorState(prev => ({ ...prev, showGrid: !prev.showGrid }));
+    dispatch({ type: 'toggleGrid' });
   };
 
   const handleBackWithConfirmation = () => {
@@ -332,12 +279,9 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
           updated_at: new Date().toISOString()
         });
 
-        setEditorState(prev => ({ 
-          ...prev, 
-          hasUnsavedChanges: true,
-          selectedTileId: null,
-          isEditing: false
-        }));
+        dispatch({ type: 'markUnsaved' });
+        dispatch({ type: 'selectTile', tileId: null });
+        dispatch({ type: 'stopEditing' });
 
         setConfirmDialog(prev => ({ ...prev, isOpen: false }));
         success('Płótno wyczyszczone', 'Wszystkie kafelki zostały usunięte');
@@ -472,7 +416,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
                 tile={lessonContent.tiles.find(t => t.id === editorState.selectedTileId) as TextTile}
                 onUpdateTile={handleUpdateTile}
                 onStopEditing={handleStopEditing}
-                isEditing={editorState.isEditing}
+                isEditing={editorState.mode === 'editing'}
                 onSelectTile={handleSelectTile}
               />
             </div>
@@ -490,7 +434,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
         {/* Expanded Canvas Area */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Dynamic Toolbar - Text Editing or Canvas Info */}
-          {editorState.isEditingText ? (
+          {editorState.mode === 'textEditing' ? (
             <TextEditingToolbar 
               onFinishEditing={handleFinishTextEditing}
             />
@@ -535,12 +479,10 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
               editorState={editorState}
               onUpdateTile={handleUpdateTile}
               onSelectTile={handleSelectTile}
-              onStartEditing={handleStartEditing}
-              onStartTextEditing={handleStartTextEditing}
               onFinishTextEditing={handleFinishTextEditing}
               onDeleteTile={handleDeleteTile}
               onAddTile={handleAddTile}
-              onUpdateEditorState={setEditorState}
+              dispatch={dispatch}
               showGrid={editorState.showGrid}
             />
           </div>

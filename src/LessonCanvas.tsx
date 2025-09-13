@@ -1,6 +1,7 @@
-import React, { forwardRef, useRef, useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 import { Type } from 'lucide-react';
 import { LessonContent, LessonTile, EditorState, GridPosition } from './types/lessonEditor';
+import { EditorAction } from './state/editorReducer';
 import { TileRenderer } from './components/admin/TileRenderer';
 import { GridUtils } from './utils/gridUtils';
 import { logger } from './utils/logger';
@@ -8,28 +9,24 @@ import { logger } from './utils/logger';
 interface LessonCanvasProps {
   content: LessonContent;
   editorState: EditorState;
+  dispatch: React.Dispatch<EditorAction>;
   onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
   onSelectTile: (tileId: string | null) => void;
-  onStartEditing: (tileId: string) => void;
   onDeleteTile: (tileId: string) => void;
   onAddTile: (tileType: string, position: { x: number; y: number }) => void;
-  onStartTextEditing: (tileId: string) => void;
   onFinishTextEditing: () => void;
-  onUpdateEditorState: (updater: (prev: EditorState) => EditorState) => void;
   showGrid?: boolean;
 }
 
-export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
+export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({ 
   content,
   editorState,
+  dispatch,
   onUpdateTile,
   onSelectTile,
-  onStartEditing,
   onDeleteTile,
   onAddTile,
-  onStartTextEditing,
   onFinishTextEditing,
-  onUpdateEditorState,
   showGrid = true
 }, ref) => {
   const [dragPreview, setDragPreview] = useState<GridPosition | null>(null);
@@ -38,9 +35,9 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
   // Handle tile double click (start editing)
   const handleTileDoubleClick = (tile: LessonTile) => {
     if (tile.type === 'text') {
-      onStartTextEditing(tile.id);
+      dispatch({ type: 'startTextEditing', tileId: tile.id });
     } else {
-      onStartEditing(tile.id);
+      dispatch({ type: 'startEditing', tileId: tile.id });
     }
   };
 
@@ -114,7 +111,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
   // Handle tile mouse down (start dragging)
   const handleTileMouseDown = (e: React.MouseEvent, tile: LessonTile) => {
     // Don't allow dragging when editing text
-    if (editorState.isEditingText) {
+    if (editorState.mode === 'textEditing') {
       return;
     }
     
@@ -137,25 +134,16 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
       document.addEventListener('mouseup', removeOutline);
     }
     
-    onUpdateEditorState(prev => ({
-      ...prev,
-      dragState: {
-        isDragging: true,
-        draggedTile: tile,
-        dragOffset: {
-          x: e.nativeEvent.offsetX,
-          y: e.nativeEvent.offsetY
-        },
-        isFromPalette: false,
-        isDraggingImage: false,
-        imageDragStart: null
-      }
-    }));
-    
+    dispatch({
+      type: 'startDrag',
+      tile,
+      offset: { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY }
+    });
+
     if (tile.type === 'text') {
-      onStartTextEditing(tile.id);
+      dispatch({ type: 'startTextEditing', tileId: tile.id });
     } else {
-      onStartEditing(tile.id);
+      dispatch({ type: 'startEditing', tileId: tile.id });
     }
   };
 
@@ -163,43 +151,23 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
   const handleImageMouseDown = (e: React.MouseEvent, tile: LessonTile) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    console.log('🖱️ handleImageMouseDown called in LessonCanvas');
-    console.log('🖱️ Image drag start in LessonCanvas - clientX:', e.clientX, 'clientY:', e.clientY);
-    
+
     if (tile.type !== 'image') return;
-    
-    const imageTile = tile as any; // ImageTile
+
+    onSelectTile(tile.id);
+
+    const imageTile = tile as any;
     const imagePosition = imageTile.content.position || { x: 0, y: 0 };
-    
-    console.log('🖱️ Setting isDraggingImage to true in LessonCanvas, current position:', imagePosition);
-    
-    console.log('🖱️ About to update editor state with isDraggingImage: true');
-    
-    // Add immediate test listener to see if mouseup works at all
-    const testMouseUp = (testEvent: MouseEvent) => {
-      console.log('🧪 TEST MOUSEUP DETECTED!', testEvent.button, testEvent.type);
-      document.removeEventListener('mouseup', testMouseUp);
-    };
-    document.addEventListener('mouseup', testMouseUp);
-    console.log('🧪 Added test mouseup listener');
-    
-    onUpdateEditorState(prev => ({
-      ...prev,
-      dragState: {
-        ...prev.dragState,
-        isDraggingImage: true,
-        imageDragStart: {
-          x: e.clientX,
-          y: e.clientY,
-          imageX: imagePosition.x,
-          imageY: imagePosition.y
-        }
+
+    dispatch({
+      type: 'startImageDrag',
+      start: {
+        x: e.clientX,
+        y: e.clientY,
+        imageX: imagePosition.x,
+        imageY: imagePosition.y
       }
-    }));
-    
-    console.log('🖱️ Image drag state set in LessonCanvas');
-    console.log('🖱️ Editor state should now have isDraggingImage: true');
+    });
   };
 
   // Handle tile resize start
@@ -209,213 +177,126 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
       const tile = content.tiles.find(t => t.id === tileId);
       if (!tile) return;
 
-      onUpdateEditorState(prev => ({
-        ...prev,
-        resizeState: {
-          isResizing: true,
-          resizingTileId: tileId,
-          resizeHandle: handle,
-          startPosition: { x: startEvent.clientX, y: startEvent.clientY },
-          startSize: { ...tile.size },
-          startGridPosition: { ...tile.gridPosition }
-        }
-      }));
+      dispatch({
+        type: 'startResize',
+        tileId,
+        handle,
+        startPosition: { x: startEvent.clientX, y: startEvent.clientY },
+        startSize: { ...tile.size },
+        startGridPosition: { ...tile.gridPosition }
+      });
     };
 
     document.addEventListener('tileResizeStart', handleResizeStart as EventListener);
     return () => document.removeEventListener('tileResizeStart', handleResizeStart as EventListener);
-  }, [content.tiles, onUpdateEditorState]);
+  }, [content.tiles, dispatch]);
 
-  // Handle mouse move (dragging)
+  // Handle mouse move and interactions
   useEffect(() => {
-    console.log('🔧 useEffect triggered - dragState:', {
-      isDragging: editorState.dragState.isDragging,
-      isDraggingImage: editorState.dragState.isDraggingImage,
-      isResizing: editorState.resizeState.isResizing
-    });
-
     const handleMouseMove = (e: MouseEvent) => {
-      const { dragState, resizeState } = editorState;
-      
-      // Handle tile dragging
-      if (dragState.isDragging && dragState.draggedTile) {
+      const interaction = editorState.interaction;
+
+      if (interaction.type === 'drag') {
         const rect = (ref as React.RefObject<HTMLDivElement>).current?.getBoundingClientRect();
         if (!rect) return;
 
         const pixelPosition = {
-          x: e.clientX - rect.left - dragState.dragOffset.x,
-          y: e.clientY - rect.top - dragState.dragOffset.y
+          x: e.clientX - rect.left - interaction.offset.x,
+          y: e.clientY - rect.top - interaction.offset.y
         };
 
-        // Snap to grid
         const snappedPosition = GridUtils.snapToGrid(pixelPosition, content.canvas_settings);
         const gridPos = GridUtils.pixelToGrid(snappedPosition, content.canvas_settings);
-        
-        // Ensure the tile stays within bounds
-        const maxCol = GridUtils.GRID_COLUMNS - dragState.draggedTile.gridPosition.colSpan;
+
+        const maxCol = GridUtils.GRID_COLUMNS - interaction.tile.gridPosition.colSpan;
         const boundedGridPos = {
-          ...dragState.draggedTile.gridPosition,
+          ...interaction.tile.gridPosition,
           col: Math.max(0, Math.min(maxCol, gridPos.col)),
           row: Math.max(0, gridPos.row)
         };
-        
-        // Check if position is valid (no overlaps)
-        if (GridUtils.isValidGridPosition(boundedGridPos, content.canvas_settings, content.tiles, dragState.draggedTile.id)) {
+
+        if (GridUtils.isValidGridPosition(boundedGridPos, content.canvas_settings, content.tiles, interaction.tile.id)) {
           const finalPixelPos = GridUtils.gridToPixel(boundedGridPos, content.canvas_settings);
-          onUpdateTile(dragState.draggedTile.id, { 
+          onUpdateTile(interaction.tile.id, {
             position: finalPixelPos,
             gridPosition: boundedGridPos
           });
         }
       }
-      
-      // Handle image dragging
-      if (dragState.isDraggingImage && dragState.imageDragStart) {
-        console.log('🖱️ Image drag move in LessonCanvas - clientX:', e.clientX, 'clientY:', e.clientY, 'selectedTileId:', editorState.selectedTileId);
-        
-        const deltaX = e.clientX - dragState.imageDragStart.x;
-        const deltaY = e.clientY - dragState.imageDragStart.y;
-        
+
+      if (interaction.type === 'imageDrag' && interaction.start) {
+        const deltaX = e.clientX - interaction.start.x;
+        const deltaY = e.clientY - interaction.start.y;
         const newPosition = {
-          x: dragState.imageDragStart.imageX + deltaX,
-          y: dragState.imageDragStart.imageY + deltaY
+          x: interaction.start.imageX + deltaX,
+          y: interaction.start.imageY + deltaY
         };
-        
-        console.log('🖱️ New image position in LessonCanvas:', newPosition, 'delta:', { deltaX, deltaY }, 'dragStart:', dragState.imageDragStart);
-        
-        // Find the tile being dragged (should be the selected one)
         const draggedTile = content.tiles.find(t => t.id === editorState.selectedTileId);
         if (draggedTile && draggedTile.type === 'image') {
-          console.log('🖱️ Updating image tile position:', draggedTile.id);
           onUpdateTile(draggedTile.id, {
             content: {
               ...draggedTile.content,
               position: newPosition
             }
           });
-        } else {
-          console.warn('🖱️ Could not find dragged image tile:', editorState.selectedTileId);
         }
       }
-      
-      // Handle tile resizing
-      if (resizeState.isResizing && resizeState.resizingTileId) {
-        const tile = content.tiles.find(t => t.id === resizeState.resizingTileId);
+
+      if (interaction.type === 'resize') {
+        const tile = content.tiles.find(t => t.id === interaction.tileId);
         if (!tile) return;
 
-        const deltaX = e.clientX - resizeState.startPosition.x;
-        const deltaY = e.clientY - resizeState.startPosition.y;
-        
-        let newGridPos = { ...resizeState.startGridPosition };
-        
-        // Calculate new grid size based on resize handle
-        switch (resizeState.resizeHandle) {
-          case 'se': // Southeast - resize width and height
-            const newColSpan = Math.max(1, resizeState.startGridPosition.colSpan + Math.round(deltaX / (content.canvas_settings.gridSize + GridUtils.GRID_GAP)));
-            const newRowSpan = Math.max(1, resizeState.startGridPosition.rowSpan + Math.round(deltaY / (content.canvas_settings.gridSize + GridUtils.GRID_GAP)));
+        const deltaX = e.clientX - interaction.startPosition.x;
+        const deltaY = e.clientY - interaction.startPosition.y;
+
+        let newGridPos = { ...interaction.startGridPosition };
+
+        switch (interaction.handle) {
+          case 'se':
+            const newColSpan = Math.max(1, interaction.startGridPosition.colSpan + Math.round(deltaX / (content.canvas_settings.gridSize + GridUtils.GRID_GAP)));
+            const newRowSpan = Math.max(1, interaction.startGridPosition.rowSpan + Math.round(deltaY / (content.canvas_settings.gridSize + GridUtils.GRID_GAP)));
             newGridPos.colSpan = Math.min(newColSpan, GridUtils.GRID_COLUMNS - newGridPos.col);
             newGridPos.rowSpan = newRowSpan;
             break;
-          case 'e': // East - resize width only
-            const eastColSpan = Math.max(1, resizeState.startGridPosition.colSpan + Math.round(deltaX / (content.canvas_settings.gridSize + GridUtils.GRID_GAP)));
+          case 'e':
+            const eastColSpan = Math.max(1, interaction.startGridPosition.colSpan + Math.round(deltaX / (content.canvas_settings.gridSize + GridUtils.GRID_GAP)));
             newGridPos.colSpan = Math.min(eastColSpan, GridUtils.GRID_COLUMNS - newGridPos.col);
             break;
-          case 's': // South - resize height only
-            newGridPos.rowSpan = Math.max(1, resizeState.startGridPosition.rowSpan + Math.round(deltaY / (content.canvas_settings.gridSize + GridUtils.GRID_GAP)));
+          case 's':
+            newGridPos.rowSpan = Math.max(1, interaction.startGridPosition.rowSpan + Math.round(deltaY / (content.canvas_settings.gridSize + GridUtils.GRID_GAP)));
             break;
         }
-        
-        // Validate new position
+
         if (GridUtils.isValidGridPosition(newGridPos, content.canvas_settings, content.tiles, tile.id)) {
           const newPixelPos = GridUtils.gridToPixel(newGridPos, content.canvas_settings);
           const newPixelSize = GridUtils.gridSizeToPixel(newGridPos, content.canvas_settings);
-          
           onUpdateTile(tile.id, {
             position: newPixelPos,
             size: newPixelSize,
             gridPosition: newGridPos
           });
-          
           setResizePreview({ tileId: tile.id, gridPosition: newGridPos });
         }
       }
     };
 
     const handleMouseUp = () => {
-      console.log('🖱️ GLOBAL mouseup triggered - current states:', {
-        isDragging: editorState.dragState.isDragging,
-        isDraggingImage: editorState.dragState.isDraggingImage,
-        isResizing: editorState.resizeState.isResizing
-      });
-      
-      console.log('🖱️ Mouse up in LessonCanvas - current dragState:', {
-        isDragging: editorState.dragState.isDragging,
-        isDraggingImage: editorState.dragState.isDraggingImage,
-        isResizing: editorState.resizeState.isResizing
-      });
-      
-      if (editorState.dragState.isDragging || editorState.dragState.isDraggingImage || editorState.resizeState.isResizing) {
-        console.log('🖱️ Mouse up in LessonCanvas - cleaning up drag states, was dragging image:', editorState.dragState.isDraggingImage);
-        onUpdateEditorState(prev => ({
-          ...prev,
-          dragState: {
-            ...prev.dragState,
-            isDragging: false,
-            draggedTile: null,
-            dragOffset: { x: 0, y: 0 },
-            isFromPalette: false,
-            isDraggingImage: false,
-            imageDragStart: null
-          },
-          resizeState: {
-            isResizing: false,
-            resizingTileId: null,
-            resizeHandle: null,
-            startPosition: { x: 0, y: 0 },
-            startSize: { width: 0, height: 0 },
-            startGridPosition: { col: 0, row: 0, colSpan: 1, rowSpan: 1 }
-          }
-        }));
+      if (editorState.interaction.type !== 'idle') {
+        dispatch({ type: 'endInteraction' });
         setResizePreview(null);
-        console.log('🖱️ Drag states cleaned up');
       }
     };
 
-    const shouldAddListeners = editorState.dragState.isDragging || editorState.dragState.isDraggingImage || editorState.resizeState.isResizing;
-    
-    console.log('🔧 Should add listeners?', shouldAddListeners, {
-      isDragging: editorState.dragState.isDragging,
-      isDraggingImage: editorState.dragState.isDraggingImage,
-      isResizing: editorState.resizeState.isResizing
-    });
-    
-    if (shouldAddListeners) {
-      console.log('🖱️ Adding mouse event listeners - isDraggingImage:', editorState.dragState.isDraggingImage);
-      
-      // Test if listeners are actually being added
-      const testListener = () => console.log('🧪 Test listener works!');
-      document.addEventListener('click', testListener);
-      setTimeout(() => document.removeEventListener('click', testListener), 1000);
-      
+    if (editorState.interaction.type !== 'idle') {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
-      
-      // Test if listeners are actually added
-      console.log('🔧 Event listeners added to document');
-      
-      // Verify listeners are there
-      console.log('🔧 Document has mousemove listeners:', document.getEventListeners ? 'checking...' : 'cannot check');
-    } else {
-      console.log('🖱️ Not adding listeners - no active dragging');
     }
 
     return () => {
-      console.log('🖱️ Cleaning up mouse event listeners');
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
-      console.log('🔧 Event listeners removed from document');
     };
-  }, [editorState.dragState, editorState.resizeState, content, onUpdateTile, onUpdateEditorState, ref, editorState.selectedTileId]);
+  }, [editorState.interaction, content, onUpdateTile, dispatch, editorState.selectedTileId, ref]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -504,11 +385,11 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
             key={`${tile.id}-${tile.updated_at}`}
             tile={tile}
             isSelected={editorState.selectedTileId === tile.id}
-            isEditing={editorState.isEditing && editorState.selectedTileId === tile.id}
-            isEditingText={editorState.isEditingText && editorState.selectedTileId === tile.id}
+            isEditing={editorState.mode === 'editing' && editorState.selectedTileId === tile.id}
+            isEditingText={editorState.mode === 'textEditing' && editorState.selectedTileId === tile.id}
             onMouseDown={(e) => handleTileMouseDown(e, tile)}
             onImageMouseDown={(e) => handleImageMouseDown(e, tile)}
-            isDraggingImage={editorState.dragState.isDraggingImage}
+            isDraggingImage={editorState.interaction.type === 'imageDrag'}
             onDoubleClick={() => handleTileDoubleClick(tile)}
             onUpdateTile={onUpdateTile}
             onDelete={onDeleteTile}
