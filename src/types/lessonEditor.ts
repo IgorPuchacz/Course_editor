@@ -104,7 +104,7 @@ export interface LessonContent {
 
 export type ResizeHandle = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w';
 
-export type EditorMode = 'idle' | 'editing' | 'textEditing';
+export type EditorMode = 'idle' | 'editing' | 'textEditing' | 'dragging' | 'resizing';
 
 export type InteractionState =
   | { type: 'idle' }
