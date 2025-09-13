@@ -26,20 +26,21 @@ export const initialEditorState: EditorState = {
 export function editorReducer(state: EditorState, action: EditorAction): EditorState {
   switch (action.type) {
     case 'selectTile':
-      return { ...state, selectedTileId: action.tileId, mode: 'idle' };
+      return { ...state, selectedTileId: action.tileId, mode: action.tileId ? 'editing' : 'idle' };
     case 'startEditing':
       return { ...state, selectedTileId: action.tileId, mode: 'editing' };
     case 'startTextEditing':
       return { ...state, selectedTileId: action.tileId, mode: 'textEditing' };
     case 'stopEditing':
-      return { ...state, mode: 'idle' };
+      return { ...state, mode: state.selectedTileId ? 'editing' : 'idle' };
     case 'startDrag':
-      return { ...state, interaction: { type: 'drag', tile: action.tile, offset: action.offset } };
+      return { ...state, mode: 'dragging', interaction: { type: 'drag', tile: action.tile, offset: action.offset } };
     case 'startImageDrag':
-      return { ...state, interaction: { type: 'imageDrag', start: action.start } };
+      return { ...state, mode: 'dragging', interaction: { type: 'imageDrag', start: action.start } };
     case 'startResize':
       return {
         ...state,
+        mode: 'resizing',
         interaction: {
           type: 'resize',
           tileId: action.tileId,
@@ -50,7 +51,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         }
       };
     case 'endInteraction':
-      return { ...state, interaction: { type: 'idle' } };
+      return { ...state, mode: state.selectedTileId ? 'editing' : 'idle', interaction: { type: 'idle' } };
     case 'toggleGrid':
       return { ...state, showGrid: !state.showGrid };
     case 'markUnsaved':
