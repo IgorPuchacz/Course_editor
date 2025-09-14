@@ -69,6 +69,7 @@ export const FontFamilySelector: React.FC<FontFamilySelectorProps> = ({
         <button
           key={font.value}
           onClick={() => handleFontSelect(font.value)}
+         onMouseDown={(e) => e.preventDefault()}
           onMouseEnter={() => setHoveredFont(font.value)}
           onMouseLeave={() => setHoveredFont(null)}
           className={`w-full px-4 py-3 text-left hover:bg-blue-50 transition-all duration-200 rounded-lg ${
@@ -111,6 +112,7 @@ export const FontFamilySelector: React.FC<FontFamilySelectorProps> = ({
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
+       onMouseDown={(e) => e.preventDefault()}
         className="flex items-center space-x-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 min-w-[140px] group"
       >
         <Type className="w-4 h-4 text-gray-600 group-hover:text-gray-800" />
@@ -167,6 +169,7 @@ export const FontFamilySelector: React.FC<FontFamilySelectorProps> = ({
                   <button
                     key={id}
                     onClick={() => setActiveTab(id as any)}
+                   onMouseDown={(e) => e.preventDefault()}
                     className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
                       activeTab === id
                         ? 'text-blue-600 bg-blue-50 border-b-2 border-blue-600'

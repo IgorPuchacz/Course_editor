@@ -42,6 +42,7 @@ export const FontSizeSelector: React.FC<FontSizeSelectorProps> = ({
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
+       onMouseDown={(e) => e.preventDefault()}
         className="flex items-center space-x-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 min-w-[80px] group"
       >
         <Type className="w-4 h-4 text-gray-600 group-hover:text-gray-800" />
@@ -76,6 +77,7 @@ export const FontSizeSelector: React.FC<FontSizeSelectorProps> = ({
                 <button
                   key={size.value}
                   onClick={() => handleSizeSelect(size.value)}
+                 onMouseDown={(e) => e.preventDefault()}
                   onMouseEnter={() => setHoveredSize(size.value)}
                   onMouseLeave={() => setHoveredSize(null)}
                   className={`w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors duration-150 border-b border-gray-50 last:border-b-0 ${
