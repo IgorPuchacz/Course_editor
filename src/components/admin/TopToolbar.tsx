@@ -250,51 +250,81 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   const handleColorSelect = (color: string) => {
     console.log('Applying color:', color);
     setIsApplyingFormat(true);
+    setIsFormattingActive(true);
     
     if (!editor || editor.isDestroyed) {
       setIsApplyingFormat(false);
+      setIsFormattingActive(false);
       return;
     }
 
-    // Ensure we have a selection to work with
-    forceRestoreSelection();
+    // Restore selection before applying formatting
+    if (savedSelection) {
+      restoreSelection();
+    } else {
+      // Ensure we have a selection to work with
+      forceRestoreSelection();
+    }
     
-    // Apply color formatting
+    // Apply color formatting and maintain selection
     setTimeout(() => {
       editor.chain().focus().setColor(color).run();
       setSelectedColor(color);
       
-      // Restore selection after formatting
+      // Keep selection active after formatting
       setTimeout(() => {
-        forceRestoreSelection();
+        if (savedSelection) {
+          restoreSelection();
+        } else {
+          forceRestoreSelection();
+        }
         setIsApplyingFormat(false);
+        setIsFormattingActive(false);
       }, 50);
     }, 10);
+    
+    // Don't close color picker immediately - let user apply more colors if needed
+    // setShowColorPicker(false);
   };
 
   const handleSizeSelect = (size: number) => {
     console.log('Applying size:', size);
     setIsApplyingFormat(true);
+    setIsFormattingActive(true);
     
     if (!editor || editor.isDestroyed) {
       setIsApplyingFormat(false);
+      setIsFormattingActive(false);
       return;
     }
 
-    // Ensure we have a selection to work with
-    forceRestoreSelection();
+    // Restore selection before applying formatting
+    if (savedSelection) {
+      restoreSelection();
+    } else {
+      // Ensure we have a selection to work with
+      forceRestoreSelection();
+    }
     
     // Apply size formatting
     setTimeout(() => {
       editor.chain().focus().setFontSize(`${size}px`).run();
       setSelectedSize(size);
       
-      // Restore selection after formatting
+      // Keep selection active after formatting
       setTimeout(() => {
-        forceRestoreSelection();
+        if (savedSelection) {
+          restoreSelection();
+        } else {
+          forceRestoreSelection();
+        }
         setIsApplyingFormat(false);
+        setIsFormattingActive(false);
       }, 50);
     }, 10);
+    
+    // Don't close size picker immediately
+    // setShowSizePicker(false);
   };
 
   // Generic formatting command handler
@@ -324,11 +354,13 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
 
   const handleColorPickerToggle = () => {
     captureSelection(); // Capture selection before opening picker
+    saveSelection(); // Save selection
     setShowColorPicker(!showColorPicker);
   };
 
   const handleSizePickerToggle = () => {
     captureSelection(); // Capture selection before opening picker
+    saveSelection(); // Save selection
     setShowSizePicker(!showSizePicker);
   };
 
