@@ -118,7 +118,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
         {/* Render Tiles */}
         {content.tiles.map((tile) => (
           <TileRenderer
-            key={`${tile.id}-${tile.updated_at}`}
+            key={tile.id}
             tile={tile}
             isSelected={editorState.selectedTileId === tile.id}
             isEditing={editorState.mode === 'editing' && editorState.selectedTileId === tile.id}
