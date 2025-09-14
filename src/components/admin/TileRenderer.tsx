@@ -94,6 +94,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
           return (
             <div className="w-full h-full p-3 overflow-hidden relative">
               <TipTapEditor
+                key={tile.id}
                 content={textTile.content.richText || `<p>${textTile.content.text || ''}</p>`}
                 onChange={(content) => {
                   // Extract plain text for fallback
