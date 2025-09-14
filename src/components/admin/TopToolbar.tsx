@@ -1,5 +1,6 @@
 import React from 'react';
 import { Bold, Italic, Underline, List, ListOrdered, Undo, Redo, Type, Palette, Code, FileCode, X } from 'lucide-react';
+import { Editor } from '@tiptap/react';
 
 
 interface TopToolbarProps {
@@ -9,6 +10,7 @@ interface TopToolbarProps {
   currentMode: string;
   isTextEditing: boolean;
   onFinishTextEditing?: () => void;
+  editor?: Editor | null;
   className?: string;
 }
 
@@ -19,15 +21,34 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   currentMode,
   isTextEditing,
   onFinishTextEditing,
+  editor,
   className = ''
 }) => {
   if (isTextEditing) {
     return (
       <div className={`top-toolbar flex items-center justify-between bg-white border-b border-gray-200 px-4 lg:px-6 py-3 ${className}`}>
-        <div className="flex items-center space-x-1 text-gray-400">
-          <button className="p-2" disabled><Bold className="w-4 h-4" /></button>
-          <button className="p-2" disabled><Italic className="w-4 h-4" /></button>
-          <button className="p-2" disabled><Underline className="w-4 h-4" /></button>
+        <div className="flex items-center space-x-1 text-gray-600">
+          <button
+            className={`p-2 ${editor?.isActive('bold') ? 'text-gray-900' : ''}`}
+            onMouseDown={e => e.preventDefault()}
+            onClick={() => editor?.chain().focus().toggleBold().run()}
+          >
+            <Bold className="w-4 h-4" />
+          </button>
+          <button
+            className={`p-2 ${editor?.isActive('italic') ? 'text-gray-900' : ''}`}
+            onMouseDown={e => e.preventDefault()}
+            onClick={() => editor?.chain().focus().toggleItalic().run()}
+          >
+            <Italic className="w-4 h-4" />
+          </button>
+          <button
+            className={`p-2 ${editor?.isActive('underline') ? 'text-gray-900' : ''}`}
+            onMouseDown={e => e.preventDefault()}
+            onClick={() => editor?.chain().focus().toggleUnderline().run()}
+          >
+            <Underline className="w-4 h-4" />
+          </button>
           <button className="p-2" disabled><List className="w-4 h-4" /></button>
           <button className="p-2" disabled><ListOrdered className="w-4 h-4" /></button>
           <button className="p-2" disabled><Type className="w-4 h-4" /></button>
