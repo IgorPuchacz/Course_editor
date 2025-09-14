@@ -104,7 +104,16 @@ export interface LessonContent {
 
 export type ResizeHandle = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w';
 
-export type EditorMode = 'idle' | 'editing' | 'textEditing' | 'dragging' | 'resizing';
+// EditorMode represents the high-level state of the editor.
+// - 'editing' is used when a tile is selected but not in a specific content editor
+// - 'textEditing' and 'imageEditing' lock the tile for content editing
+export type EditorMode =
+  | 'idle'
+  | 'editing'
+  | 'textEditing'
+  | 'imageEditing'
+  | 'dragging'
+  | 'resizing';
 
 export type InteractionState =
   | { type: 'idle' }
