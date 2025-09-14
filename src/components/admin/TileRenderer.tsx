@@ -3,6 +3,7 @@ import { Type, Image, Puzzle, BarChart3, HelpCircle, Move, Trash2 } from 'lucide
 import { LessonTile, TextTile, ImageTile, InteractiveTile, VisualizationTile, QuizTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { TipTapEditor } from './TipTapEditor';
+import { TextEditingToolbar } from './TextEditingToolbar';
 
 interface TileRendererProps {
   tile: LessonTile;
@@ -36,6 +37,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   showGrid
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [textEditor, setTextEditor] = useState<any>(null);
 
   // Check if this is a frameless text tile
   const isFramelessTextTile = tile.type === 'text' && !(tile as TextTile).content.showBorder;
@@ -90,7 +92,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         // If this text tile is being edited, show the TipTap editor
         if (isEditingText && isSelected) {
           return (
-            <div className="w-full h-full p-3 overflow-hidden">
+            <div className="w-full h-full p-3 overflow-hidden relative">
               <TipTapEditor
                 content={textTile.content.richText || `<p>${textTile.content.text || ''}</p>`}
                 onChange={(content) => {
@@ -109,6 +111,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                   });
                 }}
                 onBlur={onFinishTextEditing}
+                onEditorReady={setTextEditor}
                 autoFocus={true}
                 placeholder="Wpisz tekst..."
                 className="w-full h-full"
@@ -365,9 +368,11 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 
       {/* Text Editing Indicator */}
       {isSelected && isEditingText && tile.type === 'text' && (
-        <div className="absolute -top-8 left-0 flex items-center space-x-1 bg-green-100 rounded-md shadow-md border border-green-300 px-2 py-1">
-          <Type className="w-3 h-3 text-green-600" />
-          <span className="text-xs text-green-700 font-medium">Edytujesz tekst - kliknij poza kafelkiem aby zakończyć</span>
+        <div className="absolute -top-12 left-0 right-0 z-30">
+          <TextEditingToolbar
+            editor={textEditor}
+            onFinishEditing={onFinishTextEditing}
+          />
         </div>
       )}
 

@@ -8,7 +8,6 @@ import { LessonContentService } from './services/lessonContentService';
 import { TilePalette } from './components/admin/TilePalette';
 import { LessonCanvas } from './LessonCanvas';
 import { TextTileEditor } from './TextTileEditor';
-import { TextEditingToolbar } from './components/admin/TextEditingToolbar';
 import { ToastContainer } from './components/common/Toast';
 import { useToast } from './hooks/useToast';
 import { ConfirmDialog } from './components/common/ConfirmDialog';
@@ -433,43 +432,37 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
 
         {/* Expanded Canvas Area */}
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Dynamic Toolbar - Text Editing or Canvas Info */}
-          {editorState.mode === 'textEditing' ? (
-            <TextEditingToolbar 
-              onFinishEditing={handleFinishTextEditing}
-            />
-          ) : (
-            <div className="bg-white border-b border-gray-200 px-4 lg:px-6 py-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2 lg:space-x-4 text-xs lg:text-sm">
-                  <span className="text-gray-600">
-                    Kafelki: {lessonContent.tiles.length}
-                  </span>
-                  <span className="text-gray-600 hidden sm:inline">
-                    Siatka: {GridUtils.GRID_COLUMNS} × {lessonContent.canvas_settings.height}
-                  </span>
-                  <span className="text-gray-600 hidden md:inline">
-                    {editorState.selectedTileId ? 'Tryb edycji' : 'Tryb dodawania'}
-                  </span>
-                </div>
-                
-                {/* Context indicator */}
-                <div className="flex items-center space-x-2 text-xs text-gray-500">
-                  {editorState.selectedTileId ? (
-                    <>
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                      <span>Edytujesz kafelek</span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span>Dodaj nowy kafelek</span>
-                    </>
-                  )}
-                </div>
+          {/* Canvas Info Bar */}
+          <div className="bg-white border-b border-gray-200 px-4 lg:px-6 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 lg:space-x-4 text-xs lg:text-sm">
+                <span className="text-gray-600">
+                  Kafelki: {lessonContent.tiles.length}
+                </span>
+                <span className="text-gray-600 hidden sm:inline">
+                  Siatka: {GridUtils.GRID_COLUMNS} × {lessonContent.canvas_settings.height}
+                </span>
+                <span className="text-gray-600 hidden md:inline">
+                  {editorState.selectedTileId ? 'Tryb edycji' : 'Tryb dodawania'}
+                </span>
+              </div>
+              
+              {/* Context indicator */}
+              <div className="flex items-center space-x-2 text-xs text-gray-500">
+                {editorState.selectedTileId ? (
+                  <>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <span>Edytujesz kafelek</span>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Dodaj nowy kafelek</span>
+                  </>
+                )}
               </div>
             </div>
-          )}
+          </div>
 
           {/* Canvas */}
           <div className="flex-1 p-4 lg:p-6 overflow-auto bg-gray-100">

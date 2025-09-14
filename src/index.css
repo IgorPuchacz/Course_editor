@@ -121,3 +121,71 @@
 .tiptap-editor .ProseMirror li {
   margin: 0.25rem 0;
 }
+
+/* Custom styles for TipTap content */
+.tiptap-editor .ProseMirror .inline-code {
+  background-color: #f3f4f6;
+  color: #374151;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875em;
+}
+
+.tiptap-editor .ProseMirror .code-block {
+  background-color: #1f2937;
+  color: #f9fafb;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+
+.tiptap-editor .ProseMirror .bullet-list,
+.tiptap-editor .ProseMirror .ordered-list {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.tiptap-editor .ProseMirror .bullet-list li,
+.tiptap-editor .ProseMirror .ordered-list li {
+  margin: 0.25rem 0;
+  line-height: 1.5;
+}
+
+/* Ensure proper rendering in tiles */
+.tile-formatted-text .inline-code {
+  background-color: #f3f4f6 !important;
+  color: #374151 !important;
+  padding: 0.125rem 0.25rem !important;
+  border-radius: 0.25rem !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+  font-size: 0.875em !important;
+}
+
+.tile-formatted-text .code-block {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+  padding: 1rem !important;
+  border-radius: 0.5rem !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+  overflow-x: auto !important;
+  margin: 0.5rem 0 !important;
+}
+
+.tile-formatted-text .bullet-list,
+.tile-formatted-text .ordered-list {
+  padding-left: 1.5rem !important;
+  margin: 0.5rem 0 !important;
+}
+
+.tile-formatted-text .bullet-list li,
+.tile-formatted-text .ordered-list li {
+  margin: 0.25rem 0 !important;
+  line-height: 1.5 !important;
+}
