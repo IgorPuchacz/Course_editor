@@ -15,6 +15,7 @@ import { ConfirmDialog } from './components/common/ConfirmDialog';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 import { GridUtils } from './utils/gridUtils';
 import { logger } from './utils/logger';
+import type { Editor } from '@tiptap/react';
 
 interface LessonEditorProps {
   lesson: Lesson;
@@ -25,11 +26,12 @@ interface LessonEditorProps {
 export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBack }) => {
   const { toasts, removeToast, success, error, warning } = useToast();
   const canvasRef = useRef<HTMLDivElement>(null);
-  
+
   // Core state
   const [lessonContent, setLessonContent] = useState<LessonContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
   
   const { editorState, dispatch } = useLessonEditor();
 
@@ -435,8 +437,9 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
         <div className="flex-1 flex flex-col min-w-0">
           {/* Dynamic Toolbar - Text Editing or Canvas Info */}
           {editorState.mode === 'textEditing' ? (
-            <TextEditingToolbar 
+            <TextEditingToolbar
               onFinishEditing={handleFinishTextEditing}
+              editor={activeEditor}
             />
           ) : (
             <div className="bg-white border-b border-gray-200 px-4 lg:px-6 py-3">
@@ -482,6 +485,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
               onFinishTextEditing={handleFinishTextEditing}
               onDeleteTile={handleDeleteTile}
               onAddTile={handleAddTile}
+              onEditorMount={setActiveEditor}
               dispatch={dispatch}
               showGrid={editorState.showGrid}
             />

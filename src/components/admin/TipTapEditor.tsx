@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, type Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyle } from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
+import Underline from '../../extensions/Underline';
 
 interface TipTapEditorProps {
   content: string;
@@ -11,6 +12,7 @@ interface TipTapEditorProps {
   className?: string;
   placeholder?: string;
   autoFocus?: boolean;
+  onEditorChange?: (editor: Editor | null) => void;
 }
 
 export const TipTapEditor: React.FC<TipTapEditorProps> = ({
@@ -19,7 +21,8 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
   onBlur,
   className = '',
   placeholder = 'Wpisz tekst...',
-  autoFocus = false
+  autoFocus = false,
+  onEditorChange,
 }) => {
   const editor = useEditor({
     extensions: [
@@ -32,6 +35,7 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
       }),
       TextStyle,
       Color,
+      Underline,
     ],
     content: content,
     onUpdate: ({ editor }) => {
@@ -48,6 +52,11 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
       },
     },
   });
+
+  useEffect(() => {
+    onEditorChange?.(editor);
+    return () => onEditorChange?.(null);
+  }, [editor, onEditorChange]);
 
   useEffect(() => {
     if (editor && autoFocus) {

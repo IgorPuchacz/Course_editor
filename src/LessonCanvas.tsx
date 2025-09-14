@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import type { Editor } from '@tiptap/react';
 import { Type } from 'lucide-react';
 import { LessonContent, LessonTile, EditorState } from './types/lessonEditor';
 import { EditorAction } from './state/editorReducer';
@@ -16,6 +17,7 @@ interface LessonCanvasProps {
   onAddTile: (tileType: string, position: { x: number; y: number }) => void;
   onFinishTextEditing: () => void;
   showGrid?: boolean;
+  onEditorMount?: (editor: Editor | null) => void;
 }
 
 export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({ 
@@ -27,7 +29,8 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
   onDeleteTile,
   onAddTile,
   onFinishTextEditing,
-  showGrid = true
+  showGrid = true,
+  onEditorMount,
 }, ref) => {
   const {
     dragPreview,
@@ -131,6 +134,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
             onUpdateTile={onUpdateTile}
             onDelete={onDeleteTile}
             onFinishTextEditing={onFinishTextEditing}
+            onEditorMount={onEditorMount}
             showGrid={showGrid}
           />
         ))}

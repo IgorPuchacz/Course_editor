@@ -3,6 +3,7 @@ import { Type, Image, Puzzle, BarChart3, HelpCircle, Move, Trash2 } from 'lucide
 import { LessonTile, TextTile, ImageTile, InteractiveTile, VisualizationTile, QuizTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { TipTapEditor } from './TipTapEditor';
+import type { Editor } from '@tiptap/react';
 
 interface TileRendererProps {
   tile: LessonTile;
@@ -17,6 +18,7 @@ interface TileRendererProps {
   onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
   onDelete: (tileId: string) => void;
   onFinishTextEditing: () => void;
+  onEditorMount?: (editor: Editor | null) => void;
   showGrid: boolean;
 }
 
@@ -33,6 +35,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   onUpdateTile,
   onDelete,
   onFinishTextEditing,
+  onEditorMount,
   showGrid
 }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -109,6 +112,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                   });
                 }}
                 onBlur={onFinishTextEditing}
+                onEditorChange={onEditorMount}
                 autoFocus={true}
                 placeholder="Wpisz tekst..."
                 className="w-full h-full"
