@@ -9,6 +9,7 @@ interface TileRendererProps {
   isSelected: boolean;
   isEditing: boolean;
   isEditingText: boolean;
+  isImageEditing: boolean;
   onMouseDown: (e: React.MouseEvent) => void;
   onImageMouseDown: (e: React.MouseEvent) => void;
   isDraggingImage: boolean;
@@ -23,6 +24,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   tile,
   isSelected,
   isEditing,
+  isImageEditing,
   onMouseDown,
   onImageMouseDown,
   isDraggingImage,
@@ -55,8 +57,8 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   };
 
   const handleImageWheel = (e: React.WheelEvent, imageTile: ImageTile) => {
-    // Only handle wheel events when tile is selected and in editing mode
-    if (!isSelected || !isEditing) return;
+    // Only handle wheel events when tile is selected and in image editing mode
+    if (!isSelected || !isImageEditing) return;
     
     e.preventDefault();
     e.stopPropagation();
@@ -154,15 +156,15 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         
         return (
           <div className="w-full h-full bg-gray-100 rounded-lg overflow-hidden relative">
-            <div 
+            <div
               className="w-full h-full relative overflow-hidden"
-              style={{ cursor: isSelected && isEditing ? 'grab' : 'default' }}
+              style={{ cursor: isSelected && isImageEditing ? 'grab' : 'default' }}
             >
               <img
                 src={imageTile.content.url}
                 alt={imageTile.content.alt}
                 className={`absolute select-none ${
-                  isSelected && isEditing ? 'cursor-grab active:cursor-grabbing' : ''
+                  isSelected && isImageEditing ? 'cursor-grab active:cursor-grabbing' : ''
                 }`}
                 style={{
                   left: imagePosition.x,
@@ -171,13 +173,13 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                   transformOrigin: '0 0',
                   maxWidth: 'none',
                   maxHeight: 'none',
-                  cursor: isSelected && isEditing ? (isDraggingImage ? 'grabbing' : 'grab') : 'default'
+                  cursor: isSelected && isImageEditing ? (isDraggingImage ? 'grabbing' : 'grab') : 'default'
                 }}
-                onMouseDown={isSelected && isEditing ? (e) => {
+                onMouseDown={isSelected && isImageEditing ? (e) => {
                   console.log('🖱️ Image onMouseDown triggered in TileRenderer');
                   handleImageDragStart(e, imageTile);
                 } : undefined}
-                onWheel={isSelected && isEditing ? (e) => {
+                onWheel={isSelected && isImageEditing ? (e) => {
                   handleImageWheel(e, imageTile);
                 } : undefined}
                 draggable={false}
@@ -275,7 +277,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
     }
   };
   const renderResizeHandles = () => {
-    if (!isSelected || isEditing) return null;
+    if (!isSelected || isEditingText || isImageEditing) return null;
 
     const handles = GridUtils.getResizeHandles(tile.gridPosition);
     
@@ -305,7 +307,9 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 
   return (
     <div
-      className={`absolute select-none ${isEditing ? 'z-20' : 'z-10'} ${
+      className={`absolute select-none ${
+        isEditing || isImageEditing || isEditingText ? 'z-20' : 'z-10'
+      } ${
         isSelected ? 'ring-2 ring-blue-500 ring-opacity-75' : ''
       } ${
         !isFramelessTextTile ? `transition-all duration-200 rounded-lg ${
@@ -342,7 +346,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       </div>
 
       {/* Tile Controls */}
-      {(isSelected || isHovered) && !isEditing && !isEditingText && (
+      {(isSelected || isHovered) && !isEditing && !isEditingText && !isImageEditing && (
         <div className="absolute -top-8 left-0 flex items-center space-x-1 bg-white rounded-md shadow-md border border-gray-200 px-2 py-1">
           <Move className="w-3 h-3 text-gray-500" />
           <span className="text-xs text-gray-600 capitalize">{tile.type}</span>
@@ -368,7 +372,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       )}
 
       {/* Image Editing Indicator */}
-      {isSelected && isEditing && tile.type === 'image' && (
+      {isSelected && isImageEditing && tile.type === 'image' && (
         <div className="absolute -top-8 left-0 flex items-center space-x-1 bg-blue-100 rounded-md shadow-md border border-blue-300 px-2 py-1">
           <Move className="w-3 h-3 text-blue-600" />
           <span className="text-xs text-blue-700 font-medium">Przeciągnij obraz aby zmienić pozycję</span>
@@ -384,7 +388,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       )}
 
       {/* Resize Handles - Always Available When Selected */}
-      {!isEditingText && renderResizeHandles()}
+      {!isEditingText && !isImageEditing && renderResizeHandles()}
     </div>
   );
 };

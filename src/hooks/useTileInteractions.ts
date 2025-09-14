@@ -31,6 +31,8 @@ export const useTileInteractions = ({
   const handleTileDoubleClick = (tile: LessonTile) => {
     if (tile.type === 'text') {
       dispatch({ type: 'startTextEditing', tileId: tile.id });
+    } else if (tile.type === 'image') {
+      dispatch({ type: 'startImageEditing', tileId: tile.id });
     } else {
       dispatch({ type: 'startEditing', tileId: tile.id });
     }
@@ -88,7 +90,7 @@ export const useTileInteractions = ({
   };
 
   const handleTileMouseDown = (e: React.MouseEvent, tile: LessonTile) => {
-    if (editorState.mode === 'textEditing') {
+    if (editorState.mode === 'textEditing' || editorState.mode === 'imageEditing') {
       return;
     }
     e.preventDefault();
@@ -109,7 +111,7 @@ export const useTileInteractions = ({
   const handleImageMouseDown = (e: React.MouseEvent, tile: LessonTile) => {
     e.preventDefault();
     e.stopPropagation();
-    if (tile.type !== 'image') return;
+    if (tile.type !== 'image' || editorState.mode !== 'imageEditing') return;
     onSelectTile(tile.id);
     const imageTile = tile as ImageTile;
     const imagePosition = imageTile.content.position || { x: 0, y: 0 };
