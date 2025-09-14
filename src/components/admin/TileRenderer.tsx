@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Puzzle, HelpCircle, Move, Trash2 } from 'lucide-react';
 import { LessonTile, TextTile, ImageTile, InteractiveTile, QuizTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
-// Formatting functionality removed – keeping only basic text editing
+import { Editor, EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Underline from '@tiptap/extension-underline';
 
 interface TileRendererProps {
   tile: LessonTile;
@@ -18,7 +20,52 @@ interface TileRendererProps {
   onDelete: (tileId: string) => void;
   onFinishTextEditing: () => void;
   showGrid: boolean;
+  onEditorReady: (editor: Editor | null) => void;
 }
+
+interface TextEditorProps {
+  textTile: TextTile;
+  tileId: string;
+  onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
+  onFinishTextEditing: () => void;
+  onEditorReady: (editor: Editor | null) => void;
+}
+
+const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateTile, onFinishTextEditing, onEditorReady }) => {
+  const editor = useEditor({
+    extensions: [StarterKit, Underline],
+    content: textTile.content.richText || `<p style="margin: 0;">${textTile.content.text || ''}</p>`,
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML();
+      const plain = editor.getText();
+      onUpdateTile(tileId, {
+        content: {
+          ...textTile.content,
+          text: plain,
+          richText: html
+        }
+      });
+    },
+    autofocus: true
+  });
+
+  useEffect(() => {
+    onEditorReady(editor);
+    return () => onEditorReady(null);
+  }, [editor, onEditorReady]);
+
+  if (!editor) return null;
+
+  return (
+    <div className="w-full h-full p-3 overflow-hidden relative">
+      <EditorContent
+        editor={editor}
+        className="w-full h-full focus:outline-none"
+        onBlur={onFinishTextEditing}
+      />
+    </div>
+  );
+};
 
 export const TileRenderer: React.FC<TileRendererProps> = ({
   tile,
@@ -33,7 +80,8 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   onUpdateTile,
   onDelete,
   onFinishTextEditing,
-  showGrid
+  showGrid,
+  onEditorReady
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -101,29 +149,16 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       case 'text':
         { const textTile = tile as TextTile;
 
-        // If this text tile is being edited, show a simple textarea editor
+        // If this text tile is being edited, use Tiptap editor
         if (isEditingText && isSelected) {
-          const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-            const newText = e.target.value;
-            onUpdateTile(tile.id, {
-              content: {
-                ...textTile.content,
-                text: newText,
-                richText: `<p style="margin: 0;">${newText}</p>`
-              }
-            });
-          };
-
           return (
-            <div className="w-full h-full p-3 overflow-hidden relative">
-              <textarea
-                className="w-full h-full resize-none bg-transparent outline-none"
-                value={textTile.content.text}
-                onChange={handleChange}
-                onBlur={onFinishTextEditing}
-                autoFocus
-              />
-            </div>
+            <TextTileEditor
+              textTile={textTile}
+              tileId={tile.id}
+              onUpdateTile={onUpdateTile}
+              onFinishTextEditing={onFinishTextEditing}
+              onEditorReady={onEditorReady}
+            />
           );
         }
 

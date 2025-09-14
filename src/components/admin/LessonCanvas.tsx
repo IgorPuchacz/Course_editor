@@ -5,6 +5,7 @@ import { EditorAction } from '../../state/editorReducer.ts';
 import { TileRenderer } from './TileRenderer.tsx';
 import { GridUtils } from '../../utils/gridUtils.ts';
 import { useTileInteractions } from '../../hooks/useTileInteractions.ts';
+import { Editor } from '@tiptap/react';
 
 interface LessonCanvasProps {
   content: LessonContent;
@@ -16,6 +17,7 @@ interface LessonCanvasProps {
   onAddTile: (tileType: string, position: { x: number; y: number }) => void;
   onFinishTextEditing: () => void;
   showGrid?: boolean;
+  onEditorReady: (editor: Editor | null) => void;
 }
 
 export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({ 
@@ -27,7 +29,8 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
   onDeleteTile,
   onAddTile,
   onFinishTextEditing,
-  showGrid = true
+  showGrid = true,
+  onEditorReady
 }, ref) => {
   const {
     dragPreview,
@@ -132,6 +135,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
             onDelete={onDeleteTile}
             onFinishTextEditing={onFinishTextEditing}
             showGrid={showGrid}
+            onEditorReady={onEditorReady}
           />
         ))}
 

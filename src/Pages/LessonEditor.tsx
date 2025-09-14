@@ -8,6 +8,7 @@ import { TilePalette } from '../components/admin/TilePalette.tsx';
 import { LessonCanvas } from '../components/admin/LessonCanvas.tsx';
 import { TileSideEditor } from '../components/admin/TileSideEditor.tsx';
 import { TopToolbar } from '../components/admin/TopToolbar.tsx';
+import { Editor } from '@tiptap/react';
 import { ToastContainer } from '../components/common/Toast.tsx';
 import { useToast } from '../hooks/useToast.ts';
 import { ConfirmDialog } from '../components/common/ConfirmDialog.tsx';
@@ -31,6 +32,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
   const [isSaving, setIsSaving] = useState(false);
   
   const { editorState, dispatch } = useLessonEditor();
+  const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
 
   // Confirmation dialog state
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -236,6 +238,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
 
   const handleFinishTextEditing = () => {
     dispatch({ type: 'stopEditing' });
+    setActiveEditor(null);
   };
 
   const handleToggleGrid = () => {
@@ -434,6 +437,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
             currentMode={editorState.selectedTileId ? 'Tryb edycji' : 'Tryb dodawania'}
             isTextEditing={editorState.mode === 'textEditing'}
             onFinishTextEditing={handleFinishTextEditing}
+            editor={activeEditor}
           />
 
           {/* Canvas */}
@@ -449,6 +453,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
               onAddTile={handleAddTile}
               dispatch={dispatch}
               showGrid={editorState.showGrid}
+              onEditorReady={setActiveEditor}
             />
           </div>
         </div>
