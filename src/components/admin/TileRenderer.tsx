@@ -96,7 +96,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
           return (
             <div className="w-full h-full p-3 overflow-hidden relative">
               <TipTapEditor
-                key={tile.id}
+                key={`${tile.id}-${tile.updated_at}`}
                 content={textTile.content.richText || `<p>${textTile.content.text || ''}</p>`}
                 onChange={(content) => {
                   // Extract plain text for fallback
@@ -117,6 +117,13 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                 onEditorReady={(editor) => {
                   setTextEditor(editor);
                   onTextEditorReady?.(editor);
+                  
+                  // Ensure editor gets focus after being ready
+                  setTimeout(() => {
+                    if (editor && !editor.isDestroyed) {
+                      editor.commands.focus('end');
+                    }
+                  }, 100);
                 }}
                 autoFocus={true}
                 placeholder="Wpisz tekst..."

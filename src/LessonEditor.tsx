@@ -242,6 +242,8 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
   };
 
   const handleFinishTextEditing = () => {
+    // Clear the text editor reference when finishing editing
+    setTextEditor(null);
     dispatch({ type: 'stopEditing' });
   };
 

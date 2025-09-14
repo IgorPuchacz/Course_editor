@@ -95,7 +95,9 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   }, [editor]);
 
   const handleColorSelect = (color: string) => {
-    if (editor) {
+    if (editor && !editor.isDestroyed) {
+      // Prevent losing focus and exiting edit mode
+      editor.chain().focus().setColor(color).run();
       editor.chain().focus().setColor(color).run();
       setSelectedColor(color);
     }
@@ -103,7 +105,8 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   };
 
   const handleSizeSelect = (size: number) => {
-    if (editor) {
+    if (editor && !editor.isDestroyed) {
+      // Prevent losing focus and exiting edit mode
       // Apply font size using inline styles
       editor.chain().focus().setFontSize(`${size}px`).run();
       setSelectedSize(size);
@@ -112,11 +115,24 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   };
 
   const isActive = (name: string, attributes?: any) => {
-    return editor?.isActive(name, attributes) || false;
+    return editor && !editor.isDestroyed ? editor.isActive(name, attributes) : false;
   };
 
-  const canUndo = editor?.can().undo() || false;
-  const canRedo = editor?.can().redo() || false;
+  const canUndo = editor && !editor.isDestroyed ? editor.can().undo() : false;
+  const canRedo = editor && !editor.isDestroyed ? editor.can().redo() : false;
+
+  // Handle formatting commands with proper focus management
+  const executeCommand = (commandFn: () => any) => {
+    if (!editor || editor.isDestroyed) return;
+    
+    // Ensure editor has focus before executing command
+    if (!editor.isFocused) {
+      editor.commands.focus();
+    }
+    
+    // Execute the command
+    commandFn();
+  };
 
   // Render normal mode (canvas info)
   const renderNormalMode = () => (
@@ -148,7 +164,14 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         {/* Basic formatting buttons */}
         <div className="flex items-center space-x-1 border-r border-gray-200 pr-3 mr-3">
           <button
-            onClick={() => editor?.chain().focus().toggleBold().run()}
+            onMouseDown={(e) => {
+              e.preventDefault(); // Prevent losing focus
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              executeCommand(() => editor.chain().focus().toggleBold().run());
+            }}
             className={`p-2 rounded-lg transition-colors ${
               isActive('bold')
                 ? 'bg-blue-100 text-blue-600'
@@ -160,7 +183,14 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           </button>
           
           <button
-            onClick={() => editor?.chain().focus().toggleItalic().run()}
+            onMouseDown={(e) => {
+              e.preventDefault(); // Prevent losing focus
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              executeCommand(() => editor.chain().focus().toggleItalic().run());
+            }}
             className={`p-2 rounded-lg transition-colors ${
               isActive('italic')
                 ? 'bg-blue-100 text-blue-600'
@@ -172,7 +202,14 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           </button>
           
           <button
-            onClick={() => editor?.chain().focus().toggleUnderline().run()}
+            onMouseDown={(e) => {
+              e.preventDefault(); // Prevent losing focus
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              executeCommand(() => editor.chain().focus().toggleUnderline().run());
+            }}
             className={`p-2 rounded-lg transition-colors ${
               isActive('underline')
                 ? 'bg-blue-100 text-blue-600'
@@ -187,7 +224,14 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         {/* List buttons */}
         <div className="flex items-center space-x-1 border-r border-gray-200 pr-3 mr-3">
           <button
-            onClick={() => editor?.chain().focus().toggleBulletList().run()}
+            onMouseDown={(e) => {
+              e.preventDefault(); // Prevent losing focus
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              executeCommand(() => editor.chain().focus().toggleBulletList().run());
+            }}
             className={`p-2 rounded-lg transition-colors ${
               isActive('bulletList')
                 ? 'bg-blue-100 text-blue-600'
@@ -199,7 +243,14 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           </button>
           
           <button
-            onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+            onMouseDown={(e) => {
+              e.preventDefault(); // Prevent losing focus
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              executeCommand(() => editor.chain().focus().toggleOrderedList().run());
+            }}
             className={`p-2 rounded-lg transition-colors ${
               isActive('orderedList')
                 ? 'bg-blue-100 text-blue-600'
@@ -214,7 +265,14 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         {/* Code buttons */}
         <div className="flex items-center space-x-1 border-r border-gray-200 pr-3 mr-3">
           <button
-            onClick={() => editor?.chain().focus().toggleCode().run()}
+            onMouseDown={(e) => {
+              e.preventDefault(); // Prevent losing focus
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              executeCommand(() => editor.chain().focus().toggleCode().run());
+            }}
             className={`p-2 rounded-lg transition-colors ${
               isActive('code')
                 ? 'bg-blue-100 text-blue-600'
@@ -226,7 +284,14 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           </button>
           
           <button
-            onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
+            onMouseDown={(e) => {
+              e.preventDefault(); // Prevent losing focus
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              executeCommand(() => editor.chain().focus().toggleCodeBlock().run());
+            }}
             className={`p-2 rounded-lg transition-colors ${
               isActive('codeBlock')
                 ? 'bg-blue-100 text-blue-600'
@@ -243,7 +308,14 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           {/* Color Picker */}
           <div className="relative" ref={colorPickerRef}>
             <button
-              onClick={() => setShowColorPicker(!showColorPicker)}
+              onMouseDown={(e) => {
+                e.preventDefault(); // Prevent losing focus
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowColorPicker(!showColorPicker);
+              }}
               className="flex items-center space-x-1 p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
               title="Kolor tekstu"
             >
@@ -261,7 +333,14 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
                   {predefinedColors.map((color) => (
                     <button
                       key={color}
-                      onClick={() => handleColorSelect(color)}
+                      onMouseDown={(e) => {
+                        e.preventDefault(); // Prevent losing focus
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleColorSelect(color);
+                      }}
                       className={`w-8 h-8 rounded border-2 transition-all hover:scale-110 ${
                         selectedColor === color 
                           ? 'border-blue-500 ring-2 ring-blue-200' 
@@ -275,7 +354,10 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
                 <input
                   type="color"
                   value={selectedColor}
-                  onChange={(e) => handleColorSelect(e.target.value)}
+                  onChange={(e) => {
+                    e.preventDefault();
+                    handleColorSelect(e.target.value);
+                  }}
                   className="w-full h-8 border border-gray-300 rounded cursor-pointer"
                   title="Wybierz inny kolor"
                 />
@@ -286,7 +368,14 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           {/* Font Size Picker */}
           <div className="relative" ref={sizePickerRef}>
             <button
-              onClick={() => setShowSizePicker(!showSizePicker)}
+              onMouseDown={(e) => {
+                e.preventDefault(); // Prevent losing focus
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowSizePicker(!showSizePicker);
+              }}
               className="flex items-center space-x-1 p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
               title="Rozmiar tekstu"
             >
@@ -300,7 +389,14 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
                 {fontSizes.map((size) => (
                   <button
                     key={size}
-                    onClick={() => handleSizeSelect(size)}
+                    onMouseDown={(e) => {
+                      e.preventDefault(); // Prevent losing focus
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleSizeSelect(size);
+                    }}
                     className={`w-full px-3 py-2 text-left hover:bg-blue-50 transition-colors ${
                       selectedSize === size ? 'bg-blue-100 text-blue-600' : 'text-gray-700'
                     }`}
@@ -317,7 +413,14 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         {/* Undo/Redo buttons */}
         <div className="flex items-center space-x-1">
           <button
-            onClick={() => editor?.chain().focus().undo().run()}
+            onMouseDown={(e) => {
+              e.preventDefault(); // Prevent losing focus
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              executeCommand(() => editor.chain().focus().undo().run());
+            }}
             disabled={!canUndo}
             className={`p-2 rounded-lg transition-colors ${
               canUndo
@@ -330,7 +433,14 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           </button>
           
           <button
-            onClick={() => editor?.chain().focus().redo().run()}
+            onMouseDown={(e) => {
+              e.preventDefault(); // Prevent losing focus
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              executeCommand(() => editor.chain().focus().redo().run());
+            }}
             disabled={!canRedo}
             className={`p-2 rounded-lg transition-colors ${
               canRedo

@@ -106,8 +106,12 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
   }, [editor, autoFocus]);
 
   useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
+    // Only update content if it's actually different and editor is focused
+    if (editor && !editor.isDestroyed && content !== editor.getHTML()) {
+      // Don't update content if editor is currently focused (user is typing)
+      if (!editor.isFocused) {
       editor.commands.setContent(content, false);
+      }
     }
   }, [editor, content]);
 
