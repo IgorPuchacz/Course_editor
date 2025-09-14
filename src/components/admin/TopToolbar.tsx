@@ -50,6 +50,12 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
     isEmpty: boolean;
   } | null>(null);
   const [isApplyingFormat, setIsApplyingFormat] = useState(false);
+  const [savedSelection, setSavedSelection] = useState<{
+    from: number;
+    to: number;
+    content: string;
+  } | null>(null);
+  const [isFormattingActive, setIsFormattingActive] = useState(false);
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const sizePickerRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -63,6 +69,39 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
 
   // Font sizes
   const fontSizes = [12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
+
+  // Save selection
+  const saveSelection = () => {
+    if (!editor || editor.isDestroyed) return null;
+    
+    const { selection } = editor.state;
+    if (!selection.empty) {
+      const content = editor.state.doc.textBetween(selection.from, selection.to);
+      const selectionData = {
+        from: selection.from,
+        to: selection.to,
+        content
+      };
+      setSavedSelection(selectionData);
+      return selectionData;
+    }
+    return null;
+  };
+
+  // Restore selection
+  const restoreSelection = () => {
+    if (!editor || editor.isDestroyed || !savedSelection) return;
+    
+    try {
+      editor.commands.focus();
+      editor.commands.setTextSelection({
+        from: savedSelection.from,
+        to: savedSelection.to
+      });
+    } catch (error) {
+      console.warn('Failed to restore selection:', error);
+    }
+  };
 
   // Capture and maintain selection state
   const captureSelection = () => {
@@ -183,7 +222,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         editor.off('focus', updateState);
       }
     };
-  }, [editor]);
+  }, [editor, isApplyingFormat]);
 
   // Prevent toolbar from stealing focus
   useEffect(() => {
@@ -300,6 +339,32 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   const canUndo = editor && !editor.isDestroyed ? editor.can().undo() : false;
   const canRedo = editor && !editor.isDestroyed ? editor.can().redo() : false;
 
+  // Handle formatting commands with proper focus management
+  const executeCommand = (commandFn: () => any, commandName?: string) => {
+    setIsFormattingActive(true);
+    
+    if (!editor || editor.isDestroyed) return;
+    
+    // Save current selection before executing command
+    const currentSelection = saveSelection();
+    
+    // Restore selection if we have one saved
+    if (savedSelection) {
+      restoreSelection();
+    }
+    
+    // Execute the command
+    commandFn();
+    
+    // Restore selection after command execution
+    setTimeout(() => {
+      if (savedSelection) {
+        restoreSelection();
+      }
+      setIsFormattingActive(false);
+    }, 50);
+  };
+
   // Render normal mode (canvas info)
   const renderNormalMode = () => (
     <div className="flex items-center justify-between">
@@ -325,8 +390,8 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
 
   // Render text editing mode (formatting toolbar)
   const renderTextEditingMode = () => (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center space-x-1" ref={toolbarRef}>
+    <div className="flex items-center justify-between" ref={toolbarRef}>
+      <div className="flex items-center space-x-1">
         {/* Basic formatting buttons */}
         <div className="flex items-center space-x-1 border-r border-gray-200 pr-3 mr-3">
           <button
@@ -336,7 +401,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              applyFormatting(() => editor.chain().focus().toggleBold().run(), 'bold');
+              executeCommand(() => editor.chain().focus().toggleBold().run(), 'bold');
             }}
             className={`p-2 rounded-lg transition-colors ${
               isActive('bold')
@@ -355,7 +420,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              applyFormatting(() => editor.chain().focus().toggleItalic().run(), 'italic');
+              executeCommand(() => editor.chain().focus().toggleItalic().run(), 'italic');
             }}
             className={`p-2 rounded-lg transition-colors ${
               isActive('italic')
@@ -374,7 +439,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              applyFormatting(() => editor.chain().focus().toggleUnderline().run(), 'underline');
+              executeCommand(() => editor.chain().focus().toggleUnderline().run(), 'underline');
             }}
             className={`p-2 rounded-lg transition-colors ${
               isActive('underline')
@@ -396,7 +461,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              applyFormatting(() => editor.chain().focus().toggleBulletList().run(), 'bulletList');
+              executeCommand(() => editor.chain().focus().toggleBulletList().run(), 'bulletList');
             }}
             className={`p-2 rounded-lg transition-colors ${
               isActive('bulletList')
@@ -415,7 +480,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              applyFormatting(() => editor.chain().focus().toggleOrderedList().run(), 'orderedList');
+              executeCommand(() => editor.chain().focus().toggleOrderedList().run(), 'orderedList');
             }}
             className={`p-2 rounded-lg transition-colors ${
               isActive('orderedList')
@@ -437,7 +502,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              applyFormatting(() => editor.chain().focus().toggleCode().run(), 'code');
+              executeCommand(() => editor.chain().focus().toggleCode().run(), 'code');
             }}
             className={`p-2 rounded-lg transition-colors ${
               isActive('code')
@@ -456,7 +521,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              applyFormatting(() => editor.chain().focus().toggleCodeBlock().run(), 'codeBlock');
+              executeCommand(() => editor.chain().focus().toggleCodeBlock().run(), 'codeBlock');
             }}
             className={`p-2 rounded-lg transition-colors ${
               isActive('codeBlock')
@@ -585,7 +650,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              applyFormatting(() => editor.chain().focus().undo().run(), 'undo');
+              executeCommand(() => editor.chain().focus().undo().run(), 'undo');
             }}
             disabled={!canUndo}
             className={`p-2 rounded-lg transition-colors ${
@@ -605,7 +670,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              applyFormatting(() => editor.chain().focus().redo().run(), 'redo');
+              executeCommand(() => editor.chain().focus().redo().run(), 'redo');
             }}
             disabled={!canRedo}
             className={`p-2 rounded-lg transition-colors ${
@@ -622,10 +687,10 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
 
       {/* Right side - editing status and finish button */}
       <div className="flex items-center space-x-4">
-        {/* Selection indicator */}
-        {selectionState && !selectionState.isEmpty && (
+        {/* Selection info */}
+        {savedSelection && (
           <div className="flex items-center space-x-2 text-xs text-gray-500">
-            <span>Zaznaczono: {selectionState.content.length > 20 ? selectionState.content.substring(0, 20) + '...' : selectionState.content}</span>
+            <span>Zaznaczono: {savedSelection.content.length > 20 ? savedSelection.content.substring(0, 20) + '...' : savedSelection.content}</span>
           </div>
         )}
         
@@ -636,8 +701,9 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         
         <button
           onClick={() => {
-            setSelectionState(null);
-            setIsApplyingFormat(false);
+            // Clear saved selection when finishing editing
+            setSavedSelection(null);
+            setIsFormattingActive(false);
             onFinishTextEditing?.();
           }}
           className="flex items-center space-x-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
