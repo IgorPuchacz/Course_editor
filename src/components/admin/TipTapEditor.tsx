@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyle } from '@tiptap/extension-text-style';
@@ -31,50 +31,52 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
   autoFocus = false,
   onEditorReady
 }) => {
+  const extensions = useMemo(() => [
+    StarterKit.configure({
+      // Disable default extensions we're configuring separately
+      heading: false,
+      bulletList: false,
+      orderedList: false,
+      listItem: false,
+      code: false,
+      codeBlock: false,
+      history: false,
+      // Keep other useful features
+      blockquote: true,
+      horizontalRule: true,
+    }),
+    TextStyle,
+    Color,
+    Underline,
+    Code.configure({
+      HTMLAttributes: {
+        class: 'inline-code',
+      },
+    }),
+    CodeBlock.configure({
+      HTMLAttributes: {
+        class: 'code-block',
+      },
+    }),
+    BulletList.configure({
+      HTMLAttributes: {
+        class: 'bullet-list',
+      },
+    }),
+    OrderedList.configure({
+      HTMLAttributes: {
+        class: 'ordered-list',
+      },
+    }),
+    ListItem,
+    History.configure({
+      depth: 50,
+    }),
+    FontSize,
+  ], []);
+
   const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        // Disable default extensions we're configuring separately
-        heading: false,
-        bulletList: false,
-        orderedList: false,
-        listItem: false,
-        code: false,
-        codeBlock: false,
-        history: false,
-        // Keep other useful features
-        blockquote: true,
-        horizontalRule: true,
-      }),
-      TextStyle,
-      Color,
-      Underline,
-      Code.configure({
-        HTMLAttributes: {
-          class: 'inline-code',
-        },
-      }),
-      CodeBlock.configure({
-        HTMLAttributes: {
-          class: 'code-block',
-        },
-      }),
-      BulletList.configure({
-        HTMLAttributes: {
-          class: 'bullet-list',
-        },
-      }),
-      OrderedList.configure({
-        HTMLAttributes: {
-          class: 'ordered-list',
-        },
-      }),
-      ListItem,
-      History.configure({
-        depth: 50,
-      }),
-      FontSize,
-    ],
+    extensions,
     content: content,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
