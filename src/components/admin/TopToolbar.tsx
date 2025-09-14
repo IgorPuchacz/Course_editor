@@ -34,7 +34,10 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           {/* Font Family Selector */}
           <FontFamilySelector
             selectedFont="Inter, system-ui, sans-serif"
-            onChange={(font) => console.log('Font changed:', font)}
+            onChange={(font) => {
+              console.log('Font changed:', font);
+              // Tutaj będzie logika zmiany czcionki w edytorze
+            }}
           />
           
           <div className="w-px h-6 bg-gray-300"></div>
@@ -42,7 +45,10 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           {/* Font Size Selector */}
           <FontSizeSelector
             selectedSize={16}
-            onChange={(size) => console.log('Size changed:', size)}
+            onChange={(size) => {
+              console.log('Size changed:', size);
+              // Tutaj będzie logika zmiany rozmiaru w edytorze
+            }}
           />
           
           <div className="w-px h-6 bg-gray-300"></div>
@@ -50,7 +56,10 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           {/* Text Color Picker */}
           <TextColorPicker
             selectedColor="#000000"
-            onChange={(color) => console.log('Color changed:', color)}
+            onChange={(color) => {
+              console.log('Color changed:', color);
+              // Tutaj będzie logika zmiany koloru w edytorze
+            }}
           />
           
           <div className="w-px h-6 bg-gray-300"></div>
@@ -81,20 +90,21 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           <div className="w-px h-6 bg-gray-300"></div>
           
           {/* Lists and Advanced */}
-          <button className="p-2" disabled><List className="w-4 h-4" /></button>
-          <button className="p-2" disabled><ListOrdered className="w-4 h-4" /></button>
-          <button className="p-2" disabled><Code className="w-4 h-4" /></button>
-          <button className="p-2" disabled><FileCode className="w-4 h-4" /></button>
+          <button className="p-2" disabled onMouseDown={e => e.preventDefault()}><List className="w-4 h-4" /></button>
+          <button className="p-2" disabled onMouseDown={e => e.preventDefault()}><ListOrdered className="w-4 h-4" /></button>
+          <button className="p-2" disabled onMouseDown={e => e.preventDefault()}><Code className="w-4 h-4" /></button>
+          <button className="p-2" disabled onMouseDown={e => e.preventDefault()}><FileCode className="w-4 h-4" /></button>
           
           <div className="w-px h-6 bg-gray-300"></div>
           
           {/* History */}
-          <button className="p-2" disabled><Undo className="w-4 h-4" /></button>
-          <button className="p-2" disabled><Redo className="w-4 h-4" /></button>
+          <button className="p-2" disabled onMouseDown={e => e.preventDefault()}><Undo className="w-4 h-4" /></button>
+          <button className="p-2" disabled onMouseDown={e => e.preventDefault()}><Redo className="w-4 h-4" /></button>
         </div>
         
         <button
           onClick={onFinishTextEditing}
+          onMouseDown={e => e.preventDefault()}
           className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
           title="Zakończ edycję tekstu"
         >
