@@ -1,18 +1,6 @@
 import React from 'react';
-import {
-  Bold,
-  Italic,
-  Underline,
-  List,
-  ListOrdered,
-  Undo,
-  Redo,
-  Type,
-  Palette,
-  Code,
-  FileCode,
-  X
-} from 'lucide-react';
+import { Bold, Italic, Underline, List, ListOrdered, Undo, Redo, Type, Palette, Code, FileCode, X } from 'lucide-react';
+
 
 interface TopToolbarProps {
   tilesCount: number;

@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Save, RotateCcw, Grid, Edit } from 'lucide-react';
-import { Lesson, Course } from '../../types/course.ts';
-import { LessonContent, LessonTile, TextTile } from '../../types/lessonEditor.ts';
-import { useLessonEditor } from '../../hooks/useLessonEditor.ts';
-import { LessonContentService } from '../../services/lessonContentService.ts';
-import { TilePalette } from './TilePalette.tsx';
-import { LessonCanvas } from './LessonCanvas.tsx';
-import { TileSideEditor } from './TileSideEditor.tsx';
-import { TopToolbar } from './TopToolbar.tsx';
-import { ToastContainer } from '../common/Toast.tsx';
-import { useToast } from '../../hooks/useToast.ts';
-import { ConfirmDialog } from '../common/ConfirmDialog.tsx';
-import { LoadingSpinner } from '../common/LoadingSpinner.tsx';
-import { GridUtils } from '../../utils/gridUtils.ts';
-import { logger } from '../../utils/logger.ts';
+import { Lesson, Course } from '../types/course.ts';
+import { LessonContent, LessonTile, TextTile } from '../types/lessonEditor.ts';
+import { useLessonEditor } from '../hooks/useLessonEditor.ts';
+import { LessonContentService } from '../services/lessonContentService.ts';
+import { TilePalette } from '../components/admin/TilePalette.tsx';
+import { LessonCanvas } from '../components/admin/LessonCanvas.tsx';
+import { TileSideEditor } from '../components/admin/TileSideEditor.tsx';
+import { TopToolbar } from '../components/admin/TopToolbar.tsx';
+import { ToastContainer } from '../components/common/Toast.tsx';
+import { useToast } from '../hooks/useToast.ts';
+import { ConfirmDialog } from '../components/common/ConfirmDialog.tsx';
+import { LoadingSpinner } from '../components/common/LoadingSpinner.tsx';
+import { GridUtils } from '../utils/gridUtils.ts';
+import { logger } from '../utils/logger.ts';
 
 interface LessonEditorProps {
   lesson: Lesson;

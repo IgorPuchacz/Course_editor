@@ -111,6 +111,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
 
   const renderContentEditor = () => {
     switch (tile.type) {
+
       case 'text':
         { const textTile = tile as TextTile;
         return (
