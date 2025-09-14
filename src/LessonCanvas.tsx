@@ -15,6 +15,7 @@ interface LessonCanvasProps {
   onDeleteTile: (tileId: string) => void;
   onAddTile: (tileType: string, position: { x: number; y: number }) => void;
   onFinishTextEditing: () => void;
+  onTextEditorReady?: (editor: any) => void;
   showGrid?: boolean;
 }
 
@@ -27,6 +28,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
   onDeleteTile,
   onAddTile,
   onFinishTextEditing,
+  onTextEditorReady,
   showGrid = true
 }, ref) => {
   const {
@@ -131,6 +133,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
             onUpdateTile={onUpdateTile}
             onDelete={onDeleteTile}
             onFinishTextEditing={onFinishTextEditing}
+            onTextEditorReady={onTextEditorReady}
             showGrid={showGrid}
           />
         ))}

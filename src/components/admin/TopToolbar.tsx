@@ -11,21 +11,32 @@ import {
   Palette,
   Code,
   FileCode,
-  ChevronDown
+  ChevronDown,
+  X
 } from 'lucide-react';
 
-// This component is now deprecated - functionality moved to TopToolbar
-// Keeping for backward compatibility but it's no longer used in the main interface
-
-interface TextEditingToolbarProps {
-  editor: any; // TipTap editor instance
-  onFinishEditing: () => void;
+interface TopToolbarProps {
+  // Normal mode props
+  tilesCount: number;
+  gridColumns: number;
+  gridRows: number;
+  currentMode: string;
+  
+  // Text editing mode props
+  isTextEditing: boolean;
+  editor?: any; // TipTap editor instance
+  onFinishTextEditing?: () => void;
   className?: string;
 }
 
-export const TextEditingToolbar: React.FC<TextEditingToolbarProps> = ({
+export const TopToolbar: React.FC<TopToolbarProps> = ({
+  tilesCount,
+  gridColumns,
+  gridRows,
+  currentMode,
+  isTextEditing,
   editor,
-  onFinishEditing,
+  onFinishTextEditing,
   className = ''
 }) => {
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -70,7 +81,6 @@ export const TextEditingToolbar: React.FC<TextEditingToolbarProps> = ({
       setSelectedColor(currentColor);
       
       // Get current font size (this would need custom extension for full support)
-      // For now, we'll use a default approach
       const currentSize = 16; // Default size
       setSelectedSize(currentSize);
     };
@@ -84,37 +94,61 @@ export const TextEditingToolbar: React.FC<TextEditingToolbarProps> = ({
     };
   }, [editor]);
 
-  if (!editor) {
-    return null;
-  }
-
   const handleColorSelect = (color: string) => {
-    editor.chain().focus().setColor(color).run();
-    setSelectedColor(color);
+    if (editor) {
+      editor.chain().focus().setColor(color).run();
+      setSelectedColor(color);
+    }
     setShowColorPicker(false);
   };
 
   const handleSizeSelect = (size: number) => {
-    // Apply font size using inline styles
-    editor.chain().focus().setFontSize(`${size}px`).run();
-    setSelectedSize(size);
+    if (editor) {
+      // Apply font size using inline styles
+      editor.chain().focus().setFontSize(`${size}px`).run();
+      setSelectedSize(size);
+    }
     setShowSizePicker(false);
   };
 
   const isActive = (name: string, attributes?: any) => {
-    return editor.isActive(name, attributes);
+    return editor?.isActive(name, attributes) || false;
   };
 
-  const canUndo = editor.can().undo();
-  const canRedo = editor.can().redo();
+  const canUndo = editor?.can().undo() || false;
+  const canRedo = editor?.can().redo() || false;
 
-  return (
-    <div className={`flex items-center justify-between bg-white border-b border-gray-200 px-4 lg:px-6 py-3 ${className}`}>
+  // Render normal mode (canvas info)
+  const renderNormalMode = () => (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-2 lg:space-x-4 text-xs lg:text-sm">
+        <span className="text-gray-600">
+          Kafelki: {tilesCount}
+        </span>
+        <span className="text-gray-600 hidden sm:inline">
+          Siatka: {gridColumns} × {gridRows}
+        </span>
+        <span className="text-gray-600 hidden md:inline">
+          {currentMode}
+        </span>
+      </div>
+      
+      {/* Context indicator */}
+      <div className="flex items-center space-x-2 text-xs text-gray-500">
+        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+        <span>Dodaj nowy kafelek</span>
+      </div>
+    </div>
+  );
+
+  // Render text editing mode (formatting toolbar)
+  const renderTextEditingMode = () => (
+    <div className="flex items-center justify-between">
       <div className="flex items-center space-x-1">
         {/* Basic formatting buttons */}
         <div className="flex items-center space-x-1 border-r border-gray-200 pr-3 mr-3">
           <button
-            onClick={() => editor.chain().focus().toggleBold().run()}
+            onClick={() => editor?.chain().focus().toggleBold().run()}
             className={`p-2 rounded-lg transition-colors ${
               isActive('bold')
                 ? 'bg-blue-100 text-blue-600'
@@ -126,7 +160,7 @@ export const TextEditingToolbar: React.FC<TextEditingToolbarProps> = ({
           </button>
           
           <button
-            onClick={() => editor.chain().focus().toggleItalic().run()}
+            onClick={() => editor?.chain().focus().toggleItalic().run()}
             className={`p-2 rounded-lg transition-colors ${
               isActive('italic')
                 ? 'bg-blue-100 text-blue-600'
@@ -138,7 +172,7 @@ export const TextEditingToolbar: React.FC<TextEditingToolbarProps> = ({
           </button>
           
           <button
-            onClick={() => editor.chain().focus().toggleUnderline().run()}
+            onClick={() => editor?.chain().focus().toggleUnderline().run()}
             className={`p-2 rounded-lg transition-colors ${
               isActive('underline')
                 ? 'bg-blue-100 text-blue-600'
@@ -153,7 +187,7 @@ export const TextEditingToolbar: React.FC<TextEditingToolbarProps> = ({
         {/* List buttons */}
         <div className="flex items-center space-x-1 border-r border-gray-200 pr-3 mr-3">
           <button
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            onClick={() => editor?.chain().focus().toggleBulletList().run()}
             className={`p-2 rounded-lg transition-colors ${
               isActive('bulletList')
                 ? 'bg-blue-100 text-blue-600'
@@ -165,7 +199,7 @@ export const TextEditingToolbar: React.FC<TextEditingToolbarProps> = ({
           </button>
           
           <button
-            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            onClick={() => editor?.chain().focus().toggleOrderedList().run()}
             className={`p-2 rounded-lg transition-colors ${
               isActive('orderedList')
                 ? 'bg-blue-100 text-blue-600'
@@ -180,7 +214,7 @@ export const TextEditingToolbar: React.FC<TextEditingToolbarProps> = ({
         {/* Code buttons */}
         <div className="flex items-center space-x-1 border-r border-gray-200 pr-3 mr-3">
           <button
-            onClick={() => editor.chain().focus().toggleCode().run()}
+            onClick={() => editor?.chain().focus().toggleCode().run()}
             className={`p-2 rounded-lg transition-colors ${
               isActive('code')
                 ? 'bg-blue-100 text-blue-600'
@@ -192,7 +226,7 @@ export const TextEditingToolbar: React.FC<TextEditingToolbarProps> = ({
           </button>
           
           <button
-            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+            onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
             className={`p-2 rounded-lg transition-colors ${
               isActive('codeBlock')
                 ? 'bg-blue-100 text-blue-600'
@@ -283,7 +317,7 @@ export const TextEditingToolbar: React.FC<TextEditingToolbarProps> = ({
         {/* Undo/Redo buttons */}
         <div className="flex items-center space-x-1">
           <button
-            onClick={() => editor.chain().focus().undo().run()}
+            onClick={() => editor?.chain().focus().undo().run()}
             disabled={!canUndo}
             className={`p-2 rounded-lg transition-colors ${
               canUndo
@@ -296,7 +330,7 @@ export const TextEditingToolbar: React.FC<TextEditingToolbarProps> = ({
           </button>
           
           <button
-            onClick={() => editor.chain().focus().redo().run()}
+            onClick={() => editor?.chain().focus().redo().run()}
             disabled={!canRedo}
             className={`p-2 rounded-lg transition-colors ${
               canRedo
@@ -314,16 +348,23 @@ export const TextEditingToolbar: React.FC<TextEditingToolbarProps> = ({
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2 text-sm text-blue-600">
           <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-          <span className="font-medium">Edytujesz tekst</span>
+          <span className="font-medium hidden sm:inline">Edytujesz tekst</span>
         </div>
         
         <button
-          onClick={onFinishEditing}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+          onClick={onFinishTextEditing}
+          className="flex items-center space-x-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
         >
-          Zakończ edycję
+          <X className="w-4 h-4" />
+          <span className="hidden sm:inline">Zakończ</span>
         </button>
       </div>
+    </div>
+  );
+
+  return (
+    <div className={`bg-white border-b border-gray-200 px-4 lg:px-6 py-3 transition-all duration-200 ${className}`}>
+      {isTextEditing ? renderTextEditingMode() : renderNormalMode()}
     </div>
   );
 };

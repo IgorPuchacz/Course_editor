@@ -18,6 +18,7 @@ interface TileRendererProps {
   onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
   onDelete: (tileId: string) => void;
   onFinishTextEditing: () => void;
+  onTextEditorReady?: (editor: any) => void;
   showGrid: boolean;
 }
 
@@ -34,6 +35,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   onUpdateTile,
   onDelete,
   onFinishTextEditing,
+  onTextEditorReady,
   showGrid
 }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -112,7 +114,10 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                   });
                 }}
                 onBlur={onFinishTextEditing}
-                onEditorReady={setTextEditor}
+                onEditorReady={(editor) => {
+                  setTextEditor(editor);
+                  onTextEditorReady?.(editor);
+                }}
                 autoFocus={true}
                 placeholder="Wpisz tekst..."
                 className="w-full h-full"
@@ -368,14 +373,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       )}
 
       {/* Text Editing Indicator */}
-      {isSelected && isEditingText && tile.type === 'text' && (
-        <div className="absolute -top-12 left-0 right-0 z-30">
-          <TextEditingToolbar
-            editor={textEditor}
-            onFinishEditing={onFinishTextEditing}
-          />
-        </div>
-      )}
+      {/* Text editing toolbar is now in the top bar - no need for overlay */}
 
       {/* Image Editing Indicator */}
       {isSelected && isImageEditing && tile.type === 'image' && (
