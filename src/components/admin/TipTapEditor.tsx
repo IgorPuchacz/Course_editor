@@ -45,7 +45,7 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
       listItem: false,
       code: false,
       codeBlock: false,
-      history: false, // Explicitly disable StarterKit's history
+      undoRedo: false, // Disable StarterKit's built-in history (UndoRedo) to avoid duplicate plugins
       // Keep other useful features
       blockquote: true,
       horizontalRule: true,
