@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState } from 'react';
 import { BookOpen, Play, Users, Settings, ArrowRight } from 'lucide-react';
-import { LessonEditor } from './components/admin/LessonEditor.tsx';
+import { LessonEditor } from './Pages/LessonEditor.tsx';
 import { Lesson, Course } from './types/course';
 
 function App() {

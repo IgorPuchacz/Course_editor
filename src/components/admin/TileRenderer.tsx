@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Puzzle, HelpCircle, Move, Trash2 } from 'lucide-react';
-import { LessonTile, TextTile, ImageTile, InteractiveTile, VisualizationTile, QuizTile } from '../../types/lessonEditor';
+import { LessonTile, TextTile, ImageTile, InteractiveTile, QuizTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
-import { TipTapEditor } from './TipTapEditor';
-import { TextEditingToolbar } from './TextEditingToolbar';
+// Formatting functionality removed – keeping only basic text editing
 
 interface TileRendererProps {
   tile: LessonTile;
@@ -18,7 +17,6 @@ interface TileRendererProps {
   onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
   onDelete: (tileId: string) => void;
   onFinishTextEditing: () => void;
-  onTextEditorReady?: (editor: any) => void;
   showGrid: boolean;
 }
 
@@ -35,7 +33,6 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   onUpdateTile,
   onDelete,
   onFinishTextEditing,
-  onTextEditorReady,
   showGrid
 }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -104,11 +101,28 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       case 'text':
         { const textTile = tile as TextTile;
 
-        // If this text tile is being edited, show the TipTap editor
+        // If this text tile is being edited, show a simple textarea editor
         if (isEditingText && isSelected) {
+          const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+            const newText = e.target.value;
+            onUpdateTile(tile.id, {
+              content: {
+                ...textTile.content,
+                text: newText,
+                richText: `<p style="margin: 0;">${newText}</p>`
+              }
+            });
+          };
+
           return (
             <div className="w-full h-full p-3 overflow-hidden relative">
-                Placeholder text, here should be RichText ready to format
+              <textarea
+                className="w-full h-full resize-none bg-transparent outline-none"
+                value={textTile.content.text}
+                onChange={handleChange}
+                onBlur={onFinishTextEditing}
+                autoFocus
+              />
             </div>
           );
         }
@@ -122,7 +136,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                 backgroundColor: textTile.content.backgroundColor,
                 fontSize: `${textTile.content.fontSize}px`,
                 fontFamily: textTile.content.fontFamily,
-                textAlign: textTile.content.textAlign as any,
+                textAlign: textTile.content.textAlign,
                 display: 'flex',
                 alignItems: textTile.content.verticalAlign === 'center' ? 'center' :
                            textTile.content.verticalAlign === 'bottom' ? 'flex-end' : 'flex-start'
@@ -196,8 +210,8 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
           </div>
         ); }
 
-      case 'interactive':
-        const interactiveTile = tile as InteractiveTile;
+        case 'interactive': {
+          const interactiveTile = tile as InteractiveTile;
         
         // Render quiz functionality if interaction type is quiz
         if (interactiveTile.content.interactionType === 'quiz') {
@@ -230,47 +244,48 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         }
         
         // Default interactive tile rendering
-        return (
-          <div className="w-full h-full bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg p-4 flex flex-col">
-            <div className="flex items-center space-x-2 mb-2">
-              <Puzzle className="w-5 h-5 text-purple-600" />
-              <h4 className="font-semibold text-purple-900 text-sm">
-                {interactiveTile.content.title}
-              </h4>
+          return (
+            <div className="w-full h-full bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg p-4 flex flex-col">
+              <div className="flex items-center space-x-2 mb-2">
+                <Puzzle className="w-5 h-5 text-purple-600" />
+                <h4 className="font-semibold text-purple-900 text-sm">
+                  {interactiveTile.content.title}
+                </h4>
+              </div>
+              <p className="text-purple-700 text-xs flex-1 overflow-hidden">
+                {interactiveTile.content.description}
+              </p>
+              <div className="mt-2 text-xs text-purple-600">
+                Typ: {interactiveTile.content.interactionType}
+              </div>
             </div>
-            <p className="text-purple-700 text-xs flex-1 overflow-hidden">
-              {interactiveTile.content.description}
-            </p>
-            <div className="mt-2 text-xs text-purple-600">
-              Typ: {interactiveTile.content.interactionType}
-            </div>
-          </div>
-        );
+          );
+        }
 
-      case 'quiz':
-        const quizTile = tile as QuizTile;
-        return (
-          <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 rounded-lg p-4 flex flex-col">
-            <div className="flex items-center space-x-2 mb-2">
-              <HelpCircle className="w-5 h-5 text-green-600" />
-              <h4 className="font-semibold text-green-900 text-sm">Quiz</h4>
+        case 'quiz': {
+          const quizTile = tile as QuizTile;
+          return (
+            <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 rounded-lg p-4 flex flex-col">
+              <div className="flex items-center space-x-2 mb-2">
+                <HelpCircle className="w-5 h-5 text-green-600" />
+                <h4 className="font-semibold text-green-900 text-sm">Quiz</h4>
+              </div>
+              <p className="text-green-700 text-xs mb-2 flex-1 overflow-hidden">
+                {quizTile.content.question}
+              </p>
+              <div className="text-xs text-green-600">
+                {quizTile.content.answers.length} odpowiedzi
+              </div>
             </div>
-            <p className="text-green-700 text-xs mb-2 flex-1 overflow-hidden">
-              {quizTile.content.question}
-            </p>
-            <div className="text-xs text-green-600">
-              {quizTile.content.answers.length} odpowiedzi
-            </div>
-          </div>
-        );
+          ); }
 
-      default:
-        return (
-          <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
-            <span className="text-gray-500 text-sm">Nieznany typ kafelka</span>
-          </div>
-        );
-    }
+        default:
+          return (
+            <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+              <span className="text-gray-500 text-sm">Nieznany typ kafelka</span>
+            </div>
+          );
+      }
   };
   const renderResizeHandles = () => {
     if (!isSelected || isEditingText || isImageEditing) return null;
