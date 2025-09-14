@@ -438,6 +438,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
         <div className="flex-1 flex flex-col min-w-0">
           {/* Dynamic Top Toolbar */}
           <TopToolbar
+            key={`toolbar-${editorState.mode}-${editorState.selectedTileId}`}
             tilesCount={lessonContent.tiles.length}
             gridColumns={GridUtils.GRID_COLUMNS}
             gridRows={lessonContent.canvas_settings.height}

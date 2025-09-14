@@ -92,6 +92,35 @@
   -moz-user-select: text;
   -ms-user-select: text;
   user-select: text;
+  /* Prevent selection from being cleared */
+  -webkit-touch-callout: text;
+  -webkit-user-select: text;
+  -khtml-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Ensure selection remains visible */
+.tiptap-editor .ProseMirror::selection {
+  background: #b3d4fc;
+}
+
+.tiptap-editor .ProseMirror::-moz-selection {
+  background: #b3d4fc;
+}
+
+/* Mark toolbar as formatting area */
+.top-toolbar {
+  /* This class helps identify the toolbar for event handling */
+}
+
+/* Prevent text selection in toolbar buttons */
+.top-toolbar button {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .tiptap-editor .ProseMirror p {

@@ -85,7 +85,17 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
       const html = editor.getHTML();
       onChange(html);
     },
-    onBlur: () => {
+    onBlur: ({ event }) => {
+      // Only trigger onBlur if we're not clicking on formatting buttons
+      const relatedTarget = event?.relatedTarget as HTMLElement;
+      if (relatedTarget && (
+        relatedTarget.closest('[data-formatting-toolbar]') ||
+        relatedTarget.closest('.top-toolbar') ||
+        relatedTarget.closest('[role="button"]')
+      )) {
+        // Don't blur if clicking on formatting controls
+        return;
+      }
       onBlur?.();
     },
     editorProps: {
@@ -93,6 +103,21 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
         class: `focus:outline-none ${className}`,
         'data-placeholder': placeholder,
       },
+      handleDOMEvents: {
+        // Prevent losing selection when interacting with toolbar
+        blur: (view, event) => {
+          const relatedTarget = event.relatedTarget as HTMLElement;
+          if (relatedTarget && (
+            relatedTarget.closest('[data-formatting-toolbar]') ||
+            relatedTarget.closest('.top-toolbar')
+          )) {
+            // Prevent blur when clicking toolbar
+            event.preventDefault();
+            return true;
+          }
+          return false;
+        }
+      }
     },
   });
 
