@@ -12,6 +12,11 @@ import CodeBlock from '@tiptap/extension-code-block';
 import History from '@tiptap/extension-history';
 import { FontSize } from './TipTapFontSizeExtension';
 
+// Create stable instances of extensions outside the component
+const historyExtension = History.configure({
+  depth: 50,
+});
+
 interface TipTapEditorProps {
   content: string;
   onChange: (content: string) => void;
@@ -40,7 +45,7 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
       listItem: false,
       code: false,
       codeBlock: false,
-      history: false,
+      history: false, // Explicitly disable StarterKit's history
       // Keep other useful features
       blockquote: true,
       horizontalRule: true,
@@ -69,9 +74,7 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
       },
     }),
     ListItem,
-    History.configure({
-      depth: 50,
-    }),
+    historyExtension, // Use the stable instance
     FontSize,
   ], []);
 
