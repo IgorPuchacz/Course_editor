@@ -1,6 +1,9 @@
 import React from 'react';
-import { Bold, Italic, Underline, List, ListOrdered, Undo, Redo, Type, Palette, Code, FileCode, X } from 'lucide-react';
+import { Bold, Italic, Underline, List, ListOrdered, Undo, Redo, Code, FileCode, X } from 'lucide-react';
 import { Editor } from '@tiptap/react';
+import { FontSizeSelector } from './FontSizeSelector';
+import { TextColorPicker } from './TextColorPicker';
+import { FontFamilySelector } from './FontFamilySelector';
 
 
 interface TopToolbarProps {
@@ -27,7 +30,32 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   if (isTextEditing) {
     return (
       <div className={`top-toolbar flex items-center justify-between bg-white border-b border-gray-200 px-4 lg:px-6 py-3 ${className}`}>
-        <div className="flex items-center space-x-1 text-gray-600">
+        <div className="flex items-center space-x-2 text-gray-600">
+          {/* Font Family Selector */}
+          <FontFamilySelector
+            selectedFont="Inter, system-ui, sans-serif"
+            onChange={(font) => console.log('Font changed:', font)}
+          />
+          
+          <div className="w-px h-6 bg-gray-300"></div>
+          
+          {/* Font Size Selector */}
+          <FontSizeSelector
+            selectedSize={16}
+            onChange={(size) => console.log('Size changed:', size)}
+          />
+          
+          <div className="w-px h-6 bg-gray-300"></div>
+          
+          {/* Text Color Picker */}
+          <TextColorPicker
+            selectedColor="#000000"
+            onChange={(color) => console.log('Color changed:', color)}
+          />
+          
+          <div className="w-px h-6 bg-gray-300"></div>
+          
+          {/* Basic Formatting */}
           <button
             className={`p-2 ${editor?.isActive('bold') ? 'text-gray-900' : ''}`}
             onMouseDown={e => e.preventDefault()}
@@ -49,18 +77,26 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           >
             <Underline className="w-4 h-4" />
           </button>
+          
+          <div className="w-px h-6 bg-gray-300"></div>
+          
+          {/* Lists and Advanced */}
           <button className="p-2" disabled><List className="w-4 h-4" /></button>
           <button className="p-2" disabled><ListOrdered className="w-4 h-4" /></button>
-          <button className="p-2" disabled><Type className="w-4 h-4" /></button>
-          <button className="p-2" disabled><Palette className="w-4 h-4" /></button>
           <button className="p-2" disabled><Code className="w-4 h-4" /></button>
           <button className="p-2" disabled><FileCode className="w-4 h-4" /></button>
+          
+          <div className="w-px h-6 bg-gray-300"></div>
+          
+          {/* History */}
           <button className="p-2" disabled><Undo className="w-4 h-4" /></button>
           <button className="p-2" disabled><Redo className="w-4 h-4" /></button>
         </div>
+        
         <button
           onClick={onFinishTextEditing}
-          className="p-2 text-gray-600 hover:text-gray-900"
+          className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+          title="Zakończ edycję tekstu"
         >
           <X className="w-5 h-5" />
         </button>
