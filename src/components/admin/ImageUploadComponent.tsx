@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Upload, Link, Image as ImageIcon, X, Check, AlertCircle } from 'lucide-react';
+import { Upload, Link, Image as ImageIcon, Check, AlertCircle } from 'lucide-react';
 
 interface ImageUploadComponentProps {
   currentUrl: string;

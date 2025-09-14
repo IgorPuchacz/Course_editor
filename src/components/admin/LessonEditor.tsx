@@ -1,20 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Save, RotateCcw, Grid, Settings, Edit } from 'lucide-react';
-import { Lesson } from './types/course';
-import { Course } from './types';
-import { LessonContent, LessonTile, TextTile } from './types/lessonEditor';
-import { useLessonEditor } from './hooks/useLessonEditor';
-import { LessonContentService } from './services/lessonContentService';
-import { TilePalette } from './components/admin/TilePalette';
-import { LessonCanvas } from './LessonCanvas';
-import { TextTileEditor } from './TextTileEditor';
-import { TopToolbar } from './components/admin/TopToolbar';
-import { ToastContainer } from './components/common/Toast';
-import { useToast } from './hooks/useToast';
-import { ConfirmDialog } from './components/common/ConfirmDialog';
-import { LoadingSpinner } from './components/common/LoadingSpinner';
-import { GridUtils } from './utils/gridUtils';
-import { logger } from './utils/logger';
+import { ArrowLeft, Save, RotateCcw, Grid, Edit } from 'lucide-react';
+import { Lesson, Course } from '../../types/course.ts';
+import { LessonContent, LessonTile, TextTile } from '../../types/lessonEditor.ts';
+import { useLessonEditor } from '../../hooks/useLessonEditor.ts';
+import { LessonContentService } from '../../services/lessonContentService.ts';
+import { TilePalette } from './TilePalette.tsx';
+import { LessonCanvas } from './LessonCanvas.tsx';
+import { TileSideEditor } from './TileSideEditor.tsx';
+import { TopToolbar } from './TopToolbar.tsx';
+import { ToastContainer } from '../common/Toast.tsx';
+import { useToast } from '../../hooks/useToast.ts';
+import { ConfirmDialog } from '../common/ConfirmDialog.tsx';
+import { LoadingSpinner } from '../common/LoadingSpinner.tsx';
+import { GridUtils } from '../../utils/gridUtils.ts';
+import { logger } from '../../utils/logger.ts';
 
 interface LessonEditorProps {
   lesson: Lesson;
@@ -25,7 +24,7 @@ interface LessonEditorProps {
 export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBack }) => {
   const { toasts, removeToast, success, error, warning } = useToast();
   const canvasRef = useRef<HTMLDivElement>(null);
-  const [textEditor, setTextEditor] = useState<any>(null);
+  const [textEditor, setTextEditor] = useState<unknown>(null);
   
   // Core state
   const [lessonContent, setLessonContent] = useState<LessonContent | null>(null);
@@ -415,11 +414,9 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
           {editorState.selectedTileId ? (
             // Editing Panel - when tile is selected
             <div className="h-full">
-              <TextTileEditor
+              <TileSideEditor
                 tile={lessonContent.tiles.find(t => t.id === editorState.selectedTileId) as TextTile}
                 onUpdateTile={handleUpdateTile}
-                onStopEditing={handleStopEditing}
-                isEditing={editorState.mode === 'editing'}
                 onSelectTile={handleSelectTile}
               />
             </div>

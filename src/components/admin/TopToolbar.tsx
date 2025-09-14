@@ -372,7 +372,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   const canRedo = editor && !editor.isDestroyed ? editor.can().redo() : false;
 
   // Handle formatting commands with proper focus management
-  const executeCommand = (commandFn: () => any, commandName?: string) => {
+  const suteCommand = (commandFn: () => any, commandName?: string) => {
     setIsFormattingActive(true);
     
     if (!editor || editor.isDestroyed) return;

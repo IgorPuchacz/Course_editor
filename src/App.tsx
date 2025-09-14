@@ -1,9 +1,8 @@
 import React from 'react';
 import { useState } from 'react';
 import { BookOpen, Play, Users, Settings, ArrowRight } from 'lucide-react';
-import { LessonEditor } from './LessonEditor';
-import { Course } from './types';
-import { Lesson } from './types/course';
+import { LessonEditor } from './components/admin/LessonEditor.tsx';
+import { Lesson, Course } from './types/course';
 
 function App() {
   const [currentView, setCurrentView] = useState<'dashboard' | 'lesson-editor'>('dashboard');
