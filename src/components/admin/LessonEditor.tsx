@@ -24,7 +24,6 @@ interface LessonEditorProps {
 export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBack }) => {
   const { toasts, removeToast, success, error, warning } = useToast();
   const canvasRef = useRef<HTMLDivElement>(null);
-  const [textEditor, setTextEditor] = useState<unknown>(null);
   
   // Core state
   const [lessonContent, setLessonContent] = useState<LessonContent | null>(null);
@@ -235,14 +234,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
     dispatch({ type: 'selectTile', tileId });
   };
 
-
-  const handleStopEditing = () => {
-    dispatch({ type: 'stopEditing' });
-  };
-
   const handleFinishTextEditing = () => {
-    // Clear the text editor reference when finishing editing
-    setTextEditor(null);
     dispatch({ type: 'stopEditing' });
   };
 
@@ -441,7 +433,6 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
             gridRows={lessonContent.canvas_settings.height}
             currentMode={editorState.selectedTileId ? 'Tryb edycji' : 'Tryb dodawania'}
             isTextEditing={editorState.mode === 'textEditing'}
-            editor={textEditor}
             onFinishTextEditing={handleFinishTextEditing}
           />
 
@@ -457,7 +448,6 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
               onDeleteTile={handleDeleteTile}
               onAddTile={handleAddTile}
               dispatch={dispatch}
-              onTextEditorReady={setTextEditor}
               showGrid={editorState.showGrid}
             />
           </div>
