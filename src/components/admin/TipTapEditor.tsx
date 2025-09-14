@@ -88,14 +88,23 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
     onBlur: ({ event }) => {
       // Only trigger onBlur if we're not clicking on formatting buttons
       const relatedTarget = event?.relatedTarget as HTMLElement;
-      if (relatedTarget && (
-        relatedTarget.closest('[data-formatting-toolbar]') ||
+      
+      // Check if we're interacting with toolbar or formatting controls
+      const isToolbarInteraction = relatedTarget && (
         relatedTarget.closest('.top-toolbar') ||
-        relatedTarget.closest('[role="button"]')
-      )) {
-        // Don't blur if clicking on formatting controls
+        relatedTarget.closest('[data-formatting-toolbar]') ||
+        relatedTarget.matches('button') ||
+        relatedTarget.closest('button') ||
+        relatedTarget.matches('input[type="color"]') ||
+        relatedTarget.closest('input[type="color"]')
+      );
+      
+      if (isToolbarInteraction) {
+        console.log('Preventing blur - toolbar interaction detected');
         return;
       }
+      
+      console.log('Editor blur triggered');
       onBlur?.();
     },
     editorProps: {
@@ -104,17 +113,32 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
         'data-placeholder': placeholder,
       },
       handleDOMEvents: {
-        // Prevent losing selection when interacting with toolbar
+        // Enhanced blur prevention
         blur: (view, event) => {
           const relatedTarget = event.relatedTarget as HTMLElement;
-          if (relatedTarget && (
-            relatedTarget.closest('[data-formatting-toolbar]') ||
-            relatedTarget.closest('.top-toolbar')
-          )) {
-            // Prevent blur when clicking toolbar
+          
+          const isToolbarClick = relatedTarget && (
+            relatedTarget.closest('.top-toolbar') ||
+            relatedTarget.matches('button') ||
+            relatedTarget.closest('button') ||
+            relatedTarget.matches('input') ||
+            relatedTarget.closest('input')
+          );
+          
+          if (isToolbarClick) {
+            console.log('DOM blur prevented - toolbar interaction');
             event.preventDefault();
             return true;
           }
+          return false;
+        },
+        // Prevent selection loss on mouse events
+        mousedown: (view, event) => {
+          // Allow normal text selection within editor
+          return false;
+        },
+        mouseup: (view, event) => {
+          // Ensure selection is maintained
           return false;
         }
       }
@@ -125,35 +149,72 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
     if (editor && autoFocus) {
       // Focus the editor and move cursor to end
       setTimeout(() => {
-        editor.commands.focus('end');
+        if (!editor.isDestroyed) {
+          editor.commands.focus('end');
+        }
       }, 0);
     }
   }, [editor, autoFocus]);
 
   useEffect(() => {
-    // Only update content if it's actually different and editor is focused
+    // Only update content if it's actually different and editor is not focused
     if (editor && !editor.isDestroyed && content !== editor.getHTML()) {
-      // Don't update content if editor is currently focused (user is typing)
+      // Don't update content if editor is focused or has selection
       if (!editor.isFocused) {
-        editor.commands.setContent(content, false);
+        const hasSelection = !editor.state.selection.empty;
+        if (!hasSelection) {
+          editor.commands.setContent(content, false);
+        }
       }
     }
   }, [editor, content]);
 
-  // Prevent losing selection when mouse leaves editor area
+  // Enhanced selection preservation
   useEffect(() => {
     if (!editor) return;
 
-    const handleMouseLeave = (e: MouseEvent) => {
-      // Don't clear selection when mouse leaves editor
-      e.preventDefault();
+    let selectionBackup: any = null;
+
+    const backupSelection = () => {
+      if (!editor.isDestroyed) {
+        const { selection } = editor.state;
+        if (!selection.empty) {
+          selectionBackup = {
+            from: selection.from,
+            to: selection.to
+          };
+        }
+      }
+    };
+
+    const restoreSelection = () => {
+      if (selectionBackup && !editor.isDestroyed) {
+        try {
+          editor.commands.setTextSelection(selectionBackup);
+        } catch (error) {
+          console.warn('Failed to restore selection backup:', error);
+        }
+      }
+    };
+
+    const handleFocusOut = (e: FocusEvent) => {
+      const relatedTarget = e.relatedTarget as HTMLElement;
+      if (relatedTarget?.closest('.top-toolbar')) {
+        backupSelection();
+      }
+    };
+
+    const handleFocusIn = () => {
+      setTimeout(restoreSelection, 10);
     };
 
     const editorElement = editor.view.dom;
-    editorElement.addEventListener('mouseleave', handleMouseLeave);
+    editorElement.addEventListener('focusout', handleFocusOut);
+    editorElement.addEventListener('focusin', handleFocusIn);
 
     return () => {
-      editorElement.removeEventListener('mouseleave', handleMouseLeave);
+      editorElement.removeEventListener('focusout', handleFocusOut);
+      editorElement.removeEventListener('focusin', handleFocusIn);
     };
   }, [editor]);
   // Notify parent when editor is ready

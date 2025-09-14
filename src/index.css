@@ -73,6 +73,11 @@
 /* TipTap Editor Styles */
 .tiptap-editor {
   font-family: inherit;
+  /* Ensure selection is preserved */
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }
 
 .tiptap-editor .ProseMirror {
@@ -87,36 +92,57 @@
   -webkit-font-variant-ligatures: none;
   font-variant-ligatures: none;
   font-feature-settings: "liga" 0;
-  /* Preserve selection when mouse leaves */
+  /* Enhanced selection preservation */
   -webkit-user-select: text;
   -moz-user-select: text;
   -ms-user-select: text;
   user-select: text;
-  /* Prevent selection from being cleared */
   -webkit-touch-callout: text;
-  -webkit-user-select: text;
   -khtml-user-select: text;
-  -moz-user-select: text;
-  -ms-user-select: text;
-  user-select: text;
+  /* Prevent selection clearing on focus loss */
+  -webkit-user-modify: read-write;
 }
 
-/* Ensure selection remains visible */
+/* Enhanced selection visibility */
 .tiptap-editor .ProseMirror::selection {
-  background: #b3d4fc;
+  background: #b3d4fc !important;
 }
 
 .tiptap-editor .ProseMirror::-moz-selection {
-  background: #b3d4fc;
+  background: #b3d4fc !important;
+}
+
+/* Force selection to remain visible even when not focused */
+.tiptap-editor .ProseMirror:not(:focus)::selection {
+  background: rgba(179, 212, 252, 0.7) !important;
+}
+
+.tiptap-editor .ProseMirror:not(:focus)::-moz-selection {
+  background: rgba(179, 212, 252, 0.7) !important;
 }
 
 /* Mark toolbar as formatting area */
 .top-toolbar {
-  /* This class helps identify the toolbar for event handling */
+  /* Prevent text selection in toolbar */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 /* Prevent text selection in toolbar buttons */
 .top-toolbar button {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  /* Prevent focus stealing */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure dropdowns don't interfere with selection */
+.top-toolbar input,
+.top-toolbar select {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
