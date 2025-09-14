@@ -18,28 +18,7 @@ export const TextFormattingToolbar = forwardRef<HTMLDivElement, TextFormattingTo
   const [selectedColor, setSelectedColor] = useState('#000000');
   const colorPickerRef = useRef<HTMLDivElement>(null);
 
-  // Debug effect to monitor state changes
-  useEffect(() => {
-    console.log('🔄 showColorPicker state changed to:', showColorPicker);
-  }, [showColorPicker]);
-
-  // Fallback click handler setup
-  useEffect(() => {
-    const handleDocumentClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.closest('[title="Kolor tekstu"]')) {
-        console.log('🎯 Fallback click handler triggered');
-        if (!showColorPicker) {
-          setShowColorPicker(true);
-          onToolbarInteraction?.();
-        }
-      }
-    };
-
-    // Add fallback listener
-    document.addEventListener('click', handleDocumentClick);
-    return () => document.removeEventListener('click', handleDocumentClick);
-  }, [showColorPicker, onToolbarInteraction]);
+  // Remove debug logging and fallback click handler for stability
   const predefinedColors = [
     '#000000', '#494949', '#9c9c9c', '#ffffff',
     '#a10000', '#ff0000', '#ffa500', '#FFFF00',
@@ -64,35 +43,19 @@ export const TextFormattingToolbar = forwardRef<HTMLDivElement, TextFormattingTo
   }, [showColorPicker]);
 
   const handleColorSelect = (color: string) => {
-    console.log('Color selected:', color);
     setSelectedColor(color);
     onToolbarInteraction?.();
-    
-    // Apply color immediately
     onFormat('foreColor', color);
   };
 
   const handleColorPickerToggle = (e: React.MouseEvent) => {
-      
-      // Prevent event bubbling that might interfere
-      
-    setShowColorPicker(!showColorPicker);
-        // return newState;
-      // });
-      
-    // } catch (error) {
-      // console.error('Error in color picker toggle:', error);
-    // }
     e.stopPropagation();
-    setShowColorPicker(!showColorPicker);
-    
-    console.log('New showColorPicker state will be:', !showColorPicker);
+    setShowColorPicker((prev) => !prev);
     onToolbarInteraction?.();
   };
 
   const handleCustomColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const color = e.target.value;
-    console.log('Custom color selected:', color);
     setSelectedColor(color);
     onToolbarInteraction?.();
     onFormat('foreColor', color);
@@ -100,18 +63,7 @@ export const TextFormattingToolbar = forwardRef<HTMLDivElement, TextFormattingTo
 
   // Handle formatting button clicks
   const handleFormatClick = (command: string) => {
-    console.log('Format button clicked:', command);
-    
-    // Prevent event bubbling that might hide toolbar
-    // if (event) {
-      // event.preventDefault();
-      // event.stopPropagation();
-    // }
-    
-    // Signal toolbar interaction
     onToolbarInteraction?.();
-    
-    // Execute formatting immediately
     onFormat(command);
   };
 
@@ -131,10 +83,6 @@ export const TextFormattingToolbar = forwardRef<HTMLDivElement, TextFormattingTo
         e.preventDefault();
       }}
     >
-      {/* Debug info - remove in production */}
-      <div className="absolute -top-6 left-0 text-xs bg-yellow-100 px-2 py-1 rounded">
-        ColorPicker: {showColorPicker ? 'OPEN' : 'CLOSED'}
-      </div>
       <button
         onClick={() => handleFormatClick('bold')}
         onMouseDown={(e) => {
@@ -177,15 +125,10 @@ export const TextFormattingToolbar = forwardRef<HTMLDivElement, TextFormattingTo
         <button 
           className="p-2 hover:bg-gray-100 rounded transition-colors flex items-center space-x-1 group"
           onClick={(e) => {
-            console.log('🎨 Direct onClick handler');
             handleColorPickerToggle(e);
           }}
           onMouseDown={(e) => {
-            console.log('🖱️ Color picker button mousedown');
             e.preventDefault();
-          }}
-          onMouseUp={(e) => {
-            console.log('🖱️ Color picker button mouseup');
           }}
           title="Kolor tekstu"
           type="button"
@@ -199,8 +142,7 @@ export const TextFormattingToolbar = forwardRef<HTMLDivElement, TextFormattingTo
         
         {showColorPicker && (
           <>
-            {console.log('🎨 Rendering color picker, showColorPicker:', showColorPicker)}
-          <div 
+          <div
             ref={colorPickerRef}
             className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl p-4 min-w-[280px]"
             style={{
