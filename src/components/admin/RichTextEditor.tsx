@@ -84,7 +84,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   const cleanHTML = (html: string): string => {
     // Remove unnecessary attributes and clean up the HTML
-    let cleaned = html
+    const cleaned = html
       .replace(/style="[^"]*"/g, (match) => {
         // Keep only color styles and other important formatting
         const colorMatch = match.match(/color:\s*([^;]+)/);
@@ -92,7 +92,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         const fontStyleMatch = match.match(/font-style:\s*([^;]+)/);
         const textDecorationMatch = match.match(/text-decoration:\s*([^;]+)/);
         
-        let styles = [];
+        const styles: string[] = [];
         if (colorMatch) styles.push(`color: ${colorMatch[1]}`);
         if (fontWeightMatch) styles.push(`font-weight: ${fontWeightMatch[1]}`);
         if (fontStyleMatch) styles.push(`font-style: ${fontStyleMatch[1]}`);
@@ -235,29 +235,36 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           // Force content update
           const content = editorRef.current.innerHTML;
           console.log('Content after formatting:', content);
-          
+
           // Trigger change event
           const event = new Event('input', { bubbles: true });
           editorRef.current.dispatchEvent(event);
           onChange(content);
-          
-          // Save the new selection after formatting
-          const newSelection = window.getSelection();
-          if (newSelection && newSelection.rangeCount > 0 && !newSelection.isCollapsed) {
-            const newRange = newSelection.getRangeAt(0);
-            setSavedSelection(newRange.cloneRange());
-            
-            // Update toolbar position if selection has dimensions
-            const rect = newRange.getBoundingClientRect();
+
+          // Restore previous selection to keep it highlighted
+          const wasRestored = restoreSelection();
+          if (!wasRestored) {
+            console.warn('Selection could not be restored after formatting');
+          }
+
+          // Ensure editor retains focus and toolbar stays visible
+          editorRef.current.focus();
+          setShowToolbar(true);
+
+          // Save the (possibly restored) selection for subsequent formatting
+          const updatedSelection = window.getSelection();
+          if (updatedSelection && updatedSelection.rangeCount > 0 && !updatedSelection.isCollapsed) {
+            const range = updatedSelection.getRangeAt(0);
+            setSavedSelection(range.cloneRange());
+
+            // Update toolbar position relative to current selection
+            const rect = range.getBoundingClientRect();
             if (rect.width > 0 && rect.height > 0) {
               setToolbarPosition({
                 top: rect.top - 50,
                 left: rect.left + (rect.width / 2) - 100
               });
             }
-          } else {
-            // If no selection after formatting, keep the saved one
-            console.log('No selection after formatting, keeping saved selection');
           }
         }
         
@@ -289,7 +296,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   };
 
   // Handle click to position cursor correctly
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = () => {
     // Allow normal cursor positioning on click
     setTimeout(() => {
       const selection = window.getSelection();

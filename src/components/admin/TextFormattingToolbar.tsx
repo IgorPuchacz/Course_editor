@@ -129,6 +129,7 @@ export const TextFormattingToolbar = forwardRef<HTMLDivElement, TextFormattingTo
       onMouseDown={(e) => {
         // Prevent losing focus when clicking toolbar
         e.preventDefault();
+        e.stopPropagation();
       }}
     >
       {/* Debug info - remove in production */}
@@ -174,7 +175,7 @@ export const TextFormattingToolbar = forwardRef<HTMLDivElement, TextFormattingTo
       <div className="w-px h-6 bg-gray-300 mx-1"></div>
 
       <div className="relative">
-        <button 
+        <button
           className="p-2 hover:bg-gray-100 rounded transition-colors flex items-center space-x-1 group"
           onClick={(e) => {
             console.log('🎨 Direct onClick handler');
@@ -183,15 +184,16 @@ export const TextFormattingToolbar = forwardRef<HTMLDivElement, TextFormattingTo
           onMouseDown={(e) => {
             console.log('🖱️ Color picker button mousedown');
             e.preventDefault();
+            e.stopPropagation();
           }}
-          onMouseUp={(e) => {
+          onMouseUp={() => {
             console.log('🖱️ Color picker button mouseup');
           }}
           title="Kolor tekstu"
           type="button"
         >
           <Palette className="w-4 h-4 group-hover:text-blue-600 transition-colors" />
-          <div 
+          <div
             className="w-3 h-3 rounded border-2 border-gray-300 shadow-sm"
             style={{ backgroundColor: selectedColor }}
           ></div>
@@ -200,7 +202,7 @@ export const TextFormattingToolbar = forwardRef<HTMLDivElement, TextFormattingTo
         {showColorPicker && (
           <>
             {console.log('🎨 Rendering color picker, showColorPicker:', showColorPicker)}
-          <div 
+          <div
             ref={colorPickerRef}
             className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl p-4 min-w-[280px]"
             style={{
@@ -209,7 +211,10 @@ export const TextFormattingToolbar = forwardRef<HTMLDivElement, TextFormattingTo
               visibility: 'visible',
               opacity: 1
             }}
-            onMouseDown={(e) => e.preventDefault()}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-3">
@@ -253,10 +258,13 @@ export const TextFormattingToolbar = forwardRef<HTMLDivElement, TextFormattingTo
                   <button
                     key={color}
                     onClick={() => handleColorSelect(color)}
-                    onMouseDown={(e) => e.preventDefault()}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
                     className={`w-7 h-7 rounded-md border-2 transition-all hover:scale-110 shadow-sm ${
-                      selectedColor === color 
-                        ? 'border-blue-500 ring-2 ring-blue-200' 
+                      selectedColor === color
+                        ? 'border-blue-500 ring-2 ring-blue-200'
                         : 'border-gray-300 hover:border-gray-400'
                     }`}
                     style={{ backgroundColor: color }}
