@@ -226,38 +226,45 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         // Apply the formatting command
         const success = document.execCommand(command, false, value);
         console.log('Format command executed:', command, 'success:', success);
-        
+
         if (!success) {
           console.error('execCommand failed for:', command);
         }
-        
+
         if (editorRef.current) {
           // Force content update
           const content = editorRef.current.innerHTML;
           console.log('Content after formatting:', content);
-          
+
           // Trigger change event
           const event = new Event('input', { bubbles: true });
           editorRef.current.dispatchEvent(event);
           onChange(content);
-          
-          // Save the new selection after formatting
-          const newSelection = window.getSelection();
-          if (newSelection && newSelection.rangeCount > 0 && !newSelection.isCollapsed) {
-            const newRange = newSelection.getRangeAt(0);
-            setSavedSelection(newRange.cloneRange());
-            
-            // Update toolbar position if selection has dimensions
-            const rect = newRange.getBoundingClientRect();
+
+          // Try to keep the text selection after formatting
+          const selection = window.getSelection();
+          const rangeToKeep =
+            selection && selection.rangeCount > 0 && !selection.isCollapsed
+              ? selection.getRangeAt(0).cloneRange()
+              : savedSelection?.cloneRange();
+
+          if (rangeToKeep) {
+            selection?.removeAllRanges();
+            selection?.addRange(rangeToKeep);
+            setSavedSelection(rangeToKeep.cloneRange());
+
+            // Update toolbar position based on the preserved range
+            const rect = rangeToKeep.getBoundingClientRect();
             if (rect.width > 0 && rect.height > 0) {
               setToolbarPosition({
                 top: rect.top - 50,
-                left: rect.left + (rect.width / 2) - 100
+                left: rect.left + rect.width / 2 - 100
               });
             }
-          } else {
-            // If no selection after formatting, keep the saved one
-            console.log('No selection after formatting, keeping saved selection');
+
+            // Ensure toolbar remains visible and editor keeps focus
+            setShowToolbar(true);
+            editorRef.current.focus({ preventScroll: true });
           }
         }
         
