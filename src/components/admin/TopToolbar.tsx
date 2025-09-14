@@ -43,10 +43,16 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   const [showSizePicker, setShowSizePicker] = useState(false);
   const [selectedColor, setSelectedColor] = useState('#000000');
   const [selectedSize, setSelectedSize] = useState(16);
-  const [savedSelection, setSavedSelection] = useState<any>(null);
-  const [isFormattingActive, setIsFormattingActive] = useState(false);
+  const [selectionState, setSelectionState] = useState<{
+    from: number;
+    to: number;
+    content: string;
+    isEmpty: boolean;
+  } | null>(null);
+  const [isApplyingFormat, setIsApplyingFormat] = useState(false);
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const sizePickerRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
 
   // Predefined colors for quick selection
   const predefinedColors = [
@@ -58,44 +64,75 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   // Font sizes
   const fontSizes = [12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
 
-  // Save current selection
-  const saveSelection = () => {
-    if (!editor || editor.isDestroyed) return null;
+  // Capture and maintain selection state
+  const captureSelection = () => {
+    if (!editor || editor.isDestroyed) return;
     
-    const selection = editor.state.selection;
-    if (selection && !selection.empty) {
-      setSavedSelection({
+    const { selection } = editor.state;
+    if (!selection.empty) {
+      const content = editor.state.doc.textBetween(selection.from, selection.to);
+      setSelectionState({
         from: selection.from,
         to: selection.to,
-        content: editor.state.doc.textBetween(selection.from, selection.to)
+        content,
+        isEmpty: false
       });
-      return selection;
+      console.log('Selection captured:', { from: selection.from, to: selection.to, content });
     }
-    return null;
   };
 
-  // Restore saved selection
-  const restoreSelection = () => {
-    if (!editor || editor.isDestroyed || !savedSelection) return false;
+  // Force restore selection
+  const forceRestoreSelection = () => {
+    if (!editor || editor.isDestroyed || !selectionState || selectionState.isEmpty) return;
     
-    try {
-      editor.commands.focus();
-      editor.commands.setTextSelection({
-        from: savedSelection.from,
-        to: savedSelection.to
-      });
-      return true;
-    } catch (error) {
-      console.warn('Failed to restore selection:', error);
-      return false;
-    }
+    console.log('Forcing selection restore:', selectionState);
+    
+    // Multiple attempts to restore selection
+    const attemptRestore = (attempt = 1) => {
+      try {
+        // Ensure editor has focus first
+        if (!editor.isFocused) {
+          editor.commands.focus();
+        }
+        
+        // Set selection
+        editor.commands.setTextSelection({
+          from: selectionState.from,
+          to: selectionState.to
+        });
+        
+        // Verify selection was set
+        const currentSelection = editor.state.selection;
+        if (currentSelection.from === selectionState.from && currentSelection.to === selectionState.to) {
+          console.log('Selection restored successfully on attempt', attempt);
+          return true;
+        } else if (attempt < 3) {
+          // Retry up to 3 times
+          setTimeout(() => attemptRestore(attempt + 1), 10);
+        }
+      } catch (error) {
+        console.warn('Failed to restore selection on attempt', attempt, error);
+        if (attempt < 3) {
+          setTimeout(() => attemptRestore(attempt + 1), 10);
+        }
+      }
+    };
+    
+    attemptRestore();
   };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      
+      // Don't close if clicking within toolbar
+      if (toolbarRef.current?.contains(target)) {
+        return;
+      }
+      
       // Don't close dropdowns if we're actively formatting
-      if (!isFormattingActive) {
+      if (!isApplyingFormat) {
         if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
           setShowColorPicker(false);
         }
@@ -107,57 +144,154 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isFormattingActive]);
+  }, [isApplyingFormat]);
 
-  // Update selected color and size based on current selection
+  // Monitor editor state and capture selections
   useEffect(() => {
     if (!editor) return;
 
     const updateState = () => {
-      // Only update state if editor is not destroyed
       if (editor.isDestroyed) return;
       
-      // Get current color
+      // Update formatting state
       const currentColor = editor.getAttributes('textStyle').color || '#000000';
       setSelectedColor(currentColor);
-      
-      // Get current font size (this would need custom extension for full support)
       const currentSize = 16; // Default size
       setSelectedSize(currentSize);
       
-      // Save selection if text is selected
+      // Capture selection when it changes
       const selection = editor.state.selection;
-      if (selection && !selection.empty) {
-        saveSelection();
+      if (!selection.empty && !isApplyingFormat) {
+        captureSelection();
       }
     };
 
-    editor.on('selectionUpdate', updateState);
+    const handleSelectionUpdate = () => {
+      if (!isApplyingFormat) {
+        updateState();
+      }
+    };
+
+    editor.on('selectionUpdate', handleSelectionUpdate);
     editor.on('transaction', updateState);
+    editor.on('focus', updateState);
 
     return () => {
       if (!editor.isDestroyed) {
-        editor.off('selectionUpdate', updateState);
+        editor.off('selectionUpdate', handleSelectionUpdate);
         editor.off('transaction', updateState);
+        editor.off('focus', updateState);
+      }
+    };
+  }, [editor]);
+
+  // Prevent toolbar from stealing focus
+  useEffect(() => {
+    if (!toolbarRef.current) return;
+    
+    const handleMouseDown = (e: MouseEvent) => {
+      // Prevent focus loss when clicking toolbar
+      e.preventDefault();
+      
+      // Capture current selection before any toolbar interaction
+      if (editor && !editor.isDestroyed) {
+        captureSelection();
+      }
+    };
+    
+    toolbarRef.current.addEventListener('mousedown', handleMouseDown);
+    
+    return () => {
+      if (toolbarRef.current) {
+        toolbarRef.current.removeEventListener('mousedown', handleMouseDown);
       }
     };
   }, [editor]);
 
   const handleColorSelect = (color: string) => {
-    setIsFormattingActive(true);
+    console.log('Applying color:', color);
+    setIsApplyingFormat(true);
     
     if (!editor || editor.isDestroyed) {
-      setIsFormattingActive(false);
+      setIsApplyingFormat(false);
       return;
     }
 
-    // Restore selection before applying formatting
-    if (savedSelection) {
-      restoreSelection();
-    }
+    // Ensure we have a selection to work with
+    forceRestoreSelection();
     
-    // Apply formatting and maintain selection
-    editor.chain().focus().setColor(color).run();
+    // Apply color formatting
+    setTimeout(() => {
+      editor.chain().focus().setColor(color).run();
+      setSelectedColor(color);
+      
+      // Restore selection after formatting
+      setTimeout(() => {
+        forceRestoreSelection();
+        setIsApplyingFormat(false);
+      }, 50);
+    }, 10);
+  };
+
+  const handleSizeSelect = (size: number) => {
+    console.log('Applying size:', size);
+    setIsApplyingFormat(true);
+    
+    if (!editor || editor.isDestroyed) {
+      setIsApplyingFormat(false);
+      return;
+    }
+
+    // Ensure we have a selection to work with
+    forceRestoreSelection();
+    
+    // Apply size formatting
+    setTimeout(() => {
+      editor.chain().focus().setFontSize(`${size}px`).run();
+      setSelectedSize(size);
+      
+      // Restore selection after formatting
+      setTimeout(() => {
+        forceRestoreSelection();
+        setIsApplyingFormat(false);
+      }, 50);
+    }, 10);
+  };
+
+  // Generic formatting command handler
+  const applyFormatting = (commandFn: () => any, commandName: string) => {
+    console.log('Applying formatting:', commandName);
+    setIsApplyingFormat(true);
+    
+    if (!editor || editor.isDestroyed) {
+      setIsApplyingFormat(false);
+      return;
+    }
+
+    // Ensure we have a selection to work with
+    forceRestoreSelection();
+    
+    // Apply formatting
+    setTimeout(() => {
+      commandFn();
+      
+      // Restore selection after formatting
+      setTimeout(() => {
+        forceRestoreSelection();
+        setIsApplyingFormat(false);
+      }, 50);
+    }, 10);
+  };
+
+  const handleColorPickerToggle = () => {
+    captureSelection(); // Capture selection before opening picker
+    setShowColorPicker(!showColorPicker);
+  };
+
+  const handleSizePickerToggle = () => {
+    captureSelection(); // Capture selection before opening picker
+    setShowSizePicker(!showSizePicker);
+  };
     setSelectedColor(color);
     
     // Keep selection active after formatting
