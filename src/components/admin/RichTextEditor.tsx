@@ -241,24 +241,40 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           editorRef.current.dispatchEvent(event);
           onChange(content);
           
-          // Save the new selection after formatting
+          // Save or restore the selection after formatting
           const newSelection = window.getSelection();
           if (newSelection && newSelection.rangeCount > 0 && !newSelection.isCollapsed) {
             const newRange = newSelection.getRangeAt(0);
             setSavedSelection(newRange.cloneRange());
-            
+
             // Update toolbar position if selection has dimensions
             const rect = newRange.getBoundingClientRect();
             if (rect.width > 0 && rect.height > 0) {
               setToolbarPosition({
                 top: rect.top - 50,
-                left: rect.left + (rect.width / 2) - 100
+                left: rect.left + (rect.width / 2) - 100,
               });
             }
-          } else {
-            // If no selection after formatting, keep the saved one
-            console.log('No selection after formatting, keeping saved selection');
+          } else if (savedSelection) {
+            // Restore previous selection if it was lost
+            console.log('No selection after formatting, restoring saved selection');
+            restoreSelection();
+            const restored = window.getSelection();
+            if (restored && restored.rangeCount > 0) {
+              const range = restored.getRangeAt(0);
+              setSavedSelection(range.cloneRange());
+              const rect = range.getBoundingClientRect();
+              if (rect.width > 0 && rect.height > 0) {
+                setToolbarPosition({
+                  top: rect.top - 50,
+                  left: rect.left + (rect.width / 2) - 100,
+                });
+              }
+            }
           }
+          // Keep toolbar visible and maintain focus
+          setShowToolbar(true);
+          editorRef.current.focus();
         }
         
       } catch (error) {
