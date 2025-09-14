@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Type, Image, Puzzle, BarChart3, HelpCircle, Move, Trash2 } from 'lucide-react';
+import { Puzzle, HelpCircle, Move, Trash2 } from 'lucide-react';
 import { LessonTile, TextTile, ImageTile, InteractiveTile, VisualizationTile, QuizTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { TipTapEditor } from './TipTapEditor';
@@ -39,7 +39,6 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   showGrid
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [textEditor, setTextEditor] = useState<any>(null);
 
   // Check if this is a frameless text tile
   const isFramelessTextTile = tile.type === 'text' && !(tile as TextTile).content.showBorder;
@@ -99,54 +98,21 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       setIsHovered(false);
     }
   };
+
   const renderTileContent = () => {
     switch (tile.type) {
       case 'text':
-        const textTile = tile as TextTile;
-        console.log('Rendering text tile:', textTile.id, 'richText:', textTile.content.richText, 'updated_at:', textTile.updated_at);
-        
+        { const textTile = tile as TextTile;
+
         // If this text tile is being edited, show the TipTap editor
         if (isEditingText && isSelected) {
           return (
             <div className="w-full h-full p-3 overflow-hidden relative">
-              <TipTapEditor
-                key={`${tile.id}-${tile.updated_at}`}
-                content={textTile.content.richText || `<p>${textTile.content.text || ''}</p>`}
-                onChange={(content) => {
-                  // Extract plain text for fallback
-                  const tempDiv = document.createElement('div');
-                  tempDiv.innerHTML = content;
-                  const plainText = tempDiv.textContent || tempDiv.innerText || '';
-                  
-                  onUpdateTile(tile.id, {
-                    content: {
-                      ...textTile.content,
-                      richText: content,
-                      text: plainText
-                    },
-                    updated_at: new Date().toISOString()
-                  });
-                }}
-                onBlur={onFinishTextEditing}
-                onEditorReady={(editor) => {
-                  setTextEditor(editor);
-                  onTextEditorReady?.(editor);
-                  
-                  // Ensure editor gets focus after being ready
-                  setTimeout(() => {
-                    if (editor && !editor.isDestroyed) {
-                      editor.commands.focus('end');
-                    }
-                  }, 100);
-                }}
-                autoFocus={true}
-                placeholder="Wpisz tekst..."
-                className="w-full h-full"
-              />
+                Placeholder text, here should be RichText ready to format
             </div>
           );
         }
-        
+
         // Normal text tile display
         return (
           <>
@@ -158,11 +124,11 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                 fontFamily: textTile.content.fontFamily,
                 textAlign: textTile.content.textAlign as any,
                 display: 'flex',
-                alignItems: textTile.content.verticalAlign === 'center' ? 'center' : 
+                alignItems: textTile.content.verticalAlign === 'center' ? 'center' :
                            textTile.content.verticalAlign === 'bottom' ? 'flex-end' : 'flex-start'
               }}
             >
-              <div 
+              <div
                 className="break-words flex-1 rich-text-content tile-formatted-text"
                 style={{
                   width: '100%',
@@ -175,15 +141,15 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
               />
             </div>
           </>
-        );
+        ); }
 
       case 'image':
-        const imageTile = tile as ImageTile;
+        { const imageTile = tile as ImageTile;
         const imagePosition = imageTile.content.position || { x: 0, y: 0 };
         const imageScale = imageTile.content.scale || 1;
-        
+
         console.log('Rendering image tile:', imageTile.id, 'position:', imagePosition, 'scale:', imageScale, 'updated_at:', imageTile.updated_at);
-        
+
         return (
           <div className="w-full h-full bg-gray-100 rounded-lg overflow-hidden relative">
             <div
@@ -228,7 +194,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
               </div>
             )}
           </div>
-        );
+        ); }
 
       case 'interactive':
         const interactiveTile = tile as InteractiveTile;

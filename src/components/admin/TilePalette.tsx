@@ -51,7 +51,6 @@ const getIcon = (iconName: string) => {
 
 export const TilePalette: React.FC<TilePaletteProps> = ({
   onAddTile,
-  selectedTileId
 }) => {
   const handleDragStart = (e: React.DragEvent, tileType: string) => {
     const data = {

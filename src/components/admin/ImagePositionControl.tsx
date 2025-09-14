@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Move, RotateCcw, ZoomIn, ZoomOut, Maximize, Minimize } from 'lucide-react';
+import { RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface ImagePositionControlProps {
   imageUrl: string;
@@ -23,11 +23,10 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
   className = ''
 }) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
-  const [previewDimensions, setPreviewDimensions] = useState({ width: 0, height: 0 });
+  const [dragStart, setDragStart] = useState({x: 0, y: 0});
+  const [imageSize, setImageSize] = useState({width: 0, height: 0});
+  const [previewDimensions, setPreviewDimensions] = useState({width: 0, height: 0});
   const previewRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
 
   // Update preview dimensions when container is rendered
   useEffect(() => {
@@ -38,13 +37,13 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
           width: rect.width,
           height: rect.height
         });
-        console.log('Preview dimensions updated:', { width: rect.width, height: rect.height });
+        console.log('Preview dimensions updated:', {width: rect.width, height: rect.height});
       }
     };
 
     // Update dimensions on mount and when container size might change
     updatePreviewDimensions();
-    
+
     // Add resize observer to handle dynamic size changes
     const resizeObserver = new ResizeObserver(updatePreviewDimensions);
     if (previewRef.current) {
@@ -58,15 +57,15 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
   // Load image to get natural dimensions
   useEffect(() => {
     if (!imageUrl) return;
-    
+
     const img = new Image();
     img.onload = () => {
       console.log('Image loaded in position control:', img.naturalWidth, 'x', img.naturalHeight);
-      setImageSize({ width: img.naturalWidth, height: img.naturalHeight });
+      setImageSize({width: img.naturalWidth, height: img.naturalHeight});
     };
     img.onerror = (error) => {
       console.error('Error loading image in position control:', error);
-      setImageSize({ width: 400, height: 300 }); // Fallback dimensions
+      setImageSize({width: 400, height: 300}); // Fallback dimensions
     };
     img.src = imageUrl;
   }, [imageUrl]);
@@ -76,37 +75,24 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
     if (previewDimensions.width === 0 || previewDimensions.height === 0) {
       return 1; // Fallback when dimensions aren't available yet
     }
-    
+
     const scaleX = previewDimensions.width / containerWidth;
     const scaleY = previewDimensions.height / containerHeight;
-    
+
     // Use the same scale for both dimensions to maintain aspect ratio of the container
     const uniformScale = Math.min(scaleX, scaleY);
-    
+
     console.log('Preview scale calculation:', {
       previewDimensions,
-      containerSize: { width: containerWidth, height: containerHeight },
+      containerSize: {width: containerWidth, height: containerHeight},
       scaleX,
       scaleY,
       uniformScale
     });
-    
+
     return uniformScale;
   }, [previewDimensions, containerWidth, containerHeight]);
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    
-    // Calculate drag start relative to the preview scale
-    const previewPosition = {
-      x: position.x * previewScaleFactor,
-      y: position.y * previewScaleFactor
-    };
-    
-    setDragStart({
-      x: e.clientX - previewPosition.x,
-      y: e.clientY - previewPosition.y
-    });
-  };
+
 
   const handleMouseMove = (e: MouseEvent) => {
     if (!isDragging) return;
@@ -174,63 +160,6 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
     onScaleChange(1);
     onPositionChange({ x: 0, y: 0 });
   };
-
-  // Calculate preview image properties
-  const previewImageProps = useMemo(() => {
-    if (!imageSize.width || !imageSize.height || previewScaleFactor === 0) {
-      return {
-        left: 0,
-        top: 0,
-        width: 0,
-        height: 0,
-        transform: 'scale(1)'
-      };
-    }
-
-    return {
-      left: position.x * previewScaleFactor,
-      top: position.y * previewScaleFactor,
-      width: imageSize.width * previewScaleFactor,
-      height: imageSize.height * previewScaleFactor,
-      transform: `scale(${scale})`
-    };
-  }, [position, imageSize, previewScaleFactor, scale]);
-
-  // Calculate preview container dimensions based on tile aspect ratio
-  const previewContainerDimensions = useMemo(() => {
-    const aspectRatio = containerWidth / containerHeight;
-    const maxWidth = 320; // Maximum width for the preview
-    const maxHeight = 240; // Maximum height for the preview
-    
-    let width, height;
-    
-    if (aspectRatio >= 1) {
-      // Landscape or square - limit by width
-      width = Math.min(maxWidth, containerWidth * 0.8);
-      height = width / aspectRatio;
-      
-      // If height exceeds max, scale down
-      if (height > maxHeight) {
-        height = maxHeight;
-        width = height * aspectRatio;
-      }
-    } else {
-      // Portrait - limit by height
-      height = Math.min(maxHeight, containerHeight * 0.8);
-      width = height * aspectRatio;
-      
-      // If width exceeds max, scale down
-      if (width > maxWidth) {
-        width = maxWidth;
-        height = width / aspectRatio;
-      }
-    }
-    
-    return {
-      width: Math.round(width),
-      height: Math.round(height)
-    };
-  }, [containerWidth, containerHeight]);
   
   return (
     <div className={`space-y-4 ${className}`}>
