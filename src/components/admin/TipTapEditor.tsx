@@ -110,11 +110,27 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
     if (editor && !editor.isDestroyed && content !== editor.getHTML()) {
       // Don't update content if editor is currently focused (user is typing)
       if (!editor.isFocused) {
-      editor.commands.setContent(content, false);
+        editor.commands.setContent(content, false);
       }
     }
   }, [editor, content]);
 
+  // Prevent losing selection when mouse leaves editor area
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleMouseLeave = (e: MouseEvent) => {
+      // Don't clear selection when mouse leaves editor
+      e.preventDefault();
+    };
+
+    const editorElement = editor.view.dom;
+    editorElement.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      editorElement.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [editor]);
   // Notify parent when editor is ready
   useEffect(() => {
     if (editor && onEditorReady) {

@@ -76,6 +76,9 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
     if (!editor) return;
 
     const updateState = () => {
+      // Only update state if editor is not destroyed and has focus
+      if (editor.isDestroyed || !editor.isFocused) return;
+      
       // Get current color
       const currentColor = editor.getAttributes('textStyle').color || '#000000';
       setSelectedColor(currentColor);
@@ -85,19 +88,21 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
       setSelectedSize(currentSize);
     };
 
+    // Use more specific events to avoid unnecessary updates
+    editor.on('focus', updateState);
     editor.on('selectionUpdate', updateState);
-    editor.on('transaction', updateState);
 
     return () => {
-      editor.off('selectionUpdate', updateState);
-      editor.off('transaction', updateState);
+      if (!editor.isDestroyed) {
+        editor.off('focus', updateState);
+        editor.off('selectionUpdate', updateState);
+      }
     };
   }, [editor]);
 
   const handleColorSelect = (color: string) => {
     if (editor && !editor.isDestroyed) {
-      // Prevent losing focus and exiting edit mode
-      editor.chain().focus().setColor(color).run();
+      // Ensure editor maintains focus and selection
       editor.chain().focus().setColor(color).run();
       setSelectedColor(color);
     }
@@ -106,8 +111,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
 
   const handleSizeSelect = (size: number) => {
     if (editor && !editor.isDestroyed) {
-      // Prevent losing focus and exiting edit mode
-      // Apply font size using inline styles
+      // Ensure editor maintains focus and selection
       editor.chain().focus().setFontSize(`${size}px`).run();
       setSelectedSize(size);
     }

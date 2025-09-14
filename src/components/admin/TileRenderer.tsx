@@ -85,6 +85,20 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
     });
   };
 
+  // Handle mouse events carefully to preserve text selection
+  const handleMouseEnter = () => {
+    // Only set hover state if not in text editing mode
+    if (!isEditingText) {
+      setIsHovered(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    // Only clear hover state if not in text editing mode
+    if (!isEditingText) {
+      setIsHovered(false);
+    }
+  };
   const renderTileContent = () => {
     switch (tile.type) {
       case 'text':
@@ -340,8 +354,8 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       }}
       onMouseDown={isDraggingImage ? undefined : onMouseDown}
       onDoubleClick={onDoubleClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {/* Tile Content */}
       <div 

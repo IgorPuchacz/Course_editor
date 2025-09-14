@@ -87,6 +87,11 @@
   -webkit-font-variant-ligatures: none;
   font-variant-ligatures: none;
   font-feature-settings: "liga" 0;
+  /* Preserve selection when mouse leaves */
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }
 
 .tiptap-editor .ProseMirror p {
