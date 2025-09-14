@@ -177,106 +177,46 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     // Prevent menu from hiding during formatting
     setIsFormattingActive(true);
 
-    // Critical: Ensure editor has focus FIRST
-    if (editorRef.current) {
-      editorRef.current.focus();
-      
-      // Verify focus was actually set
-      if (document.activeElement !== editorRef.current) {
-        console.warn('Failed to focus editor');
-        setIsFormattingActive(false);
-        return;
-      }
-    }
-
-    // Restore selection with validation
-    if (savedSelection && savedSelection.startContainer && savedSelection.endContainer) {
-      const selection = window.getSelection();
-      if (selection) {
-        try {
-          selection.removeAllRanges();
-          const clonedRange = savedSelection.cloneRange();
-          selection.addRange(clonedRange);
-          console.log('Selection restored for formatting');
-          
-          // Verify selection was restored
-          if (selection.isCollapsed) {
-            console.warn('Selection collapsed after restoration');
-          }
-        } catch (error) {
-          console.error('Failed to restore selection:', error);
-          setIsFormattingActive(false);
-          return;
-        }
-      }
-    } else {
-      console.warn('No valid saved selection to restore');
-      setIsFormattingActive(false);
+    if (!savedSelection) {
+      console.warn('No saved selection to format');
       return;
     }
 
-    // Execute formatting with proper error handling
-    const executeFormatting = () => {
-      try {
-        // Ensure we still have focus
-        if (document.activeElement !== editorRef.current) {
-          editorRef.current?.focus();
-        }
-        
-        // Apply the formatting command
-        const success = document.execCommand(command, false, value);
-        console.log('Format command executed:', command, 'success:', success);
-        
-        if (!success) {
-          console.error('execCommand failed for:', command);
-        }
-        
-        if (editorRef.current) {
-          // Force content update
-          const content = editorRef.current.innerHTML;
-          console.log('Content after formatting:', content);
-          
-          // Trigger change event
-          const event = new Event('input', { bubbles: true });
-          editorRef.current.dispatchEvent(event);
-          onChange(content);
-          
-          // Save the new selection after formatting
-          const newSelection = window.getSelection();
-          if (newSelection && newSelection.rangeCount > 0 && !newSelection.isCollapsed) {
-            const newRange = newSelection.getRangeAt(0);
-            setSavedSelection(newRange.cloneRange());
-            
-            // Update toolbar position if selection has dimensions
-            const rect = newRange.getBoundingClientRect();
-            if (rect.width > 0 && rect.height > 0) {
-              setToolbarPosition({
-                top: rect.top - 50,
-                left: rect.left + (rect.width / 2) - 100
-              });
-            }
-          } else {
-            // If no selection after formatting, keep the saved one
-            console.log('No selection after formatting, keeping saved selection');
-          }
-        }
-        
-      } catch (error) {
-        console.error('Error applying format:', error);
-      } finally {
-        // Always reset formatting state after a delay
-        setTimeout(() => {
-          setIsFormattingActive(false);
-        }, 100);
-      }
-    };
+    // Keep editor focused and selection active
+    editorRef.current?.focus();
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(savedSelection);
 
-    // Execute immediately if we have focus, otherwise with small delay
-    if (document.activeElement === editorRef.current) {
-      executeFormatting();
-    } else {
-      setTimeout(executeFormatting, 10);
+    // Apply formatting
+    document.execCommand(command, false, value);
+
+    // Force content update for React state
+    if (editorRef.current) {
+      const content = editorRef.current.innerHTML;
+      const event = new Event('input', { bubbles: true });
+      editorRef.current.dispatchEvent(event);
+      onChange(content);
     }
+
+    // Restore and save selection so it remains highlighted
+    selection?.removeAllRanges();
+    const range = savedSelection.cloneRange();
+    selection?.addRange(range);
+    setSavedSelection(range);
+
+    // Keep toolbar visible and correctly positioned
+    setShowToolbar(true);
+    const rect = range.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      setToolbarPosition({
+        top: rect.top - 50,
+        left: rect.left + rect.width / 2 - 100
+      });
+    }
+
+    // Allow subsequent selection events
+    setTimeout(() => setIsFormattingActive(false), 0);
   };
 
   // Handle focus events to maintain selection
