@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Puzzle, HelpCircle, Move, Trash2 } from 'lucide-react';
 import { LessonTile, TextTile, ImageTile, InteractiveTile, QuizTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
@@ -39,6 +39,34 @@ interface TextEditorProps {
 }
 
 const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateTile, onFinishTextEditing, onEditorReady }) => {
+  const updateTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const serializeContent = useCallback(
+    (ed: Editor) => {
+      const html = ed.getHTML();
+      const plain = ed.getText();
+      onUpdateTile(tileId, {
+        content: {
+          ...textTile.content,
+          text: plain,
+          richText: html
+        }
+      });
+    },
+    [tileId, onUpdateTile, textTile.content]
+  );
+
+  const throttledOnUpdate = useCallback(
+    ({ editor }: { editor: Editor }) => {
+      if (updateTimeout.current) return;
+      updateTimeout.current = setTimeout(() => {
+        serializeContent(editor);
+        updateTimeout.current = null;
+      }, 200);
+    },
+    [serializeContent]
+  );
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -66,17 +94,7 @@ const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateT
     content:
       textTile.content.richText ||
       `<p style="margin: 0;">${textTile.content.text || ''}</p>`,
-    onUpdate: ({ editor }) => {
-      const html = editor.getHTML();
-      const plain = editor.getText();
-      onUpdateTile(tileId, {
-        content: {
-          ...textTile.content,
-          text: plain,
-          richText: html
-        }
-      });
-    },
+    onUpdate: throttledOnUpdate,
     autofocus: true
   });
 
@@ -84,6 +102,15 @@ const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateT
     onEditorReady(editor);
     return () => onEditorReady(null);
   }, [editor, onEditorReady]);
+
+  const flushUpdate = useCallback(() => {
+    if (!editor) return;
+    if (updateTimeout.current) {
+      clearTimeout(updateTimeout.current);
+      updateTimeout.current = null;
+    }
+    serializeContent(editor);
+  }, [editor, serializeContent]);
 
   if (!editor) return null;
 
@@ -94,6 +121,7 @@ const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateT
       editor.commands.focus();
       return;
     }
+    flushUpdate();
     onFinishTextEditing();
   };
 
