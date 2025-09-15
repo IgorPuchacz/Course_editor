@@ -25,7 +25,6 @@ export const AlignmentControls: React.FC<AlignmentControlsProps> = ({
     <div className={`flex items-center space-x-4 ${className}`}>
       {/* Horizontal Alignment Section */}
       <div className="flex items-center space-x-1">
-        <span className="text-xs text-gray-500 mr-2 hidden sm:inline">Poziomo:</span>
         <div className="flex items-center bg-gray-50 rounded-lg p-1">
           {horizontalAlignments.map(({ id, icon: Icon, label }) => (
             <button
@@ -42,7 +41,6 @@ export const AlignmentControls: React.FC<AlignmentControlsProps> = ({
 
       {/* Vertical Alignment Section */}
       <div className="flex items-center space-x-1">
-        <span className="text-xs text-gray-500 mr-2 hidden sm:inline">Pionowo:</span>
         <div className="flex items-center bg-gray-50 rounded-lg p-1">
           {verticalAlignments.map(({ id, label, symbol }) => (
             <button
