@@ -58,13 +58,14 @@ export const FontSizeSelector: React.FC<FontSizeSelectorProps> = ({
       {isOpen && (
         <>
           {/* Backdrop */}
-          <div 
-            className="fixed inset-0 z-10" 
+          <div
+            className="fixed inset-0 z-40"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => setIsOpen(false)}
           />
           
           {/* Dropdown Content */}
-          <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-xl z-20 overflow-hidden">
+          <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden">
             {/* Header */}
             <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
               <h3 className="text-sm font-semibold text-gray-800">Rozmiar czcionki</h3>

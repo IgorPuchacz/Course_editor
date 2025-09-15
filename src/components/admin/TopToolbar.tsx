@@ -55,8 +55,11 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
 
   if (isTextEditing) {
     return (
-      <div className={`top-toolbar flex items-center justify-between bg-white border-b border-gray-200 px-4 lg:px-6 py-3 ${className}`}>
-        <div className="flex items-center space-x-2 text-gray-600">
+      <div
+        className={`top-toolbar relative z-30 flex items-center justify-between bg-white border-b border-gray-200 px-4 lg:px-6 py-3 ${className}`}
+        onMouseDown={(e) => e.preventDefault()}
+      >
+        <div className="flex items-center space-x-2 text-gray-600" onMouseDown={(e) => e.preventDefault()}>
           {/* Font Family Selector */}
           <FontFamilySelector
             selectedFont={currentFont}

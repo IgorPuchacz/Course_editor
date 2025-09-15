@@ -210,6 +210,14 @@
   margin: 0.5rem 0;
 }
 
+.tiptap-editor .ProseMirror .bullet-list {
+  list-style-type: disc;
+}
+
+.tiptap-editor .ProseMirror .ordered-list {
+  list-style-type: decimal;
+}
+
 .tiptap-editor .ProseMirror .bullet-list li,
 .tiptap-editor .ProseMirror .ordered-list li {
   margin: 0.25rem 0;
@@ -238,10 +246,19 @@
   margin: 0.5rem 0 !important;
 }
 
+
 .tile-formatted-text .bullet-list,
 .tile-formatted-text .ordered-list {
   padding-left: 1.5rem !important;
   margin: 0.5rem 0 !important;
+}
+
+.tile-formatted-text .bullet-list {
+  list-style-type: disc !important;
+}
+
+.tile-formatted-text .ordered-list {
+  list-style-type: decimal !important;
 }
 
 .tile-formatted-text .bullet-list li,

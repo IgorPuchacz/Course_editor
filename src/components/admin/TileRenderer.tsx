@@ -69,12 +69,22 @@ const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateT
 
   if (!editor) return null;
 
+  const handleBlur = (e: React.FocusEvent) => {
+    const toolbar = document.querySelector('.top-toolbar');
+    if (toolbar && e.relatedTarget && toolbar.contains(e.relatedTarget as Node)) {
+      e.preventDefault();
+      editor.commands.focus();
+      return;
+    }
+    onFinishTextEditing();
+  };
+
   return (
     <div className="w-full h-full p-3 overflow-hidden relative">
       <EditorContent
         editor={editor}
         className="w-full h-full focus:outline-none"
-        onBlur={onFinishTextEditing}
+        onBlur={handleBlur}
       />
     </div>
   );
