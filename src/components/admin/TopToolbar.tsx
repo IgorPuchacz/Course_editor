@@ -31,6 +31,8 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   const [currentFont, setCurrentFont] = useState('Inter, system-ui, sans-serif');
   const [currentSize, setCurrentSize] = useState(16);
   const [currentColor, setCurrentColor] = useState('#000000');
+  const [horizontalAlign, setHorizontalAlign] = useState<'left' | 'center' | 'right' | 'justify'>('left');
+  const [verticalAlign, setVerticalAlign] = useState<'top' | 'middle' | 'bottom'>('top');
 
   useEffect(() => {
     if (!editor) return;
@@ -54,6 +56,18 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
     };
   }, [editor]);
 
+  // Enhanced button styling for formatting buttons
+  const getFormattingButtonClass = (isActive: boolean, isDisabled = false) => {
+    if (isDisabled) {
+      return 'p-2 text-gray-300 cursor-not-allowed rounded-lg transition-all duration-200 min-w-[36px] h-9 flex items-center justify-center';
+    }
+    
+    if (isActive) {
+      return 'p-2 bg-blue-500 text-white shadow-sm border border-blue-600 rounded-lg transition-all duration-200 min-w-[36px] h-9 flex items-center justify-center hover:bg-blue-600';
+    }
+    
+    return 'p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 hover:shadow-sm border border-transparent rounded-lg transition-all duration-200 min-w-[36px] h-9 flex items-center justify-center';
+  };
   if (isTextEditing) {
     return (
       <div
@@ -89,23 +103,26 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           
           {/* Basic Formatting */}
           <button
-            className={`p-2 ${editor?.isActive('bold') ? 'text-gray-900' : ''}`}
+            className={getFormattingButtonClass(editor?.isActive('bold') || false)}
             onMouseDown={e => e.preventDefault()}
             onClick={() => editor?.chain().focus().toggleBold().run()}
+            title="Pogrubienie (Ctrl+B)"
           >
             <Bold className="w-4 h-4" />
           </button>
           <button
-            className={`p-2 ${editor?.isActive('italic') ? 'text-gray-900' : ''}`}
+            className={getFormattingButtonClass(editor?.isActive('italic') || false)}
             onMouseDown={e => e.preventDefault()}
             onClick={() => editor?.chain().focus().toggleItalic().run()}
+            title="Kursywa (Ctrl+I)"
           >
             <Italic className="w-4 h-4" />
           </button>
           <button
-            className={`p-2 ${editor?.isActive('underline') ? 'text-gray-900' : ''}`}
+            className={getFormattingButtonClass(editor?.isActive('underline') || false)}
             onMouseDown={e => e.preventDefault()}
             onClick={() => editor?.chain().focus().toggleUnderline().run()}
+            title="Podkreślenie (Ctrl+U)"
           >
             <Underline className="w-4 h-4" />
           </button>
@@ -113,22 +130,29 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           <div className="w-px h-6 bg-gray-300"></div>
           
           {/* Alignment Controls */}
-          <AlignmentControls />
+          <AlignmentControls 
+            selectedHorizontal={horizontalAlign}
+            selectedVertical={verticalAlign}
+            onHorizontalChange={setHorizontalAlign}
+            onVerticalChange={setVerticalAlign}
+          />
           
           <div className="w-px h-6 bg-gray-300"></div>
           
           {/* Lists and Advanced */}
           <button
-            className={`p-2 ${editor?.isActive('bulletList') ? 'text-gray-900' : ''}`}
+            className={getFormattingButtonClass(editor?.isActive('bulletList') || false)}
             onMouseDown={e => e.preventDefault()}
             onClick={() => editor?.chain().focus().toggleBulletList().run()}
+            title="Lista punktowana"
           >
             <List className="w-4 h-4" />
           </button>
           <button
-            className={`p-2 ${editor?.isActive('orderedList') ? 'text-gray-900' : ''}`}
+            className={getFormattingButtonClass(editor?.isActive('orderedList') || false)}
             onMouseDown={e => e.preventDefault()}
             onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+            title="Lista numerowana"
           >
             <ListOrdered className="w-4 h-4" />
           </button>
@@ -136,9 +160,10 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           <div className="w-px h-6 bg-gray-300"></div>
           
           <button
-            className={`p-2 ${editor?.isActive('code') ? 'text-gray-900' : ''}`}
+            className={getFormattingButtonClass(editor?.isActive('code') || false)}
             onMouseDown={e => e.preventDefault()}
             onClick={() => editor?.chain().focus().toggleCode().run()}
+            title="Kod inline"
           >
 
           
@@ -146,9 +171,10 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             <Code className="w-4 h-4" />
           </button>
           <button
-            className={`p-2 ${editor?.isActive('codeBlock') ? 'text-gray-900' : ''}`}
+            className={getFormattingButtonClass(editor?.isActive('codeBlock') || false)}
             onMouseDown={e => e.preventDefault()}
             onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
+            title="Blok kodu"
           >
             <FileCode className="w-4 h-4" />
           </button>
@@ -157,18 +183,20 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           
           {/* History */}
           <button
-            className="p-2"
+            className={getFormattingButtonClass(false, !editor?.can().undo())}
             onMouseDown={e => e.preventDefault()}
             disabled={!editor?.can().undo()}
             onClick={() => editor?.chain().focus().undo().run()}
+            title="Cofnij (Ctrl+Z)"
           >
             <Undo className="w-4 h-4" />
           </button>
           <button
-            className="p-2"
+            className={getFormattingButtonClass(false, !editor?.can().redo())}
             onMouseDown={e => e.preventDefault()}
             disabled={!editor?.can().redo()}
             onClick={() => editor?.chain().focus().redo().run()}
+            title="Ponów (Ctrl+Y)"
           >
             <Redo className="w-4 h-4" />
           </button>
@@ -177,7 +205,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         <button
           onClick={onFinishTextEditing}
           onMouseDown={e => e.preventDefault()}
-          className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 border border-transparent hover:border-red-200"
           title="Zakończ edycję tekstu"
         >
           <X className="w-5 h-5" />
