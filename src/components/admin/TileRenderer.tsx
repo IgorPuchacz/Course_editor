@@ -5,6 +5,10 @@ import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
+import { TextStyle } from '@tiptap/extension-text-style';
+import Color from '@tiptap/extension-color';
+import FontFamily from '@tiptap/extension-font-family';
+import FontSize from '../../extensions/FontSize';
 
 interface TileRendererProps {
   tile: LessonTile;
@@ -33,8 +37,17 @@ interface TextEditorProps {
 
 const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateTile, onFinishTextEditing, onEditorReady }) => {
   const editor = useEditor({
-    extensions: [StarterKit, Underline],
-    content: textTile.content.richText || `<p style="margin: 0;">${textTile.content.text || ''}</p>`,
+    extensions: [
+      StarterKit,
+      Underline,
+      TextStyle,
+      Color.configure({ types: ['textStyle'] }),
+      FontFamily.configure({ types: ['textStyle'] }),
+      FontSize,
+    ],
+    content:
+      textTile.content.richText ||
+      `<p style="margin: 0;">${textTile.content.text || ''}</p>`,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
       const plain = editor.getText();
@@ -61,7 +74,11 @@ const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateT
       <EditorContent
         editor={editor}
         className="w-full h-full focus:outline-none"
-        onBlur={onFinishTextEditing}
+        onBlur={(e) => {
+          const next = e.relatedTarget as HTMLElement | null;
+          if (next?.closest('[data-toolbar]')) return;
+          onFinishTextEditing();
+        }}
       />
     </div>
   );
