@@ -5,6 +5,7 @@ import { FontSizeSelector } from './FontSizeSelector';
 import { TextColorPicker } from './TextColorPicker';
 import { SimpleFontSelector } from './SimpleFontSelector';
 import { AlignmentControls } from './AlignmentControls';
+import { LessonTile, TextTile } from '../../types/lessonEditor.ts';
 
 
 interface TopToolbarProps {
@@ -15,6 +16,8 @@ interface TopToolbarProps {
   isTextEditing: boolean;
   onFinishTextEditing?: () => void;
   editor?: Editor | null;
+  selectedTile?: TextTile | null;
+  onUpdateTile?: (tileId: string, updates: Partial<LessonTile>) => void;
   className?: string;
 }
 
@@ -26,23 +29,28 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   isTextEditing,
   onFinishTextEditing,
   editor,
+  selectedTile,
+  onUpdateTile,
   className = ''
 }) => {
   const [currentFont, setCurrentFont] = useState('Inter, system-ui, sans-serif');
   const [currentSize, setCurrentSize] = useState(16);
   const [currentColor, setCurrentColor] = useState('#000000');
   const [horizontalAlign, setHorizontalAlign] = useState<'left' | 'center' | 'right' | 'justify'>('left');
-  const [verticalAlign, setVerticalAlign] = useState<'top' | 'middle' | 'bottom'>('top');
+  const [verticalAlign, setVerticalAlign] = useState<'top' | 'center' | 'bottom'>('top');
 
   useEffect(() => {
     if (!editor) return;
 
     const updateAttributes = () => {
-      const attrs = editor.getAttributes('textStyle');
-      setCurrentFont(attrs.fontFamily || 'Inter, system-ui, sans-serif');
-      const sizeAttr = attrs.fontSize ? parseInt(attrs.fontSize) : 16;
+      const styleAttrs = editor.getAttributes('textStyle');
+      setCurrentFont(styleAttrs.fontFamily || 'Inter, system-ui, sans-serif');
+      const sizeAttr = styleAttrs.fontSize ? parseInt(styleAttrs.fontSize) : 16;
       setCurrentSize(sizeAttr || 16);
-      setCurrentColor(attrs.color || '#000000');
+      setCurrentColor(styleAttrs.color || '#000000');
+
+      const paragraphAttrs = editor.getAttributes('paragraph');
+      setHorizontalAlign((paragraphAttrs.textAlign as 'left' | 'center' | 'right' | 'justify') || 'left');
     };
 
     updateAttributes();
@@ -55,6 +63,29 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
       editor.off('transaction', updateAttributes);
     };
   }, [editor]);
+
+  useEffect(() => {
+    if (selectedTile?.type === 'text') {
+      setVerticalAlign(selectedTile.content.verticalAlign || 'top');
+    }
+  }, [selectedTile]);
+
+  const handleHorizontalChange = (alignment: 'left' | 'center' | 'right' | 'justify') => {
+    setHorizontalAlign(alignment);
+    editor?.chain().focus().setTextAlign(alignment).run();
+  };
+
+  const handleVerticalChange = (alignment: 'top' | 'center' | 'bottom') => {
+    setVerticalAlign(alignment);
+    if (selectedTile && onUpdateTile) {
+      onUpdateTile(selectedTile.id, {
+        content: {
+          verticalAlign: alignment,
+        },
+      });
+    }
+    editor?.commands.focus();
+  };
 
   // Enhanced button styling for formatting buttons
   const getFormattingButtonClass = (isActive: boolean, isDisabled = false) => {
@@ -130,11 +161,11 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           <div className="w-px h-6 bg-gray-300"></div>
           
           {/* Alignment Controls */}
-          <AlignmentControls 
+          <AlignmentControls
             selectedHorizontal={horizontalAlign}
             selectedVertical={verticalAlign}
-            onHorizontalChange={setHorizontalAlign}
-            onVerticalChange={setVerticalAlign}
+            onHorizontalChange={handleHorizontalChange}
+            onVerticalChange={handleVerticalChange}
           />
           
           <div className="w-px h-6 bg-gray-300"></div>
