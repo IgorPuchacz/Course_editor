@@ -185,8 +185,14 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           <button
             className={getFormattingButtonClass(false, !editor?.can().undo())}
             onMouseDown={e => e.preventDefault()}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (editor?.can().undo()) {
+                editor?.chain().focus().undo().run();
+              }
+            }}
             disabled={!editor?.can().undo()}
-            onClick={() => editor?.chain().focus().undo().run()}
             title="Cofnij (Ctrl+Z)"
           >
             <Undo className="w-4 h-4" />
@@ -194,8 +200,14 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           <button
             className={getFormattingButtonClass(false, !editor?.can().redo())}
             onMouseDown={e => e.preventDefault()}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (editor?.can().redo()) {
+                editor?.chain().focus().redo().run();
+              }
+            }}
             disabled={!editor?.can().redo()}
-            onClick={() => editor?.chain().focus().redo().run()}
             title="Ponów (Ctrl+Y)"
           >
             <Redo className="w-4 h-4" />
