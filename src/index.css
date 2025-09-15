@@ -188,8 +188,8 @@
   margin: 0.25rem 0;
 }
 
-/* Custom styles for TipTap content */
-.tiptap-editor .ProseMirror .inline-code {
+/* TipTap Code Styling - Inline Code */
+.tiptap-editor .ProseMirror code {
   background-color: #f1f5f9;
   color: #475569;
   padding: 0.125rem 0.375rem;
@@ -201,7 +201,8 @@
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
-.tiptap-editor .ProseMirror .code-block {
+/* TipTap Code Styling - Code Block */
+.tiptap-editor .ProseMirror pre {
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
   color: #f8fafc;
   padding: 1.25rem 1.5rem;
@@ -216,7 +217,7 @@
   position: relative;
 }
 
-.tiptap-editor .ProseMirror .code-block::before {
+.tiptap-editor .ProseMirror pre::before {
   content: '';
   position: absolute;
   top: 0;
@@ -227,7 +228,7 @@
   border-radius: 0.75rem 0.75rem 0 0;
 }
 
-.tiptap-editor .ProseMirror .code-block code {
+.tiptap-editor .ProseMirror pre code {
   background: none !important;
   color: inherit !important;
   font-size: inherit !important;
@@ -256,8 +257,8 @@
   line-height: 1.5;
 }
 
-/* Ensure proper rendering in tiles */
-.tile-formatted-text .inline-code {
+/* Ensure proper rendering in tiles - Inline Code */
+.tile-formatted-text code {
   background-color: #f1f5f9 !important;
   color: #475569 !important;
   padding: 0.125rem 0.375rem !important;
@@ -269,7 +270,8 @@
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
 }
 
-.tile-formatted-text .code-block {
+/* Ensure proper rendering in tiles - Code Block */
+.tile-formatted-text pre {
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
   color: #f8fafc !important;
   padding: 1.25rem 1.5rem !important;
@@ -284,7 +286,7 @@
   position: relative !important;
 }
 
-.tile-formatted-text .code-block::before {
+.tile-formatted-text pre::before {
   content: '' !important;
   position: absolute !important;
   top: 0 !important;
@@ -295,7 +297,7 @@
   border-radius: 0.75rem 0.75rem 0 0 !important;
 }
 
-.tile-formatted-text .code-block code {
+.tile-formatted-text pre code {
   background: none !important;
   color: inherit !important;
   font-size: inherit !important;
