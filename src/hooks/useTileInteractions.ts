@@ -174,8 +174,8 @@ export const useTileInteractions = ({
         const deltaX = e.clientX - interaction.start.x;
         const deltaY = e.clientY - interaction.start.y;
         const newPosition = {
-          x: interaction.start.imageX + deltaX,
-          y: interaction.start.imageY + deltaY
+          x: Math.min(0, interaction.start.imageX + deltaX),
+          y: Math.min(0, interaction.start.imageY + deltaY)
         };
         const draggedTile = content.tiles.find(t => t.id === editorState.selectedTileId);
         if (draggedTile && draggedTile.type === 'image') {

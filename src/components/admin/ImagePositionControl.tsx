@@ -23,7 +23,7 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
   className = ''
 }) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({x: 0, y: 0});
+  const [dragStart] = useState({ x: 0, y: 0 });
   const [imageSize, setImageSize] = useState({width: 0, height: 0});
   const [previewDimensions, setPreviewDimensions] = useState({width: 0, height: 0});
   const previewRef = useRef<HTMLDivElement>(null);
@@ -119,7 +119,10 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
     const boundedX = Math.max(minX, Math.min(maxX, newX));
     const boundedY = Math.max(minY, Math.min(maxY, newY));
 
-    onPositionChange({ x: boundedX, y: boundedY });
+    const clampedX = Math.min(0, boundedX);
+    const clampedY = Math.min(0, boundedY);
+
+    onPositionChange({ x: clampedX, y: clampedY });
   };
 
   const handleMouseUp = () => {
@@ -143,14 +146,13 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
     
     // Calculate new position to keep image centered during scaling
     if (imageSize.width && imageSize.height) {
-      const scaleDiff = clampedScale - scale;
       const imageCenterX = position.x + (imageSize.width * scale) / 2;
       const imageCenterY = position.y + (imageSize.height * scale) / 2;
       
       const newX = imageCenterX - (imageSize.width * clampedScale) / 2;
       const newY = imageCenterY - (imageSize.height * clampedScale) / 2;
-      
-      onPositionChange({ x: newX, y: newY });
+
+      onPositionChange({ x: Math.min(0, newX), y: Math.min(0, newY) });
     }
     
     onScaleChange(clampedScale);
@@ -218,7 +220,10 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
               <input
                 type="number"
                 value={Math.round(position.x)}
-                onChange={(e) => onPositionChange({ ...position, x: parseInt(e.target.value) || 0 })}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  onPositionChange({ ...position, x: Math.min(0, isNaN(value) ? 0 : value) });
+                }}
                 className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -227,7 +232,10 @@ export const ImagePositionControl: React.FC<ImagePositionControlProps> = ({
               <input
                 type="number"
                 value={Math.round(position.y)}
-                onChange={(e) => onPositionChange({ ...position, y: parseInt(e.target.value) || 0 })}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  onPositionChange({ ...position, y: Math.min(0, isNaN(value) ? 0 : value) });
+                }}
                 className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>

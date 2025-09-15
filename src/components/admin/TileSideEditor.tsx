@@ -63,9 +63,9 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
         const scaledHeight = img.naturalHeight * fitScale;
         const centerX = (containerWidth - scaledWidth) / 2;
         const centerY = (containerHeight - scaledHeight) / 2;
-        
-        // Update position and scale
-        handleContentUpdate('position', { x: centerX, y: centerY });
+
+        // Update position and scale (clamp position to non-positive values)
+        handleContentUpdate('position', { x: Math.min(0, centerX), y: Math.min(0, centerY) });
         handleContentUpdate('scale', fitScale);
       };
       img.onerror = (error) => {
