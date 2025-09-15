@@ -85,9 +85,6 @@ export const TextColorPicker: React.FC<TextColorPickerProps> = ({
             style={{ backgroundColor: selectedColor }}
           />
         </div>
-        <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
-          Kolor
-        </span>
       </button>
 
       {/* Dropdown */}
