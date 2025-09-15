@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Bold, Italic, Underline, List, ListOrdered, Undo, Redo, Code, FileCode, X } from 'lucide-react';
 import { Editor } from '@tiptap/react';
 import { FontSizeSelector } from './FontSizeSelector';
@@ -27,16 +27,44 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   editor,
   className = ''
 }) => {
+  const [currentFont, setCurrentFont] = useState('Inter, system-ui, sans-serif');
+  const [currentSize, setCurrentSize] = useState(16);
+  const [currentColor, setCurrentColor] = useState('#000000');
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const updateAttributes = () => {
+      const attrs = editor.getAttributes('textStyle');
+      setCurrentFont(attrs.fontFamily || 'Inter, system-ui, sans-serif');
+      const sizeAttr = attrs.fontSize ? parseInt(attrs.fontSize) : 16;
+      setCurrentSize(sizeAttr || 16);
+      setCurrentColor(attrs.color || '#000000');
+    };
+
+    updateAttributes();
+
+    editor.on('selectionUpdate', updateAttributes);
+    editor.on('transaction', updateAttributes);
+
+    return () => {
+      editor.off('selectionUpdate', updateAttributes);
+      editor.off('transaction', updateAttributes);
+    };
+  }, [editor]);
+
   if (isTextEditing) {
     return (
-      <div className={`top-toolbar flex items-center justify-between bg-white border-b border-gray-200 px-4 lg:px-6 py-3 ${className}`}>
-        <div className="flex items-center space-x-2 text-gray-600">
+      <div
+        className={`top-toolbar relative z-30 flex items-center justify-between bg-white border-b border-gray-200 px-4 lg:px-6 py-3 ${className}`}
+        onMouseDown={(e) => e.preventDefault()}
+      >
+        <div className="flex items-center space-x-2 text-gray-600" onMouseDown={(e) => e.preventDefault()}>
           {/* Font Family Selector */}
           <FontFamilySelector
-            selectedFont="Inter, system-ui, sans-serif"
+            selectedFont={currentFont}
             onChange={(font) => {
-              console.log('Font changed:', font);
-              // Tutaj będzie logika zmiany czcionki w edytorze
+              editor?.chain().focus().setFontFamily(font).run();
             }}
           />
           
@@ -44,10 +72,9 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           
           {/* Font Size Selector */}
           <FontSizeSelector
-            selectedSize={16}
+            selectedSize={currentSize}
             onChange={(size) => {
-              console.log('Size changed:', size);
-              // Tutaj będzie logika zmiany rozmiaru w edytorze
+              editor?.chain().focus().setFontSize(size).run();
             }}
           />
           
@@ -55,10 +82,9 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           
           {/* Text Color Picker */}
           <TextColorPicker
-            selectedColor="#000000"
+            selectedColor={currentColor}
             onChange={(color) => {
-              console.log('Color changed:', color);
-              // Tutaj będzie logika zmiany koloru w edytorze
+              editor?.chain().focus().setColor(color).run();
             }}
           />
           
@@ -90,16 +116,54 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           <div className="w-px h-6 bg-gray-300"></div>
           
           {/* Lists and Advanced */}
-          <button className="p-2" disabled onMouseDown={e => e.preventDefault()}><List className="w-4 h-4" /></button>
-          <button className="p-2" disabled onMouseDown={e => e.preventDefault()}><ListOrdered className="w-4 h-4" /></button>
-          <button className="p-2" disabled onMouseDown={e => e.preventDefault()}><Code className="w-4 h-4" /></button>
-          <button className="p-2" disabled onMouseDown={e => e.preventDefault()}><FileCode className="w-4 h-4" /></button>
+          <button
+            className={`p-2 ${editor?.isActive('bulletList') ? 'text-gray-900' : ''}`}
+            onMouseDown={e => e.preventDefault()}
+            onClick={() => editor?.chain().focus().toggleBulletList().run()}
+          >
+            <List className="w-4 h-4" />
+          </button>
+          <button
+            className={`p-2 ${editor?.isActive('orderedList') ? 'text-gray-900' : ''}`}
+            onMouseDown={e => e.preventDefault()}
+            onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+          >
+            <ListOrdered className="w-4 h-4" />
+          </button>
+          <button
+            className={`p-2 ${editor?.isActive('code') ? 'text-gray-900' : ''}`}
+            onMouseDown={e => e.preventDefault()}
+            onClick={() => editor?.chain().focus().toggleCode().run()}
+          >
+            <Code className="w-4 h-4" />
+          </button>
+          <button
+            className={`p-2 ${editor?.isActive('codeBlock') ? 'text-gray-900' : ''}`}
+            onMouseDown={e => e.preventDefault()}
+            onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
+          >
+            <FileCode className="w-4 h-4" />
+          </button>
           
           <div className="w-px h-6 bg-gray-300"></div>
           
           {/* History */}
-          <button className="p-2" disabled onMouseDown={e => e.preventDefault()}><Undo className="w-4 h-4" /></button>
-          <button className="p-2" disabled onMouseDown={e => e.preventDefault()}><Redo className="w-4 h-4" /></button>
+          <button
+            className="p-2"
+            onMouseDown={e => e.preventDefault()}
+            disabled={!editor?.can().undo()}
+            onClick={() => editor?.chain().focus().undo().run()}
+          >
+            <Undo className="w-4 h-4" />
+          </button>
+          <button
+            className="p-2"
+            onMouseDown={e => e.preventDefault()}
+            disabled={!editor?.can().redo()}
+            onClick={() => editor?.chain().focus().redo().run()}
+          >
+            <Redo className="w-4 h-4" />
+          </button>
         </div>
         
         <button
