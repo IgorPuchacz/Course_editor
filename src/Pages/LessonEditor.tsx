@@ -438,6 +438,8 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
             isTextEditing={editorState.mode === 'textEditing'}
             onFinishTextEditing={handleFinishTextEditing}
             editor={activeEditor}
+            selectedTile={lessonContent.tiles.find(t => t.id === editorState.selectedTileId) as TextTile | undefined}
+            onUpdateTile={handleUpdateTile}
           />
 
           {/* Canvas */}

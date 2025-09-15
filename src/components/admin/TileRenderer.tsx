@@ -12,6 +12,7 @@ import FontSize from '../../extensions/FontSize';
 import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
+import TextAlign from '../../extensions/TextAlign';
 
 interface TileRendererProps {
   tile: LessonTile;
@@ -62,6 +63,7 @@ const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateT
       Color.configure({ types: ['textStyle'] }),
       FontFamily.configure({ types: ['textStyle'] }),
       FontSize,
+      TextAlign.configure({ types: ['paragraph'] }),
     ],
     content:
       textTile.content.richText ||
@@ -120,7 +122,8 @@ const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateT
         fontSize: `${textTile.content.fontSize}px`,
         fontFamily: textTile.content.fontFamily,
         display: 'flex',
-        alignItems:
+        flexDirection: 'column',
+        justifyContent:
           textTile.content.verticalAlign === 'center'
             ? 'center'
             : textTile.content.verticalAlign === 'bottom'
@@ -130,7 +133,7 @@ const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateT
     >
       <EditorContent
         editor={editor}
-        className="w-full h-full focus:outline-none break-words flex-1 rich-text-content tile-formatted-text"
+        className="w-full focus:outline-none break-words rich-text-content tile-formatted-text"
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
       />
@@ -243,14 +246,14 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                 fontSize: `${textTile.content.fontSize}px`,
                 fontFamily: textTile.content.fontFamily,
                 display: 'flex',
-                alignItems: textTile.content.verticalAlign === 'center' ? 'center' :
-                           textTile.content.verticalAlign === 'bottom' ? 'flex-end' : 'flex-start'
+                flexDirection: 'column',
+                justifyContent: textTile.content.verticalAlign === 'center' ? 'center' :
+                               textTile.content.verticalAlign === 'bottom' ? 'flex-end' : 'flex-start'
               }}
             >
               <div
-                className="break-words flex-1 rich-text-content tile-formatted-text"
+                className="break-words rich-text-content tile-formatted-text w-full"
                 style={{
-                  width: '100%',
                   minHeight: '1em',
                   outline: 'none'
                 }}
