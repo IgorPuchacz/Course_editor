@@ -238,14 +238,21 @@
   margin: 0.5rem 0 !important;
 }
 
-.tile-formatted-text .bullet-list,
-.tile-formatted-text .ordered-list {
+.tile-formatted-text ul,
+.tile-formatted-text ol {
   padding-left: 1.5rem !important;
   margin: 0.5rem 0 !important;
 }
 
-.tile-formatted-text .bullet-list li,
-.tile-formatted-text .ordered-list li {
+.tile-formatted-text ul {
+  list-style-type: disc !important;
+}
+
+.tile-formatted-text ol {
+  list-style-type: decimal !important;
+}
+
+.tile-formatted-text li {
   margin: 0.25rem 0 !important;
   line-height: 1.5 !important;
 }
