@@ -423,12 +423,12 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 
   return (
     <div
-      className={`absolute select-none ${
+      className={`absolute select-none transition-all duration-200 ${
         isEditing || isImageEditing || isEditingText ? 'z-20' : 'z-10'
       } ${
         isSelected ? 'ring-2 ring-blue-500 ring-opacity-75' : ''
       } ${
-        !isFramelessTextTile ? `transition-all duration-200 rounded-lg ${
+        !isFramelessTextTile ? `rounded-lg ${
           isSelected ? 'shadow-lg' : 'shadow-sm'
         }` : ''
       }`}
