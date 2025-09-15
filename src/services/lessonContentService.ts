@@ -94,7 +94,6 @@ export class LessonContentService {
         richText: '<p style="margin: 0;">Nowy tekst</p>',
         fontFamily: 'Inter, system-ui, sans-serif',
         fontSize: 16,
-        textAlign: 'left',
         verticalAlign: 'top',
         backgroundColor: '#ffffff',
         showBorder: true,

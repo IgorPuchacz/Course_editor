@@ -34,7 +34,6 @@ export interface TextTile extends LessonTile {
     richText?: string; // HTML content with formatting
     fontFamily: string;
     fontSize: number;
-    textAlign: 'left' | 'center' | 'right';
     verticalAlign: 'top' | 'center' | 'bottom';
     backgroundColor: string;
     showBorder: boolean;
