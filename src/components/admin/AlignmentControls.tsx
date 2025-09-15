@@ -39,6 +39,8 @@ export const AlignmentControls: React.FC<AlignmentControlsProps> = ({
         </div>
       </div>
 
+      <div className="w-px h-6 bg-gray-300"></div>
+
       {/* Vertical Alignment Section */}
       <div className="flex items-center space-x-1">
         <div className="flex items-center bg-gray-50 rounded-lg p-1">
