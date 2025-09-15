@@ -141,6 +141,9 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             onMouseDown={e => e.preventDefault()}
             onClick={() => editor?.chain().focus().toggleCode().run()}
           >
+
+          <div className="w-px h-6 bg-gray-300"></div>
+            
             <Code className="w-4 h-4" />
           </button>
           <button
