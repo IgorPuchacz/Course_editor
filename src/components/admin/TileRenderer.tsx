@@ -9,6 +9,9 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import FontFamily from '@tiptap/extension-font-family';
 import FontSize from '../../extensions/FontSize';
+import BulletList from '@tiptap/extension-bullet-list';
+import OrderedList from '@tiptap/extension-ordered-list';
+import ListItem from '@tiptap/extension-list-item';
 
 interface TileRendererProps {
   tile: LessonTile;
@@ -38,7 +41,22 @@ interface TextEditorProps {
 const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateTile, onFinishTextEditing, onEditorReady }) => {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        bulletList: false,
+        orderedList: false,
+        listItem: false,
+      }),
+      BulletList.configure({
+        HTMLAttributes: { class: 'bullet-list' },
+        keepMarks: true,
+        keepAttributes: true,
+      }),
+      OrderedList.configure({
+        HTMLAttributes: { class: 'ordered-list' },
+        keepMarks: true,
+        keepAttributes: true,
+      }),
+      ListItem,
       Underline,
       TextStyle,
       Color.configure({ types: ['textStyle'] }),
@@ -80,10 +98,24 @@ const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateT
   };
 
   return (
-    <div className="w-full h-full p-3 overflow-hidden relative">
+    <div
+      className="w-full h-full p-3 overflow-hidden relative tile-text-content tiptap-editor"
+      style={{
+        backgroundColor: textTile.content.backgroundColor,
+        fontSize: `${textTile.content.fontSize}px`,
+        fontFamily: textTile.content.fontFamily,
+        display: 'flex',
+        alignItems:
+          textTile.content.verticalAlign === 'center'
+            ? 'center'
+            : textTile.content.verticalAlign === 'bottom'
+            ? 'flex-end'
+            : 'flex-start',
+      }}
+    >
       <EditorContent
         editor={editor}
-        className="w-full h-full focus:outline-none"
+        className="w-full h-full focus:outline-none break-words flex-1 rich-text-content tile-formatted-text"
         onBlur={handleBlur}
       />
     </div>
@@ -194,7 +226,6 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                 backgroundColor: textTile.content.backgroundColor,
                 fontSize: `${textTile.content.fontSize}px`,
                 fontFamily: textTile.content.fontFamily,
-                textAlign: textTile.content.textAlign,
                 display: 'flex',
                 alignItems: textTile.content.verticalAlign === 'center' ? 'center' :
                            textTile.content.verticalAlign === 'bottom' ? 'flex-end' : 'flex-start'
