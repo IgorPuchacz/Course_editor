@@ -59,7 +59,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   // Enhanced button styling for formatting buttons
   const getFormattingButtonClass = (isActive: boolean, isDisabled = false) => {
     if (isDisabled) {
-      return 'p-2 text-gray-300 cursor-not-allowed rounded-lg transition-all duration-200 min-w-[36px] h-9 flex items-center justify-center';
+      return 'p-2 text-gray-300 cursor-not-allowed rounded-lg transition-all duration-200 min-w-[36px] h-9 flex items-center justify-center pointer-events-none';
     }
     
     if (isActive) {

@@ -97,6 +97,21 @@ const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateT
     onFinishTextEditing();
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      if (editor.isActive('listItem')) {
+        if (e.shiftKey) {
+          editor.chain().focus().liftListItem('listItem').run();
+        } else {
+          editor.chain().focus().sinkListItem('listItem').run();
+        }
+      } else {
+        editor.chain().focus().insertContent('\t').run();
+      }
+    }
+  };
+
   return (
     <div
       className="w-full h-full p-3 overflow-hidden relative tile-text-content tiptap-editor"
@@ -117,6 +132,7 @@ const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateT
         editor={editor}
         className="w-full h-full focus:outline-none break-words flex-1 rich-text-content tile-formatted-text"
         onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
       />
     </div>
   );
