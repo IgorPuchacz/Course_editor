@@ -192,16 +192,17 @@ export const useTileInteractions = ({
         if (!tile) return;
         const deltaX = e.clientX - interaction.startPosition.x;
         const deltaY = e.clientY - interaction.startPosition.y;
+        const gridUnit = content.canvas_settings.gridSize + GridUtils.GRID_GAP;
         const newGridPos = { ...interaction.startGridPosition };
         switch (interaction.handle) {
           case 'se': {
             const newColSpan = Math.max(
               1,
-              interaction.startGridPosition.colSpan + Math.round(deltaX / (content.canvas_settings.gridSize + GridUtils.GRID_GAP))
+              interaction.startGridPosition.colSpan + Math.round(deltaX / gridUnit)
             );
             const newRowSpan = Math.max(
               1,
-              interaction.startGridPosition.rowSpan + Math.round(deltaY / (content.canvas_settings.gridSize + GridUtils.GRID_GAP))
+              interaction.startGridPosition.rowSpan + Math.round(deltaY / gridUnit)
             );
             newGridPos.colSpan = Math.min(newColSpan, GridUtils.GRID_COLUMNS - newGridPos.col);
             newGridPos.rowSpan = newRowSpan;
@@ -210,7 +211,7 @@ export const useTileInteractions = ({
           case 'e': {
             const eastColSpan = Math.max(
               1,
-              interaction.startGridPosition.colSpan + Math.round(deltaX / (content.canvas_settings.gridSize + GridUtils.GRID_GAP))
+              interaction.startGridPosition.colSpan + Math.round(deltaX / gridUnit)
             );
             newGridPos.colSpan = Math.min(eastColSpan, GridUtils.GRID_COLUMNS - newGridPos.col);
             break;
@@ -218,7 +219,79 @@ export const useTileInteractions = ({
           case 's': {
             newGridPos.rowSpan = Math.max(
               1,
-              interaction.startGridPosition.rowSpan + Math.round(deltaY / (content.canvas_settings.gridSize + GridUtils.GRID_GAP))
+              interaction.startGridPosition.rowSpan + Math.round(deltaY / gridUnit)
+            );
+            break;
+          }
+          case 'n': {
+            const bottom = interaction.startGridPosition.row + interaction.startGridPosition.rowSpan;
+            const deltaRows = Math.round(deltaY / gridUnit);
+            const newRow = Math.min(
+              Math.max(0, interaction.startGridPosition.row + deltaRows),
+              bottom - 1
+            );
+            newGridPos.row = newRow;
+            newGridPos.rowSpan = bottom - newRow;
+            break;
+          }
+          case 'w': {
+            const right = interaction.startGridPosition.col + interaction.startGridPosition.colSpan;
+            const deltaCols = Math.round(deltaX / gridUnit);
+            const newCol = Math.min(
+              Math.max(0, interaction.startGridPosition.col + deltaCols),
+              right - 1
+            );
+            newGridPos.col = newCol;
+            newGridPos.colSpan = right - newCol;
+            break;
+          }
+          case 'ne': {
+            const newColSpan = Math.max(
+              1,
+              interaction.startGridPosition.colSpan + Math.round(deltaX / gridUnit)
+            );
+            newGridPos.colSpan = Math.min(newColSpan, GridUtils.GRID_COLUMNS - newGridPos.col);
+            const bottom = interaction.startGridPosition.row + interaction.startGridPosition.rowSpan;
+            const deltaRows = Math.round(deltaY / gridUnit);
+            const newRow = Math.min(
+              Math.max(0, interaction.startGridPosition.row + deltaRows),
+              bottom - 1
+            );
+            newGridPos.row = newRow;
+            newGridPos.rowSpan = bottom - newRow;
+            break;
+          }
+          case 'nw': {
+            const right = interaction.startGridPosition.col + interaction.startGridPosition.colSpan;
+            const deltaCols = Math.round(deltaX / gridUnit);
+            const newCol = Math.min(
+              Math.max(0, interaction.startGridPosition.col + deltaCols),
+              right - 1
+            );
+            newGridPos.col = newCol;
+            newGridPos.colSpan = right - newCol;
+            const bottom = interaction.startGridPosition.row + interaction.startGridPosition.rowSpan;
+            const deltaRows = Math.round(deltaY / gridUnit);
+            const newRow = Math.min(
+              Math.max(0, interaction.startGridPosition.row + deltaRows),
+              bottom - 1
+            );
+            newGridPos.row = newRow;
+            newGridPos.rowSpan = bottom - newRow;
+            break;
+          }
+          case 'sw': {
+            const right = interaction.startGridPosition.col + interaction.startGridPosition.colSpan;
+            const deltaCols = Math.round(deltaX / gridUnit);
+            const newCol = Math.min(
+              Math.max(0, interaction.startGridPosition.col + deltaCols),
+              right - 1
+            );
+            newGridPos.col = newCol;
+            newGridPos.colSpan = right - newCol;
+            newGridPos.rowSpan = Math.max(
+              1,
+              interaction.startGridPosition.rowSpan + Math.round(deltaY / gridUnit)
             );
             break;
           }
