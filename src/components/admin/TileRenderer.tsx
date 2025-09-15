@@ -462,7 +462,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       </div>
 
       {/* Tile Controls */}
-      {(isSelected || isHovered) && !isEditing && !isEditingText && !isImageEditing && (
+      {(isSelected || isHovered) && !isEditingText && !isImageEditing && (
         <div className="absolute -top-8 left-0 flex items-center space-x-1 bg-white rounded-md shadow-md border border-gray-200 px-2 py-1">
           <Move className="w-3 h-3 text-gray-500" />
           <span className="text-xs text-gray-600 capitalize">{tile.type}</span>
