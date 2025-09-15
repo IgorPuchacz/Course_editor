@@ -136,13 +136,16 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           >
             <ListOrdered className="w-4 h-4" />
           </button>
+
+          <div className="w-px h-6 bg-gray-300"></div>
+          
           <button
             className={`p-2 ${editor?.isActive('code') ? 'text-gray-900' : ''}`}
             onMouseDown={e => e.preventDefault()}
             onClick={() => editor?.chain().focus().toggleCode().run()}
           >
 
-          <div className="w-px h-6 bg-gray-300"></div>
+          
             
             <Code className="w-4 h-4" />
           </button>
