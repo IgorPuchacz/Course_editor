@@ -12,6 +12,7 @@ import FontSize from '../../extensions/FontSize';
 import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
+import TextAlign from '@tiptap/extension-text-align';
 
 interface TileRendererProps {
   tile: LessonTile;
@@ -62,6 +63,7 @@ const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateT
       Color.configure({ types: ['textStyle'] }),
       FontFamily.configure({ types: ['textStyle'] }),
       FontSize,
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
     ],
     content:
       textTile.content.richText ||

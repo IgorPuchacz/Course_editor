@@ -5,6 +5,7 @@ import { FontSizeSelector } from './FontSizeSelector';
 import { TextColorPicker } from './TextColorPicker';
 import { SimpleFontSelector } from './SimpleFontSelector';
 import { AlignmentControls } from './AlignmentControls';
+import { TextTile, LessonTile } from '../../types/lessonEditor';
 
 
 interface TopToolbarProps {
@@ -15,6 +16,8 @@ interface TopToolbarProps {
   isTextEditing: boolean;
   onFinishTextEditing?: () => void;
   editor?: Editor | null;
+  selectedTile?: TextTile | null;
+  onUpdateTile?: (tileId: string, updates: Partial<LessonTile>) => void;
   className?: string;
 }
 
@@ -26,13 +29,15 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   isTextEditing,
   onFinishTextEditing,
   editor,
+  selectedTile,
+  onUpdateTile,
   className = ''
 }) => {
   const [currentFont, setCurrentFont] = useState('Inter, system-ui, sans-serif');
   const [currentSize, setCurrentSize] = useState(16);
   const [currentColor, setCurrentColor] = useState('#000000');
   const [horizontalAlign, setHorizontalAlign] = useState<'left' | 'center' | 'right' | 'justify'>('left');
-  const [verticalAlign, setVerticalAlign] = useState<'top' | 'middle' | 'bottom'>('top');
+  const [verticalAlign, setVerticalAlign] = useState<'top' | 'center' | 'bottom'>('top');
 
   useEffect(() => {
     if (!editor) return;
@@ -43,6 +48,12 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
       const sizeAttr = attrs.fontSize ? parseInt(attrs.fontSize) : 16;
       setCurrentSize(sizeAttr || 16);
       setCurrentColor(attrs.color || '#000000');
+
+      const alignAttr =
+        editor.getAttributes('paragraph').textAlign ||
+        editor.getAttributes('heading').textAlign ||
+        'left';
+      setHorizontalAlign(alignAttr);
     };
 
     updateAttributes();
@@ -55,6 +66,12 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
       editor.off('transaction', updateAttributes);
     };
   }, [editor]);
+
+  useEffect(() => {
+    if (selectedTile) {
+      setVerticalAlign(selectedTile.content.verticalAlign);
+    }
+  }, [selectedTile]);
 
   // Enhanced button styling for formatting buttons
   const getFormattingButtonClass = (isActive: boolean, isDisabled = false) => {
@@ -130,11 +147,21 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           <div className="w-px h-6 bg-gray-300"></div>
           
           {/* Alignment Controls */}
-          <AlignmentControls 
+          <AlignmentControls
             selectedHorizontal={horizontalAlign}
             selectedVertical={verticalAlign}
-            onHorizontalChange={setHorizontalAlign}
-            onVerticalChange={setVerticalAlign}
+            onHorizontalChange={(align) => {
+              setHorizontalAlign(align);
+              editor?.chain().focus().setTextAlign(align).run();
+            }}
+            onVerticalChange={(align) => {
+              setVerticalAlign(align);
+              if (selectedTile && onUpdateTile) {
+                onUpdateTile(selectedTile.id, {
+                  content: { ...selectedTile.content, verticalAlign: align }
+                });
+              }
+            }}
           />
           
           <div className="w-px h-6 bg-gray-300"></div>

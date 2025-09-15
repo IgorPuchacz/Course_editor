@@ -3,9 +3,9 @@ import { AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react';
 
 interface AlignmentControlsProps {
   selectedHorizontal?: 'left' | 'center' | 'right' | 'justify';
-  selectedVertical?: 'top' | 'middle' | 'bottom';
+  selectedVertical?: 'top' | 'center' | 'bottom';
   onHorizontalChange?: (alignment: 'left' | 'center' | 'right' | 'justify') => void;
-  onVerticalChange?: (alignment: 'top' | 'middle' | 'bottom') => void;
+  onVerticalChange?: (alignment: 'top' | 'center' | 'bottom') => void;
   className?: string;
 }
 
@@ -25,7 +25,7 @@ export const AlignmentControls: React.FC<AlignmentControlsProps> = ({
 
   const verticalAlignments = [
     { id: 'top' as const, label: 'Góra', symbol: '⤴' },
-    { id: 'middle' as const, label: 'Środek', symbol: '↔' },
+    { id: 'center' as const, label: 'Środek', symbol: '↔' },
     { id: 'bottom' as const, label: 'Dół', symbol: '⤵' }
   ];
 
