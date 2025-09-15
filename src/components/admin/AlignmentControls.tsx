@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react';
+import { AlignLeft, AlignCenter, AlignRight, AlignJustify, ArrowUpToLine, MoveVertical, ArrowDownToLine } from 'lucide-react';
 
 interface AlignmentControlsProps {
   selectedHorizontal?: 'left' | 'center' | 'right' | 'justify';
@@ -24,9 +24,9 @@ export const AlignmentControls: React.FC<AlignmentControlsProps> = ({
   ];
 
   const verticalAlignments = [
-    { id: 'top' as const, label: 'Góra', symbol: '⤴' },
-    { id: 'middle' as const, label: 'Środek', symbol: '↔' },
-    { id: 'bottom' as const, label: 'Dół', symbol: '⤵' }
+    { id: 'top' as const, icon: ArrowUpToLine, label: 'Góra' },
+    { id: 'middle' as const, icon: MoveVertical, label: 'Środek' },
+    { id: 'bottom' as const, icon: ArrowDownToLine, label: 'Dół' }
   ];
 
   return (
@@ -57,7 +57,7 @@ export const AlignmentControls: React.FC<AlignmentControlsProps> = ({
       {/* Vertical Alignment Section */}
       <div className="flex items-center space-x-1">
         <div className="flex items-center bg-gray-50 rounded-lg p-1 border border-gray-200">
-          {verticalAlignments.map(({ id, label, symbol }) => (
+          {verticalAlignments.map(({ id, icon: Icon, label }) => (
             <button
               key={id}
               onMouseDown={(e) => e.preventDefault()}
@@ -69,7 +69,7 @@ export const AlignmentControls: React.FC<AlignmentControlsProps> = ({
               }`}
               title={label}
             >
-              <span className="text-sm font-medium">{symbol}</span>
+              <Icon className="w-4 h-4" />
             </button>
           ))}
         </div>

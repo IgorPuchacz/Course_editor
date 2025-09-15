@@ -138,7 +138,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                       className="w-5 h-5 text-blue-600"
                   />
                   <div>
-                    <span className="text-sm font-medium text-gray-900">Pokaż ramkę kafelka</span>
+                    <span className="text-sm font-medium text-gray-900">Pokaż obramowanie kafelka</span>
                     <p className="text-xs text-gray-600 mt-1">
                       Gdy wyłączone, tekst wtopi się w tło bez wizualnej ramki
                     </p>

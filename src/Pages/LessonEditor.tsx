@@ -338,7 +338,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
                 className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
-                <span>Powrót do edytora kursów</span>
+                <span>Powrót</span>
               </button>
               
               <div className="h-6 w-px bg-gray-300"></div>
