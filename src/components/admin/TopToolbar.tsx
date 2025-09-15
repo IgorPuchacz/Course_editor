@@ -69,8 +69,6 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             }}
           />
           
-          <div className="w-px h-6 bg-gray-300"></div>
-          
           {/* Font Size Selector */}
           <FontSizeSelector
             selectedSize={currentSize}
@@ -78,8 +76,6 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
               editor?.chain().focus().setFontSize(size).run();
             }}
           />
-          
-          <div className="w-px h-6 bg-gray-300"></div>
           
           {/* Text Color Picker */}
           <TextColorPicker
