@@ -35,7 +35,7 @@ const ToastComponent: React.FC<ToastProps> = ({ toast, onClose }) => {
   };
 
   return (
-    <div className={`max-w-sm w-full ${getBgColor()} border rounded-lg shadow-lg p-4 mb-4`}>
+    <div className={`min-w-[300px] max-w-sm ${getBgColor()} border rounded-lg shadow-lg p-4 mb-4`}>
       <div className="flex items-start">
         <div className="flex-shrink-0">
           {getIcon()}
