@@ -3,7 +3,7 @@ import { Bold, Italic, Underline, List, ListOrdered, Undo, Redo, Code, FileCode,
 import { Editor } from '@tiptap/react';
 import { FontSizeSelector } from './FontSizeSelector';
 import { TextColorPicker } from './TextColorPicker';
-import { SimpleFontSelector } from './SimpleFontSelector';
+import { FontSelector } from './FontSelector.tsx';
 import { AlignmentControls } from './AlignmentControls';
 import { LessonTile, TextTile } from '../../types/lessonEditor.ts';
 
@@ -107,7 +107,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
       >
         <div className="flex items-center space-x-2 text-gray-600" onMouseDown={(e) => e.preventDefault()}>
           {/* Font Family Selector */}
-          <SimpleFontSelector
+          <FontSelector
             selectedFont={currentFont}
             onChange={(font) => {
               editor?.chain().focus().setFontFamily(font).run();

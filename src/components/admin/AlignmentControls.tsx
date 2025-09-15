@@ -3,9 +3,9 @@ import { AlignLeft, AlignCenter, AlignRight, AlignJustify, ArrowUpToLine, MoveVe
 
 interface AlignmentControlsProps {
   selectedHorizontal?: 'left' | 'center' | 'right' | 'justify';
-  selectedVertical?: 'top' | 'middle' | 'bottom';
+  selectedVertical?: 'top' | 'center' | 'bottom';
   onHorizontalChange?: (alignment: 'left' | 'center' | 'right' | 'justify') => void;
-  onVerticalChange?: (alignment: 'top' | 'middle' | 'bottom') => void;
+  onVerticalChange?: (alignment: 'top' | 'center' | 'bottom') => void;
   className?: string;
 }
 
@@ -25,7 +25,7 @@ export const AlignmentControls: React.FC<AlignmentControlsProps> = ({
 
   const verticalAlignments = [
     { id: 'top' as const, icon: ArrowUpToLine, label: 'Góra' },
-    { id: 'middle' as const, icon: MoveVertical, label: 'Środek' },
+    { id: 'center' as const, icon: MoveVertical, label: 'Środek' },
     { id: 'bottom' as const, icon: ArrowDownToLine, label: 'Dół' }
   ];
 
