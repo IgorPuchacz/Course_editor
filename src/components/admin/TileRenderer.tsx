@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Puzzle, HelpCircle, Move, Trash2 } from 'lucide-react';
-import { LessonTile, TextTile, ImageTile, InteractiveTile, QuizTile } from '../../types/lessonEditor';
+import { LessonTile, TextTile, ImageTile, InteractiveTile, QuizTile, ProgrammingTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -317,6 +317,132 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
             )}
           </div>
         ); }
+
+      case 'programming': {
+        const programmingTile = tile as ProgrammingTile;
+
+        // If this programming tile is being edited, use Tiptap editor for description
+        if (isEditingText && isSelected) {
+          return (
+            <div className="w-full h-full flex flex-col">
+              {/* Rich Text Editor for Description */}
+              <div className="flex-shrink-0 max-h-[40%] overflow-hidden">
+                <TextTileEditor
+                  textTile={{
+                    ...tile,
+                    type: 'text',
+                    content: {
+                      text: programmingTile.content.description,
+                      richText: programmingTile.content.richDescription,
+                      fontFamily: programmingTile.content.fontFamily,
+                      fontSize: programmingTile.content.fontSize,
+                      verticalAlign: 'top',
+                      backgroundColor: programmingTile.content.backgroundColor,
+                      showBorder: programmingTile.content.showBorder,
+                    }
+                  } as TextTile}
+                  tileId={tile.id}
+                  onUpdateTile={(tileId, updates) => {
+                    if (updates.content) {
+                      onUpdateTile(tileId, {
+                        content: {
+                          ...programmingTile.content,
+                          description: updates.content.text || programmingTile.content.description,
+                          richDescription: updates.content.richText || programmingTile.content.richDescription,
+                        }
+                      });
+                    }
+                  }}
+                  onFinishTextEditing={onFinishTextEditing}
+                  onEditorReady={onEditorReady}
+                />
+              </div>
+              
+              {/* Code Editor Section */}
+              <div className="flex-1 border-t border-gray-200">
+                <textarea
+                  value={programmingTile.content.code}
+                  onChange={(e) => onUpdateTile(tile.id, {
+                    content: {
+                      ...programmingTile.content,
+                      code: e.target.value
+                    }
+                  })}
+                  className="w-full h-full p-4 bg-gray-900 text-green-400 font-mono text-sm resize-none border-none outline-none"
+                  style={{
+                    fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
+                    lineHeight: '1.5',
+                    tabSize: 4
+                  }}
+                  placeholder={`# Napisz swój kod ${programmingTile.content.language} tutaj...`}
+                  spellCheck={false}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Tab') {
+                      e.preventDefault();
+                      const textarea = e.target as HTMLTextAreaElement;
+                      const start = textarea.selectionStart;
+                      const end = textarea.selectionEnd;
+                      const value = textarea.value;
+                      const newValue = value.substring(0, start) + '    ' + value.substring(end);
+                      
+                      onUpdateTile(tile.id, {
+                        content: {
+                          ...programmingTile.content,
+                          code: newValue
+                        }
+                      });
+                      
+                      // Set cursor position after the inserted tab
+                      setTimeout(() => {
+                        textarea.selectionStart = textarea.selectionEnd = start + 4;
+                      }, 0);
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          );
+        }
+
+        // Normal programming tile display
+        return (
+          <div className="w-full h-full flex flex-col">
+            {/* Description Section */}
+            <div 
+              className="flex-shrink-0 max-h-[40%] overflow-hidden p-3"
+              style={{
+                backgroundColor: programmingTile.content.backgroundColor,
+                fontSize: `${programmingTile.content.fontSize}px`,
+                fontFamily: programmingTile.content.fontFamily,
+              }}
+            >
+              <div
+                className="break-words rich-text-content tile-formatted-text w-full h-full overflow-auto"
+                style={{
+                  minHeight: '1em',
+                  outline: 'none'
+                }}
+                dangerouslySetInnerHTML={{
+                  __html: programmingTile.content.richDescription || `<p style="margin: 0;">${programmingTile.content.description || 'Kliknij dwukrotnie, aby edytować opis zadania'}</p>`
+                }}
+              />
+            </div>
+            
+            {/* Code Section */}
+            <div className="flex-1 border-t border-gray-200">
+              <div 
+                className="w-full h-full p-4 bg-gray-900 text-green-400 font-mono text-sm overflow-auto whitespace-pre-wrap"
+                style={{
+                  fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
+                  lineHeight: '1.5'
+                }}
+              >
+                {programmingTile.content.code || `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`}
+              </div>
+            </div>
+          </div>
+        );
+      }
 
         case 'interactive': {
           const interactiveTile = tile as InteractiveTile;
