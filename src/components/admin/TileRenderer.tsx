@@ -14,6 +14,66 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import TextAlign from '../../extensions/TextAlign';
 
+const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
+  if (!hex) return null;
+
+  let normalized = hex.replace('#', '').trim();
+  if (normalized.length === 3) {
+    normalized = normalized.split('').map((char) => `${char}${char}`).join('');
+  }
+
+  if (normalized.length !== 6) return null;
+
+  const intValue = Number.parseInt(normalized, 16);
+  if (Number.isNaN(intValue)) return null;
+
+  return {
+    r: (intValue >> 16) & 255,
+    g: (intValue >> 8) & 255,
+    b: intValue & 255,
+  };
+};
+
+const channelToLinear = (value: number): number => {
+  const scaled = value / 255;
+  return scaled <= 0.03928 ? scaled / 12.92 : Math.pow((scaled + 0.055) / 1.055, 2.4);
+};
+
+const getReadableTextColor = (hex: string): string => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return '#0f172a';
+
+  const luminance = (0.2126 * channelToLinear(rgb.r)) +
+    (0.7152 * channelToLinear(rgb.g)) +
+    (0.0722 * channelToLinear(rgb.b));
+
+  return luminance > 0.6 ? '#0f172a' : '#f8fafc';
+};
+
+const lightenColor = (hex: string, amount: number): string => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return hex;
+
+  const lightenChannel = (channel: number) => Math.round(channel + ((255 - channel) * amount));
+
+  return `rgb(${lightenChannel(rgb.r)}, ${lightenChannel(rgb.g)}, ${lightenChannel(rgb.b)})`;
+};
+
+const darkenColor = (hex: string, amount: number): string => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return hex;
+
+  const darkenChannel = (channel: number) => Math.round(channel * (1 - amount));
+
+  return `rgb(${darkenChannel(rgb.r)}, ${darkenChannel(rgb.g)}, ${darkenChannel(rgb.b)})`;
+};
+
+const withAlpha = (hex: string, alpha: number): string => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return `rgba(15, 23, 42, ${alpha})`;
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+};
+
 interface TileRendererProps {
   tile: LessonTile;
   isSelected: boolean;
@@ -37,9 +97,10 @@ interface TextEditorProps {
   onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
   onFinishTextEditing: () => void;
   onEditorReady: (editor: Editor | null) => void;
+  textColor?: string;
 }
 
-const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateTile, onFinishTextEditing, onEditorReady }) => {
+const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateTile, onFinishTextEditing, onEditorReady, textColor }) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -121,6 +182,7 @@ const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateT
         backgroundColor: textTile.content.backgroundColor,
         fontSize: `${textTile.content.fontSize}px`,
         fontFamily: textTile.content.fontFamily,
+        color: textColor,
         display: 'flex',
         flexDirection: 'column',
         justifyContent:
@@ -161,6 +223,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 
   // Check if this is a frameless text tile
   const isFramelessTextTile = tile.type === 'text' && !(tile as TextTile).content.showBorder;
+  const isProgrammingTile = tile.type === 'programming';
 
   const handleResizeStart = (e: React.MouseEvent, handle: string) => {
     e.preventDefault();
@@ -329,141 +392,189 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       case 'programming': {
         const programmingTile = tile as ProgrammingTile;
 
+        const accentColor = programmingTile.content.backgroundColor || '#ffffff';
+        const textColor = getReadableTextColor(accentColor);
+        const gradientStart = lightenColor(accentColor, 0.08);
+        const gradientEnd = darkenColor(accentColor, 0.08);
+        const containerBorderColor = withAlpha(textColor, textColor === '#0f172a' ? 0.18 : 0.38);
+        const mutedTextColor = textColor === '#0f172a'
+          ? 'rgba(15, 23, 42, 0.65)'
+          : 'rgba(248, 250, 252, 0.82)';
+        const headerOutlineColor = withAlpha(textColor, textColor === '#0f172a' ? 0.14 : 0.32);
+        const headerShadowColor = withAlpha(textColor, textColor === '#0f172a' ? 0.28 : 0.55);
+        const chipBackground = withAlpha(textColor, textColor === '#0f172a' ? 0.16 : 0.32);
+
+        const containerStyle: React.CSSProperties = {
+          backgroundColor: accentColor,
+          backgroundImage: `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`,
+          color: textColor,
+          border: programmingTile.content.showBorder ? `1px solid ${containerBorderColor}` : 'none',
+          boxShadow: '0 22px 48px -28px rgba(15, 23, 42, 0.45)'
+        };
+
+        const descriptionContainerStyle: React.CSSProperties = {
+          backgroundColor: accentColor,
+          color: textColor,
+          border: `1px solid ${headerOutlineColor}`,
+          boxShadow: `0 24px 55px -32px ${headerShadowColor}`
+        };
+
+        const codeContainerStyle: React.CSSProperties = {
+          borderColor: 'rgba(15, 23, 42, 0.4)',
+          backgroundColor: 'rgba(2, 6, 23, 0.86)',
+          boxShadow: '0 28px 65px -36px rgba(15, 23, 42, 0.65)'
+        };
+
+        const renderDescriptionBlock = (content: React.ReactNode) => (
+          <div
+            className="flex-shrink-0 max-h-[45%] overflow-hidden rounded-2xl border transition-colors duration-300"
+            style={descriptionContainerStyle}
+          >
+            <div className="px-5 pt-5 pb-3 flex items-center gap-3">
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm"
+                style={{ backgroundColor: chipBackground, color: textColor }}
+              >
+                <Code2 className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs uppercase tracking-[0.22em] font-semibold" style={{ color: mutedTextColor }}>
+                  Zadanie programistyczne
+                </span>
+                <span className="text-sm font-semibold tracking-tight" style={{ color: textColor }}>
+                  Opis zadania
+                </span>
+              </div>
+            </div>
+            <div className="px-5 pb-5 h-full">
+              {content}
+            </div>
+          </div>
+        );
+
         // If this programming tile is being edited, use Tiptap editor for description
         if (isEditingText && isSelected) {
           contentToRender = (
-            <div className="w-full h-full flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg overflow-hidden">
-              {/* Rich Text Editor for Description */}
-              <div className="flex-shrink-0 max-h-[40%] overflow-hidden p-4 bg-white border-b border-slate-200">
-                <div className="flex items-center space-x-2 mb-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center">
-                    <Code2 className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <span className="text-sm font-medium text-slate-700">Opis zadania</span>
-                </div>
-                <TextTileEditor
-                  textTile={{
-                    ...tile,
-                    type: 'text',
-                    content: {
-                      text: programmingTile.content.description,
-                      richText: programmingTile.content.richDescription,
-                      fontFamily: programmingTile.content.fontFamily,
-                      fontSize: programmingTile.content.fontSize,
-                      verticalAlign: 'top',
-                      backgroundColor: programmingTile.content.backgroundColor,
-                      showBorder: programmingTile.content.showBorder,
-                    }
-                  } as TextTile}
-                  tileId={tile.id}
-                  onUpdateTile={(tileId, updates) => {
-                    if (updates.content) {
-                      onUpdateTile(tileId, {
-                        content: {
-                          ...programmingTile.content,
-                          description: updates.content.text || programmingTile.content.description,
-                          richDescription: updates.content.richText || programmingTile.content.richDescription,
-                        }
-                      });
-                    }
-                  }}
-                  onFinishTextEditing={onFinishTextEditing}
-                  onEditorReady={onEditorReady}
-                />
-              </div>
-              
-              {/* Code Editor Section with Toolbar */}
-              <div className="flex-1 flex flex-col m-3 mt-0 rounded-lg overflow-hidden shadow-sm">
-                {/* Code Toolbar */}
-                <div className="flex items-center justify-between bg-slate-800 border-b border-slate-700 px-4 py-3 shadow-sm">
-                  <div className="flex items-center space-x-3">
-                    {/* Run Button */}
-                    <button
-                      className="flex items-center justify-center w-9 h-9 bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md group"
-                      title="Uruchom kod"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Play className="w-4 h-4 text-white fill-white" />
-                    </button>
-                    
-                    {/* Stop Button */}
-                    <button
-                      className="flex items-center justify-center w-9 h-9 bg-red-600 hover:bg-red-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
-                      title="Zatrzymaj kod"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Square className="w-4 h-4 text-white fill-white" />
-                    </button>
-                    
-                    {/* Separator */}
-                    <div className="w-px h-5 bg-slate-600"></div>
-                    
-                    {/* Status Indicator */}
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-slate-500 rounded-full"></div>
-                      <span className="text-xs text-slate-400">Gotowy</span>
+            <div className="w-full h-full flex flex-col rounded-2xl transition-all duration-300" style={containerStyle}>
+              <div className="flex flex-col flex-1 gap-5 p-5">
+                {renderDescriptionBlock(
+                  <TextTileEditor
+                    textTile={{
+                      ...tile,
+                      type: 'text',
+                      content: {
+                        text: programmingTile.content.description,
+                        richText: programmingTile.content.richDescription,
+                        fontFamily: programmingTile.content.fontFamily,
+                        fontSize: programmingTile.content.fontSize,
+                        verticalAlign: 'top',
+                        backgroundColor: programmingTile.content.backgroundColor,
+                        showBorder: programmingTile.content.showBorder,
+                      }
+                    } as TextTile}
+                    tileId={tile.id}
+                    textColor={textColor}
+                    onUpdateTile={(tileId, updates) => {
+                      if (updates.content) {
+                        onUpdateTile(tileId, {
+                          content: {
+                            ...programmingTile.content,
+                            description: updates.content.text || programmingTile.content.description,
+                            richDescription: updates.content.richText || programmingTile.content.richDescription,
+                          }
+                        });
+                      }
+                    }}
+                    onFinishTextEditing={onFinishTextEditing}
+                    onEditorReady={onEditorReady}
+                  />
+                )}
+
+                <div
+                  className="flex-1 flex flex-col rounded-2xl overflow-hidden border backdrop-blur-sm transition-colors duration-300"
+                  style={codeContainerStyle}
+                >
+                  <div
+                    className="flex items-center justify-between px-5 py-4 border-b"
+                    style={{
+                      borderColor: 'rgba(255, 255, 255, 0.08)',
+                      backgroundColor: 'rgba(15, 23, 42, 0.92)'
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <button
+                        className="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-500/90 hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-500/30"
+                        title="Uruchom kod"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Play className="w-4 h-4 text-white fill-white" />
+                      </button>
+                      <button
+                        className="flex items-center justify-center w-10 h-10 rounded-xl bg-rose-500/90 hover:bg-rose-500 transition-colors shadow-lg shadow-rose-500/30"
+                        title="Zatrzymaj kod"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Square className="w-4 h-4 text-white fill-white" />
+                      </button>
+                      <div className="w-px h-6 bg-white/10" />
+                      <div className="flex items-center gap-2 text-xs font-medium" style={{ color: 'rgba(226, 232, 240, 0.75)' }}>
+                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span>Gotowy</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-[0.28em]" style={{ color: 'rgba(226, 232, 240, 0.7)' }}>
+                      <Code2 className="w-4 h-4" />
+                      <span>{programmingTile.content.language.toUpperCase()}</span>
                     </div>
                   </div>
-                  
-                  {/* Language Indicator */}
-                  <div className="flex items-center space-x-2">
-                    <Code2 className="w-4 h-4 text-slate-400" />
-                    <span className="text-xs text-slate-300 font-mono font-medium uppercase tracking-wider">
-                    {programmingTile.content.language.toUpperCase()}
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Code Textarea */}
-                <div className="flex-1 relative bg-slate-900">
-                <textarea
-                  value={programmingTile.content.code}
-                  onChange={(e) => onUpdateTile(tile.id, {
-                    content: {
-                      ...programmingTile.content,
-                      code: e.target.value
-                    }
-                  })}
-                  className="w-full h-full p-6 bg-slate-900 text-emerald-400 font-mono text-sm resize-none border-none outline-none leading-relaxed"
-                  style={{
-                    fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
-                    lineHeight: '1.6',
-                    tabSize: 4
-                  }}
-                  placeholder={`# Napisz swój kod ${programmingTile.content.language} tutaj...`}
-                  spellCheck={false}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Tab') {
-                      e.preventDefault();
-                      const textarea = e.target as HTMLTextAreaElement;
-                      const start = textarea.selectionStart;
-                      const end = textarea.selectionEnd;
-                      const value = textarea.value;
-                      const newValue = value.substring(0, start) + '    ' + value.substring(end);
-                      
-                      onUpdateTile(tile.id, {
+
+                  <div className="flex-1 relative">
+                    <textarea
+                      value={programmingTile.content.code}
+                      onChange={(e) => onUpdateTile(tile.id, {
                         content: {
                           ...programmingTile.content,
-                          code: newValue
+                          code: e.target.value
                         }
-                      });
-                      
-                      // Set cursor position after the inserted tab
-                      setTimeout(() => {
-                        textarea.selectionStart = textarea.selectionEnd = start + 4;
-                      }, 0);
-                    }
-                  }}
-                />
-                
-                {/* Line numbers overlay (visual enhancement) */}
-                <div className="absolute left-2 top-6 text-slate-600 text-sm font-mono leading-relaxed pointer-events-none select-none">
-                  {programmingTile.content.code.split('\n').map((_, index) => (
-                    <div key={index} className="h-[1.6em] flex items-center">
-                      <span className="text-xs">{index + 1}</span>
+                      })}
+                      className="w-full h-full px-14 py-6 bg-transparent text-emerald-400 font-mono text-sm resize-none border-none outline-none leading-relaxed"
+                      style={{
+                        fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
+                        lineHeight: '1.65',
+                        tabSize: 4
+                      }}
+                      placeholder={`# Napisz swój kod ${programmingTile.content.language} tutaj...`}
+                      spellCheck={false}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Tab') {
+                          e.preventDefault();
+                          const textarea = e.target as HTMLTextAreaElement;
+                          const start = textarea.selectionStart;
+                          const end = textarea.selectionEnd;
+                          const value = textarea.value;
+                          const newValue = value.substring(0, start) + '    ' + value.substring(end);
+
+                          onUpdateTile(tile.id, {
+                            content: {
+                              ...programmingTile.content,
+                              code: newValue
+                            }
+                          });
+
+                          setTimeout(() => {
+                            textarea.selectionStart = textarea.selectionEnd = start + 4;
+                          }, 0);
+                        }
+                      }}
+                    />
+                    <div className="pointer-events-none select-none absolute left-5 top-6 text-xs font-mono leading-relaxed" style={{ color: 'rgba(148, 163, 184, 0.55)' }}>
+                      {programmingTile.content.code.split('\n').map((_, index) => (
+                        <div key={index} className="h-[1.65em] flex items-center">
+                          <span>{index + 1}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -471,96 +582,80 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         } else {
           // Normal programming tile display
           contentToRender = (
-            <div className="w-full h-full flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg overflow-hidden">
-              {/* Description Section */}
-              <div 
-                className="flex-shrink-0 max-h-[40%] overflow-hidden p-4 bg-white border-b border-slate-200"
-                style={{
-                  backgroundColor: programmingTile.content.backgroundColor,
-                  fontSize: `${programmingTile.content.fontSize}px`,
-                  fontFamily: programmingTile.content.fontFamily,
-                }}
-              >
-                <div className="flex items-center space-x-2 mb-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center">
-                    <Code2 className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <span className="text-sm font-medium text-slate-700">Opis zadania</span>
-                </div>
+            <div className="w-full h-full flex flex-col rounded-2xl transition-all duration-300" style={containerStyle}>
+              <div className="flex flex-col flex-1 gap-5 p-5">
+                {renderDescriptionBlock(
+                  <div
+                    className="break-words rich-text-content tile-formatted-text w-full h-full overflow-auto"
+                    style={{
+                      minHeight: '1em',
+                      outline: 'none',
+                      color: textColor,
+                      fontSize: `${programmingTile.content.fontSize}px`,
+                      fontFamily: programmingTile.content.fontFamily
+                    }}
+                    dangerouslySetInnerHTML={{
+                      __html: programmingTile.content.richDescription || `<p style="margin: 0;">${programmingTile.content.description || 'Kliknij dwukrotnie, aby edytować opis zadania'}</p>`
+                    }}
+                  />
+                )}
+
                 <div
-                  className="break-words rich-text-content tile-formatted-text w-full h-full overflow-auto"
-                  style={{
-                    minHeight: '1em',
-                    outline: 'none'
-                  }}
-                  dangerouslySetInnerHTML={{
-                    __html: programmingTile.content.richDescription || `<p style="margin: 0;">${programmingTile.content.description || 'Kliknij dwukrotnie, aby edytować opis zadania'}</p>`
-                  }}
-                />
-              </div>
-              
-              {/* Code Section with Toolbar */}
-              <div className="flex-1 flex flex-col m-3 mt-0 rounded-lg overflow-hidden shadow-sm">
-                {/* Code Toolbar */}
-                <div className="flex items-center justify-between bg-slate-800 border-b border-slate-700 px-4 py-3 shadow-sm">
-                  <div className="flex items-center space-x-3">
-                    {/* Run Button */}
-                    <button
-                      className="flex items-center justify-center w-9 h-9 bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md group"
-                      title="Uruchom kod"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Play className="w-4 h-4 text-white fill-white" />
-                    </button>
-                    
-                    {/* Stop Button */}
-                    <button
-                      className="flex items-center justify-center w-9 h-9 bg-red-600 hover:bg-red-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
-                      title="Zatrzymaj kod"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Square className="w-4 h-4 text-white fill-white" />
-                    </button>
-                    
-                    {/* Separator */}
-                    <div className="w-px h-5 bg-slate-600"></div>
-                    
-                    {/* Status Indicator */}
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-slate-500 rounded-full"></div>
-                      <span className="text-xs text-slate-400">Gotowy</span>
-                    </div>
-                  </div>
-                  
-                  {/* Language Indicator */}
-                  <div className="flex items-center space-x-2">
-                    <Code2 className="w-4 h-4 text-slate-400" />
-                    <span className="text-xs text-slate-300 font-mono font-medium uppercase tracking-wider">
-                    {programmingTile.content.language.toUpperCase()}
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Code Display */}
-                <div className="flex-1 relative bg-slate-900">
-                <div 
-                  className="w-full h-full p-6 bg-slate-900 text-emerald-400 font-mono text-sm overflow-auto whitespace-pre-wrap leading-relaxed"
-                  style={{
-                    fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
-                    lineHeight: '1.6'
-                  }}
+                  className="flex-1 flex flex-col rounded-2xl overflow-hidden border backdrop-blur-sm transition-colors duration-300"
+                  style={codeContainerStyle}
                 >
-                  {programmingTile.content.code || `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`}
-                </div>
-                
-                {/* Line numbers overlay (visual enhancement) */}
-                <div className="absolute left-2 top-6 text-slate-600 text-sm font-mono leading-relaxed pointer-events-none select-none">
-                  {(programmingTile.content.code || `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`).split('\n').map((_, index) => (
-                    <div key={index} className="h-[1.6em] flex items-center">
-                      <span className="text-xs">{index + 1}</span>
+                  <div
+                    className="flex items-center justify-between px-5 py-4 border-b"
+                    style={{
+                      borderColor: 'rgba(255, 255, 255, 0.08)',
+                      backgroundColor: 'rgba(15, 23, 42, 0.92)'
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <button
+                        className="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-500/90 hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-500/30"
+                        title="Uruchom kod"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Play className="w-4 h-4 text-white fill-white" />
+                      </button>
+                      <button
+                        className="flex items-center justify-center w-10 h-10 rounded-xl bg-rose-500/90 hover:bg-rose-500 transition-colors shadow-lg shadow-rose-500/30"
+                        title="Zatrzymaj kod"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Square className="w-4 h-4 text-white fill-white" />
+                      </button>
+                      <div className="w-px h-6 bg-white/10" />
+                      <div className="flex items-center gap-2 text-xs font-medium" style={{ color: 'rgba(226, 232, 240, 0.75)' }}>
+                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span>Gotowy</span>
+                      </div>
                     </div>
-                  ))}
-                </div>
+                    <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-[0.28em]" style={{ color: 'rgba(226, 232, 240, 0.7)' }}>
+                      <Code2 className="w-4 h-4" />
+                      <span>{programmingTile.content.language.toUpperCase()}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 relative">
+                    <div
+                      className="w-full h-full px-14 py-6 text-emerald-400 font-mono text-sm overflow-auto whitespace-pre leading-loose"
+                      style={{
+                        fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
+                        lineHeight: '1.65'
+                      }}
+                    >
+                      {programmingTile.content.code || `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`}
+                    </div>
+                    <div className="pointer-events-none select-none absolute left-5 top-6 text-xs font-mono leading-relaxed" style={{ color: 'rgba(148, 163, 184, 0.55)' }}>
+                      {(programmingTile.content.code || `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`).split('\n').map((_, index) => (
+                        <div key={index} className="h-[1.65em] flex items-center">
+                          <span>{index + 1}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -704,10 +799,10 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       onMouseLeave={handleMouseLeave}
     >
       {/* Tile Content */}
-      <div 
-        className={`w-full h-full overflow-hidden ${
-          isFramelessTextTile 
-            ? '' 
+      <div
+        className={`w-full h-full ${isProgrammingTile ? 'overflow-visible' : 'overflow-hidden'} ${
+          isFramelessTextTile || isProgrammingTile
+            ? ''
             : 'bg-white border border-gray-200 shadow-sm rounded-lg'
         }`}
         style={isFramelessTextTile ? {
