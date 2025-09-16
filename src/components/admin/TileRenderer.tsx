@@ -13,6 +13,7 @@ import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import TextAlign from '../../extensions/TextAlign';
+import UnifiedCodeBlock from '../../extensions/UnifiedCodeBlock';
 
 interface TileRendererProps {
   tile: LessonTile;
@@ -46,7 +47,9 @@ const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateT
         bulletList: false,
         orderedList: false,
         listItem: false,
+        codeBlock: false,
       }),
+      UnifiedCodeBlock,
       BulletList.configure({
         HTMLAttributes: { class: 'bullet-list' },
         keepMarks: true,
