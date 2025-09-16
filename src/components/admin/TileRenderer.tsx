@@ -219,111 +219,119 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   };
 
   const renderTileContent = () => {
+    let contentToRender: JSX.Element;
+
     switch (tile.type) {
       case 'text':
-        { const textTile = tile as TextTile;
+        {
+          const textTile = tile as TextTile;
 
-        // If this text tile is being edited, use Tiptap editor
-        if (isEditingText && isSelected) {
-          return (
-            <TextTileEditor
-              textTile={textTile}
-              tileId={tile.id}
-              onUpdateTile={onUpdateTile}
-              onFinishTextEditing={onFinishTextEditing}
-              onEditorReady={onEditorReady}
-            />
-          );
+          // If this text tile is being edited, use Tiptap editor
+          if (isEditingText && isSelected) {
+            contentToRender = (
+              <TextTileEditor
+                textTile={textTile}
+                tileId={tile.id}
+                onUpdateTile={onUpdateTile}
+                onFinishTextEditing={onFinishTextEditing}
+                onEditorReady={onEditorReady}
+              />
+            );
+          } else {
+            // Normal text tile display
+            contentToRender = (
+              <>
+                <div
+                  className="w-full h-full p-3 overflow-hidden tile-text-content"
+                  style={{
+                    backgroundColor: textTile.content.backgroundColor,
+                    fontSize: `${textTile.content.fontSize}px`,
+                    fontFamily: textTile.content.fontFamily,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: textTile.content.verticalAlign === 'center' ? 'center' :
+                                   textTile.content.verticalAlign === 'bottom' ? 'flex-end' : 'flex-start'
+                  }}
+                >
+                  <div
+                    className="break-words rich-text-content tile-formatted-text w-full"
+                    style={{
+                      minHeight: '1em',
+                      outline: 'none'
+                    }}
+                    dangerouslySetInnerHTML={{
+                      __html: textTile.content.richText || `<p style="margin: 0;">${textTile.content.text || 'Kliknij dwukrotnie, aby edytować'}</p>`
+                    }}
+                  />
+                </div>
+              </>
+            );
+          }
+          break;
         }
 
-        // Normal text tile display
-        return (
-          <>
-            <div
-              className="w-full h-full p-3 overflow-hidden tile-text-content"
-              style={{
-                backgroundColor: textTile.content.backgroundColor,
-                fontSize: `${textTile.content.fontSize}px`,
-                fontFamily: textTile.content.fontFamily,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: textTile.content.verticalAlign === 'center' ? 'center' :
-                               textTile.content.verticalAlign === 'bottom' ? 'flex-end' : 'flex-start'
-              }}
-            >
-              <div
-                className="break-words rich-text-content tile-formatted-text w-full"
-                style={{
-                  minHeight: '1em',
-                  outline: 'none'
-                }}
-                dangerouslySetInnerHTML={{
-                  __html: textTile.content.richText || `<p style="margin: 0;">${textTile.content.text || 'Kliknij dwukrotnie, aby edytować'}</p>`
-                }}
-              />
-            </div>
-          </>
-        ); }
-
       case 'image':
-        { const imageTile = tile as ImageTile;
-        const imagePosition = imageTile.content.position || { x: 0, y: 0 };
-        const imageScale = imageTile.content.scale || 1;
+        {
+          const imageTile = tile as ImageTile;
+          const imagePosition = imageTile.content.position || { x: 0, y: 0 };
+          const imageScale = imageTile.content.scale || 1;
 
-        console.log('Rendering image tile:', imageTile.id, 'position:', imagePosition, 'scale:', imageScale, 'updated_at:', imageTile.updated_at);
+          console.log('Rendering image tile:', imageTile.id, 'position:', imagePosition, 'scale:', imageScale, 'updated_at:', imageTile.updated_at);
 
-        return (
-          <div className="w-full h-full bg-gray-100 rounded-lg overflow-hidden relative">
-            <div
-              className="w-full h-full relative overflow-hidden"
-              style={{ cursor: isSelected && isImageEditing ? 'grab' : 'default' }}
-            >
-              <img
-                src={imageTile.content.url}
-                alt={imageTile.content.alt}
-                className={`absolute select-none ${
-                  isSelected && isImageEditing ? 'cursor-grab active:cursor-grabbing' : ''
-                }`}
-                style={{
-                  left: imagePosition.x,
-                  top: imagePosition.y,
-                  transform: `scale(${imageScale})`,
-                  transformOrigin: '0 0',
-                  maxWidth: 'none',
-                  maxHeight: 'none',
-                  cursor: isSelected && isImageEditing ? (isDraggingImage ? 'grabbing' : 'grab') : 'default'
-                }}
-                onMouseDown={isSelected && isImageEditing ? (e) => {
-                  console.log('🖱️ Image onMouseDown triggered in TileRenderer');
-                  handleImageDragStart(e, imageTile);
-                } : undefined}
-                onWheel={isSelected && isImageEditing ? (e) => {
-                  handleImageWheel(e, imageTile);
-                } : undefined}
-                draggable={false}
-                onError={(e) => {
-                  console.error('Image failed to load:', imageTile.content.url.substring(0, 100));
-                  (e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400';
-                }}
-                onLoad={() => {
-                  console.log('Image loaded successfully');
-                }}
-              />
-            </div>
-            {imageTile.content.caption && (
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent text-white text-xs p-3 rounded-b-lg">
-                {imageTile.content.caption}
+          contentToRender = (
+            <div className="w-full h-full bg-gray-100 rounded-lg overflow-hidden relative">
+              <div
+                className="w-full h-full relative overflow-hidden"
+                style={{ cursor: isSelected && isImageEditing ? 'grab' : 'default' }}
+              >
+                <img
+                  src={imageTile.content.url}
+                  alt={imageTile.content.alt}
+                  className={`absolute select-none ${
+                    isSelected && isImageEditing ? 'cursor-grab active:cursor-grabbing' : ''
+                  }`}
+                  style={{
+                    left: imagePosition.x,
+                    top: imagePosition.y,
+                    transform: `scale(${imageScale})`,
+                    transformOrigin: '0 0',
+                    maxWidth: 'none',
+                    maxHeight: 'none',
+                    cursor: isSelected && isImageEditing ? (isDraggingImage ? 'grabbing' : 'grab') : 'default'
+                  }}
+                  onMouseDown={isSelected && isImageEditing ? (e) => {
+                    console.log('🖱️ Image onMouseDown triggered in TileRenderer');
+                    handleImageDragStart(e, imageTile);
+                  } : undefined}
+                  onWheel={isSelected && isImageEditing ? (e) => {
+                    handleImageWheel(e, imageTile);
+                  } : undefined}
+                  draggable={false}
+                  onError={(e) => {
+                    console.error('Image failed to load:', imageTile.content.url.substring(0, 100));
+                    (e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400';
+                  }}
+                  onLoad={() => {
+                    console.log('Image loaded successfully');
+                  }}
+                />
               </div>
-            )}
-          </div>
-        ); }
+              {imageTile.content.caption && (
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent text-white text-xs p-3 rounded-b-lg">
+                  {imageTile.content.caption}
+                </div>
+              )}
+            </div>
+          );
+          break;
+        }
 
       case 'programming': {
         const programmingTile = tile as ProgrammingTile;
 
         // If this programming tile is being edited, use Tiptap editor for description
         if (isEditingText && isSelected) {
-          return (
+          contentToRender = (
             <div className="w-full h-full flex flex-col">
               {/* Rich Text Editor for Description */}
               <div className="flex-shrink-0 max-h-[40%] overflow-hidden p-3">
@@ -430,84 +438,84 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                 />
               </div>
           );
-        }
-
-        // Normal programming tile display
-        return (
-          <div className="w-full h-full flex flex-col">
-            {/* Description Section */}
-            <div 
-              className="flex-shrink-0 max-h-[40%] overflow-hidden p-3"
-              style={{
-                backgroundColor: programmingTile.content.backgroundColor,
-                fontSize: `${programmingTile.content.fontSize}px`,
-                fontFamily: programmingTile.content.fontFamily,
-              }}
-            >
-              <div
-                className="break-words rich-text-content tile-formatted-text w-full h-full overflow-auto"
-                style={{
-                  minHeight: '1em',
-                  outline: 'none'
-                }}
-                dangerouslySetInnerHTML={{
-                  __html: programmingTile.content.richDescription || `<p style="margin: 0;">${programmingTile.content.description || 'Kliknij dwukrotnie, aby edytować opis zadania'}</p>`
-                }}
-              />
-            </div>
-            
-            {/* Code Section with Toolbar */}
-            <div className="flex-1 flex flex-col border-t border-gray-200">
-              {/* Code Toolbar */}
-              <div className="flex items-center justify-between bg-gray-800 border-b border-gray-700 px-3 py-2">
-                <div className="flex items-center space-x-2">
-                  {/* Run Button */}
-                  <button
-                    className="flex items-center justify-center w-8 h-8 bg-green-600 hover:bg-green-700 rounded-lg transition-colors group"
-                    title="Uruchom kod"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="w-0 h-0 border-l-[6px] border-l-white border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent ml-0.5"></div>
-                  </button>
-                  
-                  {/* Stop Button */}
-                  <button
-                    className="flex items-center justify-center w-8 h-8 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
-                    title="Zatrzymaj kod"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="w-3 h-3 bg-white rounded-sm"></div>
-                  </button>
-                </div>
-                
-                {/* Language Indicator */}
-                <div className="text-xs text-gray-400 font-mono">
-                  {programmingTile.content.language.toUpperCase()}
-                </div>
-              </div>
-              
-              {/* Code Display */}
+        } else {
+          // Normal programming tile display
+          contentToRender = (
+            <div className="w-full h-full flex flex-col">
+              {/* Description Section */}
               <div 
-                className="flex-1 w-full p-4 bg-gray-900 text-green-400 font-mono text-sm overflow-auto whitespace-pre-wrap"
+                className="flex-shrink-0 max-h-[40%] overflow-hidden p-3"
                 style={{
-                  fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
-                  lineHeight: '1.5'
+                  backgroundColor: programmingTile.content.backgroundColor,
+                  fontSize: `${programmingTile.content.fontSize}px`,
+                  fontFamily: programmingTile.content.fontFamily,
                 }}
               >
-                {programmingTile.content.code || `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`}
+                <div
+                  className="break-words rich-text-content tile-formatted-text w-full h-full overflow-auto"
+                  style={{
+                    minHeight: '1em',
+                    outline: 'none'
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html: programmingTile.content.richDescription || `<p style="margin: 0;">${programmingTile.content.description || 'Kliknij dwukrotnie, aby edytować opis zadania'}</p>`
+                  }}
+                />
+              </div>
+              
+              {/* Code Section with Toolbar */}
+              <div className="flex-1 flex flex-col border-t border-gray-200">
+                {/* Code Toolbar */}
+                <div className="flex items-center justify-between bg-gray-800 border-b border-gray-700 px-3 py-2">
+                  <div className="flex items-center space-x-2">
+                    {/* Run Button */}
+                    <button
+                      className="flex items-center justify-center w-8 h-8 bg-green-600 hover:bg-green-700 rounded-lg transition-colors group"
+                      title="Uruchom kod"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="w-0 h-0 border-l-[6px] border-l-white border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent ml-0.5"></div>
+                    </button>
+                    
+                    {/* Stop Button */}
+                    <button
+                      className="flex items-center justify-center w-8 h-8 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                      title="Zatrzymaj kod"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="w-3 h-3 bg-white rounded-sm"></div>
+                    </button>
+                  </div>
+                  
+                  {/* Language Indicator */}
+                  <div className="text-xs text-gray-400 font-mono">
+                    {programmingTile.content.language.toUpperCase()}
+                  </div>
+                </div>
+                
+                {/* Code Display */}
+                <div 
+                  className="flex-1 w-full p-4 bg-gray-900 text-green-400 font-mono text-sm overflow-auto whitespace-pre-wrap"
+                  style={{
+                    fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
+                    lineHeight: '1.5'
+                  }}
+                >
+                  {programmingTile.content.code || `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`}
+                </div>
               </div>
             </div>
-            </div>
-          </div>
-        );
+          );
+        }
+        break;
       }
 
-        case 'interactive': {
+      case 'interactive': {
           const interactiveTile = tile as InteractiveTile;
         
         // Render quiz functionality if interaction type is quiz
         if (interactiveTile.content.interactionType === 'quiz') {
-          return (
+          contentToRender = (
             <div className="w-full h-full bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg p-4 flex flex-col">
               <div className="flex items-center space-x-2 mb-2">
                 <HelpCircle className="w-5 h-5 text-purple-600" />
@@ -533,10 +541,9 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
               </div>
             </div>
           );
-        }
-        
-        // Default interactive tile rendering
-          return (
+        } else {
+          // Default interactive tile rendering
+          contentToRender = (
             <div className="w-full h-full bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg p-4 flex flex-col">
               <div className="flex items-center space-x-2 mb-2">
                 <Puzzle className="w-5 h-5 text-purple-600" />
@@ -553,10 +560,12 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
             </div>
           );
         }
-
-        case 'quiz': {
+        break;
+      }
+        
+      case 'quiz': {
           const quizTile = tile as QuizTile;
-          return (
+          contentToRender = (
             <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 rounded-lg p-4 flex flex-col">
               <div className="flex items-center space-x-2 mb-2">
                 <HelpCircle className="w-5 h-5 text-green-600" />
@@ -570,14 +579,19 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
               </div>
             </div>
           ); }
+          break;
+        }
 
-        default:
-          return (
+      default:
+        contentToRender = (
             <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
               <span className="text-gray-500 text-sm">Nieznany typ kafelka</span>
             </div>
           );
+        break;
       }
+
+    return contentToRender;
   };
   const renderResizeHandles = () => {
     if (!isSelected || isEditingText || isImageEditing) return null;
