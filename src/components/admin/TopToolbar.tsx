@@ -165,7 +165,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             selectedHorizontal={horizontalAlign}
             selectedVertical={verticalAlign}
             onHorizontalChange={handleHorizontalChange}
-            onVerticalChange={handleVerticalChange}
+            onVerticalChange={selectedTile?.type === 'programming' ? undefined : handleVerticalChange}
           />
           
           <div className="w-px h-6 bg-gray-300"></div>

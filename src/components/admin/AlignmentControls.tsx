@@ -55,7 +55,8 @@ export const AlignmentControls: React.FC<AlignmentControlsProps> = ({
       <div className="w-px h-6 bg-gray-300"></div>
 
       {/* Vertical Alignment Section */}
-      <div className="flex items-center space-x-1">
+      {onVerticalChange && (
+        <div className="flex items-center space-x-1">
         <div className="flex items-center bg-gray-50 rounded-lg p-1 border border-gray-200">
           {verticalAlignments.map(({ id, icon: Icon, label }) => (
             <button
@@ -73,7 +74,8 @@ export const AlignmentControls: React.FC<AlignmentControlsProps> = ({
             </button>
           ))}
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 };
