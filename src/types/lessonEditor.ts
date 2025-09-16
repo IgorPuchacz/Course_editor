@@ -97,6 +97,8 @@ export interface ProgrammingTile extends LessonTile {
     showBorder: boolean;
     code: string; // Python code in textarea
     language: string; // Programming language (default: 'python')
+    startingCode?: string; // Code that appears at the beginning (non-editable for student)
+    endingCode?: string; // Code that appears at the end (non-editable for student)
   };
 }
 

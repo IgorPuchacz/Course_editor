@@ -1,6 +1,6 @@
 import React from 'react';
 import { Type, X } from 'lucide-react';
-import { TextTile, ImageTile, LessonTile } from '../../types/lessonEditor.ts';
+import { TextTile, ImageTile, LessonTile, ProgrammingTile } from '../../types/lessonEditor.ts';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
 
@@ -232,6 +232,41 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
               </select>
             </div>
 
+            {/* Starting Code */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Kod początkowy
+              </label>
+              <p className="text-xs text-gray-600 mb-2">
+                Kod wyświetlany na początku edytora (niemodyfikowalny dla ucznia)
+              </p>
+              <textarea
+                value={programmingTile.content.startingCode || ''}
+                onChange={(e) => handleContentUpdate('startingCode', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono resize-vertical"
+                rows={4}
+                placeholder="np. value1 = 23&#10;value2 = ['abc', 'def', 'ghi']"
+                style={{ fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace" }}
+              />
+            </div>
+
+            {/* Ending Code */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Kod końcowy
+              </label>
+              <p className="text-xs text-gray-600 mb-2">
+                Kod wyświetlany na końcu edytora (niemodyfikowalny dla ucznia)
+              </p>
+              <textarea
+                value={programmingTile.content.endingCode || ''}
+                onChange={(e) => handleContentUpdate('endingCode', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono resize-vertical"
+                rows={4}
+                placeholder="np. print(value1, value2)"
+                style={{ fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace" }}
+              />
+            </div>
             {/* Info Box */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-start space-x-3">
@@ -243,8 +278,8 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                 <div>
                   <h4 className="text-sm font-medium text-blue-900 mb-1">Zadanie programistyczne</h4>
                   <p className="text-xs text-blue-700">
-                    Górna sekcja zawiera opis zadania z formatowaniem tekstu. 
-                    Dolna sekcja to edytor kodu - w przyszłości będzie obsługiwać wykonywanie kodu Python.
+                    Górna sekcja zawiera opis zadania z formatowaniem tekstu. Dolna sekcja to edytor kodu z opcjonalnym kodem początkowym i końcowym.
+                    Uczniowie będą mogli edytować tylko środkową część kodu.
                   </p>
                 </div>
               </div>
