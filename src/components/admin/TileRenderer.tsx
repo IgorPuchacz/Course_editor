@@ -326,7 +326,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
           return (
             <div className="w-full h-full flex flex-col">
               {/* Rich Text Editor for Description */}
-              <div className="flex-shrink-0 max-h-[40%] overflow-hidden">
+              <div className="flex-shrink-0 max-h-[40%] overflow-hidden p-3">
                 <TextTileEditor
                   textTile={{
                     ...tile,
@@ -358,8 +358,37 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                 />
               </div>
               
-              {/* Code Editor Section */}
-              <div className="flex-1 border-t border-gray-200">
+              {/* Code Editor Section with Toolbar */}
+              <div className="flex-1 flex flex-col border-t border-gray-200">
+                {/* Code Toolbar */}
+                <div className="flex items-center justify-between bg-gray-800 border-b border-gray-700 px-3 py-2">
+                  <div className="flex items-center space-x-2">
+                    {/* Run Button */}
+                    <button
+                      className="flex items-center justify-center w-8 h-8 bg-green-600 hover:bg-green-700 rounded-lg transition-colors group"
+                      title="Uruchom kod"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="w-0 h-0 border-l-[6px] border-l-white border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent ml-0.5"></div>
+                    </button>
+                    
+                    {/* Stop Button */}
+                    <button
+                      className="flex items-center justify-center w-8 h-8 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                      title="Zatrzymaj kod"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="w-3 h-3 bg-white rounded-sm"></div>
+                    </button>
+                  </div>
+                  
+                  {/* Language Indicator */}
+                  <div className="text-xs text-gray-400 font-mono">
+                    {programmingTile.content.language.toUpperCase()}
+                  </div>
+                </div>
+                
+                {/* Code Textarea */}
                 <textarea
                   value={programmingTile.content.code}
                   onChange={(e) => onUpdateTile(tile.id, {
@@ -368,7 +397,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                       code: e.target.value
                     }
                   })}
-                  className="w-full h-full p-4 bg-gray-900 text-green-400 font-mono text-sm resize-none border-none outline-none"
+                  className="flex-1 w-full p-4 bg-gray-900 text-green-400 font-mono text-sm resize-none border-none outline-none"
                   style={{
                     fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
                     lineHeight: '1.5',
@@ -400,6 +429,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                   }}
                 />
               </div>
+              </div>
             </div>
           );
         }
@@ -428,10 +458,39 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
               />
             </div>
             
-            {/* Code Section */}
-            <div className="flex-1 border-t border-gray-200">
+            {/* Code Section with Toolbar */}
+            <div className="flex-1 flex flex-col border-t border-gray-200">
+              {/* Code Toolbar */}
+              <div className="flex items-center justify-between bg-gray-800 border-b border-gray-700 px-3 py-2">
+                <div className="flex items-center space-x-2">
+                  {/* Run Button */}
+                  <button
+                    className="flex items-center justify-center w-8 h-8 bg-green-600 hover:bg-green-700 rounded-lg transition-colors group"
+                    title="Uruchom kod"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="w-0 h-0 border-l-[6px] border-l-white border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent ml-0.5"></div>
+                  </button>
+                  
+                  {/* Stop Button */}
+                  <button
+                    className="flex items-center justify-center w-8 h-8 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                    title="Zatrzymaj kod"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="w-3 h-3 bg-white rounded-sm"></div>
+                  </button>
+                </div>
+                
+                {/* Language Indicator */}
+                <div className="text-xs text-gray-400 font-mono">
+                  {programmingTile.content.language.toUpperCase()}
+                </div>
+              </div>
+              
+              {/* Code Display */}
               <div 
-                className="w-full h-full p-4 bg-gray-900 text-green-400 font-mono text-sm overflow-auto whitespace-pre-wrap"
+                className="flex-1 w-full p-4 bg-gray-900 text-green-400 font-mono text-sm overflow-auto whitespace-pre-wrap"
                 style={{
                   fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
                   lineHeight: '1.5'
@@ -439,6 +498,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
               >
                 {programmingTile.content.code || `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`}
               </div>
+            </div>
             </div>
           </div>
         );
