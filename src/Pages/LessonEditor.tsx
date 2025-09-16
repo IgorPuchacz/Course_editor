@@ -122,6 +122,9 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       case 'quiz':
         newTile = LessonContentService.createQuizTile(position);
         break;
+      case 'programming':
+        newTile = LessonContentService.createProgrammingTile(position);
+        break;
       default:
         logger.warn(`Tile type ${tileType} not implemented yet`);
         warning('Funkcja niedostępna', `Typ kafelka "${tileType}" nie jest jeszcze dostępny`);

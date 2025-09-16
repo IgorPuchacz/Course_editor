@@ -1,4 +1,5 @@
 import { LessonContent, LessonTile, TextTile } from '../types/lessonEditor';
+import { ProgrammingTile } from '../types/lessonEditor';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
 
