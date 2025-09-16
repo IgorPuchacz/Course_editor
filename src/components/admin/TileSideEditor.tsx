@@ -214,24 +214,6 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
               />
             </div>
 
-            {/* Border Toggle */}
-            <div>
-              <label className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
-                <input
-                  type="checkbox"
-                  checked={programmingTile.content.showBorder}
-                  onChange={(e) => handleContentUpdate('showBorder', e.target.checked)}
-                  className="w-5 h-5 text-blue-600"
-                />
-                <div>
-                  <span className="text-sm font-medium text-gray-900">Pokaż obramowanie kafelka</span>
-                  <p className="text-xs text-gray-600 mt-1">
-                    Gdy wyłączone, kafelek wtopi się w tło bez wizualnej ramki
-                  </p>
-                </div>
-              </label>
-            </div>
-
             {/* Programming Language */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
