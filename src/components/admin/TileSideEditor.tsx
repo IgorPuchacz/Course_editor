@@ -205,13 +205,17 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
           <div className="space-y-6">
             {/* Background Color */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Kolor tła opisu</label>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Kolor tła kafelka</label>
               <input
                 type="color"
                 value={programmingTile.content.backgroundColor}
                 onChange={(e) => handleContentUpdate('backgroundColor', e.target.value)}
                 className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
               />
+              <p className="mt-2 text-xs text-gray-500">
+                Zmiana koloru obejmuje całą kartę zadania, podczas gdy edytor kodu pozostaje w ciemnym motywie dla lepszej
+                czytelności składni.
+              </p>
             </div>
 
             {/* Border Toggle */}
