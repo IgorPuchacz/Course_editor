@@ -263,4 +263,58 @@ export class LessonContentService {
       z_index: 1
     };
   }
+
+  /**
+   * Create a new programming task tile
+   */
+  static createProgrammingTile(position: { x: number; y: number }): ProgrammingTile {
+    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+    
+    const gridPos = GridUtils.pixelToGrid(position, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    // Default to 4x3 grid size for programming tiles
+    gridPos.colSpan = 4;
+    gridPos.rowSpan = 3;
+
+    const pixelPos = GridUtils.gridToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    return {
+      id,
+      type: 'programming',
+      position: pixelPos,
+      size: pixelSize,
+      gridPosition: gridPos,
+      content: {
+        description: 'Opis zadania programistycznego',
+        richDescription: '<p style="margin: 0;">Opis zadania programistycznego</p>',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 14,
+        backgroundColor: '#ffffff',
+        showBorder: true,
+        code: '# Napisz swój kod tutaj\nprint("Hello, World!")',
+        language: 'python'
+      },
+      created_at: now,
+      updated_at: now,
+      z_index: 1
+    };
+  }
 }
