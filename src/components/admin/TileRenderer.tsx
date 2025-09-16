@@ -141,135 +141,6 @@ const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateT
   );
 };
 
-const ProgrammingTileEditor: React.FC<ProgrammingEditorProps> = ({ 
-  programmingTile, 
-  tileId, 
-  onUpdateTile, 
-  onFinishTextEditing, 
-  onEditorReady 
-}) => {
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        bulletList: false,
-        orderedList: false,
-        listItem: false,
-      }),
-      BulletList.configure({
-        HTMLAttributes: { class: 'bullet-list' },
-        keepMarks: true,
-        keepAttributes: true,
-      }),
-      OrderedList.configure({
-        HTMLAttributes: { class: 'ordered-list' },
-        keepMarks: true,
-        keepAttributes: true,
-      }),
-      ListItem,
-      Underline,
-      TextStyle,
-      Color.configure({ types: ['textStyle'] }),
-      FontFamily.configure({ types: ['textStyle'] }),
-      FontSize,
-      TextAlign.configure({ types: ['paragraph'] }),
-    ],
-    content:
-      programmingTile.content.richDescription ||
-      `<p style="margin: 0;">${programmingTile.content.description || ''}</p>`,
-    onUpdate: ({ editor }) => {
-      const html = editor.getHTML();
-      const plain = editor.getText();
-      onUpdateTile(tileId, {
-        content: {
-          ...programmingTile.content,
-          description: plain,
-          richDescription: html
-        }
-      });
-    },
-    autofocus: true
-  });
-
-  useEffect(() => {
-    onEditorReady(editor);
-    return () => onEditorReady(null);
-  }, [editor, onEditorReady]);
-
-  if (!editor) return null;
-
-  const handleBlur = (e: React.FocusEvent) => {
-    const toolbar = document.querySelector('.top-toolbar');
-    if (toolbar && e.relatedTarget && toolbar.contains(e.relatedTarget as Node)) {
-      e.preventDefault();
-      editor.commands.focus();
-      return;
-    }
-    onFinishTextEditing();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      if (editor.isActive('listItem')) {
-        if (e.shiftKey) {
-          editor.chain().focus().liftListItem('listItem').run();
-        } else {
-          editor.chain().focus().sinkListItem('listItem').run();
-        }
-      } else {
-        editor.chain().focus().insertContent('\t').run();
-      }
-    }
-  };
-
-  const handleCodeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    onUpdateTile(tileId, {
-      content: {
-        ...programmingTile.content,
-        code: e.target.value
-      }
-    });
-  };
-
-  return (
-    <div className="w-full h-full flex flex-col overflow-hidden">
-      {/* Description Section - Rich Text Editor */}
-      <div 
-        className="flex-shrink-0 p-3 border-b border-gray-200"
-        style={{
-          backgroundColor: programmingTile.content.backgroundColor,
-          fontSize: `${programmingTile.content.fontSize}px`,
-          fontFamily: programmingTile.content.fontFamily,
-          minHeight: '60px',
-          maxHeight: '40%'
-        }}
-      >
-        <EditorContent
-          editor={editor}
-          className="w-full focus:outline-none break-words rich-text-content tile-formatted-text"
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-        />
-      </div>
-
-      {/* Code Section - Textarea */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <textarea
-          value={programmingTile.content.code}
-          onChange={handleCodeChange}
-          className="w-full h-full p-3 bg-gray-900 text-green-400 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
-          style={{
-            fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
-            lineHeight: '1.5',
-            tabSize: 4
-          }}
-          placeholder="# Napisz swój kod tutaj..."
-          spellCheck={false}
-        />
-      </div>
-    </div>
-  );
-};
 export const TileRenderer: React.FC<TileRendererProps> = ({
   tile,
   isSelected,
@@ -289,7 +160,8 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   const [isHovered, setIsHovered] = useState(false);
 
   // Check if this is a frameless text tile
-  const isFramelessTextTile = tile.type === 'text' && !(tile as TextTile).content.showBorder;
+  const isFramelessTextTile = (tile.type === 'text' && !(tile as TextTile).content.showBorder) ||
+                              (tile.type === 'programming' && !(tile as ProgrammingTile).content.showBorder);
 
   const handleResizeStart = (e: React.MouseEvent, handle: string) => {
     e.preventDefault();
