@@ -438,11 +438,8 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                 <Code2 className="w-4 h-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-xs uppercase tracking-[0.22em] font-semibold" style={{ color: mutedTextColor }}>
-                  Zadanie programistyczne
-                </span>
-                <span className="text-sm font-semibold tracking-tight" style={{ color: textColor }}>
-                  Opis zadania
+                <span className="text-lg uppercase tracking-[0.10em] font-semibold" style={{ color: mutedTextColor }}>
+                  Zadanie
                 </span>
               </div>
             </div>
