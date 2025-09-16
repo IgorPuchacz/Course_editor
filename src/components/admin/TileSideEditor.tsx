@@ -1,6 +1,6 @@
 import React from 'react';
 import { Type, X } from 'lucide-react';
-import { TextTile, ImageTile, LessonTile } from '../../types/lessonEditor.ts';
+import { TextTile, ImageTile, LessonTile, ProgrammingTile } from '../../types/lessonEditor.ts';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
 
@@ -202,16 +202,19 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
       case 'programming': {
         const programmingTile = tile as ProgrammingTile;
         return (
-          <div className="space-y-6">
+            <div className="space-y-6">
             {/* Background Color */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Kolor tła opisu</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Kolor tła kafelka</label>
               <input
                 type="color"
                 value={programmingTile.content.backgroundColor}
                 onChange={(e) => handleContentUpdate('backgroundColor', e.target.value)}
                 className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
               />
+              <p className="mt-2 text-xs text-gray-500">
+                Kolor zostanie zastosowany do całego kafelka – zarówno sekcji opisu, jak i przestrzeni wokół edytora kodu.
+              </p>
             </div>
 
             {/* Border Toggle */}
@@ -261,8 +264,9 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                 <div>
                   <h4 className="text-sm font-medium text-blue-900 mb-1">Zadanie programistyczne</h4>
                   <p className="text-xs text-blue-700">
-                    Górna sekcja zawiera opis zadania z formatowaniem tekstu. 
+                    Górna sekcja zawiera opis zadania z formatowaniem tekstu.
                     Dolna sekcja to edytor kodu - w przyszłości będzie obsługiwać wykonywanie kodu Python.
+                    Kolor tła pozwala stworzyć spójne, nowoczesne tło dla całego kafelka.
                   </p>
                 </div>
               </div>
