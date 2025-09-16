@@ -225,8 +225,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 
         // If this text tile is being edited, use Tiptap editor
         if (isEditingText && isSelected) {
-    if ((tile.type === 'text' && !(tile as TextTile).content.showBorder) ||
-        (tile.type === 'programming' && !(tile as ProgrammingTile).content.showBorder)) {
+          return (
             <TextTileEditor
               textTile={textTile}
               tileId={tile.id}
