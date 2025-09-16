@@ -426,7 +426,28 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         };
 
         const defaultCodePlaceholder = `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`;
-        const codeDisplayContent = programmingTile.content.code || defaultCodePlaceholder;
+        
+        // Build the complete code display content
+        let codeDisplayContent = '';
+        
+        // Add starting code if provided
+        if (programmingTile.content.startingCode) {
+          codeDisplayContent += programmingTile.content.startingCode + '\n\n';
+        }
+        
+        // Add placeholder text
+        codeDisplayContent += 'wpisz swój kod tutaj';
+        
+        // Add ending code if provided
+        if (programmingTile.content.endingCode) {
+          codeDisplayContent += '\n\n' + programmingTile.content.endingCode;
+        }
+        
+        // If no starting or ending code, use default placeholder
+        if (!programmingTile.content.startingCode && !programmingTile.content.endingCode) {
+          codeDisplayContent = programmingTile.content.code || defaultCodePlaceholder;
+        }
+        
         const codeLines = codeDisplayContent.split('\n');
 
         const renderDescriptionBlock = (content: React.ReactNode) => (
@@ -530,15 +551,32 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                   </div>
 
                   <div className="flex-1 relative">
-                    <div
+                    <pre
                       className="w-full h-full px-14 py-6 text-emerald-400 font-mono text-sm overflow-auto whitespace-pre leading-loose"
                       style={{
                         fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
                         lineHeight: '1.65'
                       }}
                     >
-                      {codeDisplayContent}
-                    </div>
+                      {/* Render code with proper styling for different sections */}
+                      {programmingTile.content.startingCode && (
+                        <>
+                          <span style={{ color: '#94a3b8' }}>{programmingTile.content.startingCode}</span>
+                          {'\n\n'}
+                        </>
+                      )}
+                      <span style={{ color: '#f8fafc' }}>wpisz swój kod tutaj</span>
+                      {programmingTile.content.endingCode && (
+                        <>
+                          {'\n\n'}
+                          <span style={{ color: '#94a3b8' }}>{programmingTile.content.endingCode}</span>
+                        </>
+                      )}
+                      {/* Fallback to default content if no starting/ending code */}
+                      {!programmingTile.content.startingCode && !programmingTile.content.endingCode && (
+                        <span>{programmingTile.content.code || defaultCodePlaceholder}</span>
+                      )}
+                    </pre>
                     <div className="pointer-events-none select-none absolute left-5 top-6 text-xs font-mono leading-relaxed" style={{ color: 'rgba(148, 163, 184, 0.55)' }}>
                       {codeLines.map((_, index) => (
                         <div key={index} className="h-[1.65em] flex items-center">
@@ -611,15 +649,32 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                   </div>
 
                   <div className="flex-1 relative">
-                    <div
+                    <pre
                       className="w-full h-full px-14 py-6 text-emerald-400 font-mono text-sm overflow-auto whitespace-pre leading-loose"
                       style={{
                         fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
                         lineHeight: '1.65'
                       }}
                     >
-                      {codeDisplayContent}
-                    </div>
+                      {/* Render code with proper styling for different sections */}
+                      {programmingTile.content.startingCode && (
+                        <>
+                          <span style={{ color: '#94a3b8' }}>{programmingTile.content.startingCode}</span>
+                          {'\n\n'}
+                        </>
+                      )}
+                      <span style={{ color: '#f8fafc' }}>wpisz swój kod tutaj</span>
+                      {programmingTile.content.endingCode && (
+                        <>
+                          {'\n\n'}
+                          <span style={{ color: '#94a3b8' }}>{programmingTile.content.endingCode}</span>
+                        </>
+                      )}
+                      {/* Fallback to default content if no starting/ending code */}
+                      {!programmingTile.content.startingCode && !programmingTile.content.endingCode && (
+                        <span>{programmingTile.content.code || defaultCodePlaceholder}</span>
+                      )}
+                    </pre>
                     <div className="pointer-events-none select-none absolute left-5 top-6 text-xs font-mono leading-relaxed" style={{ color: 'rgba(148, 163, 184, 0.55)' }}>
                       {codeLines.map((_, index) => (
                         <div key={index} className="h-[1.65em] flex items-center">

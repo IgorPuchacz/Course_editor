@@ -311,7 +311,9 @@ export class LessonContentService {
         backgroundColor: '#ffffff',
         showBorder: true,
         code: '# Napisz swój kod tutaj\nprint("Hello, World!")',
-        language: 'python'
+        language: 'python',
+        startingCode: '',
+        endingCode: ''
       },
       created_at: now,
       updated_at: now,
