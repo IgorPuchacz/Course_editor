@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Puzzle, HelpCircle, Move, Trash2 } from 'lucide-react';
+import { Puzzle, HelpCircle, Move, Trash2, Play, Square, Code2 } from 'lucide-react';
 import { LessonTile, TextTile, ImageTile, InteractiveTile, QuizTile, ProgrammingTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
@@ -332,9 +332,15 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         // If this programming tile is being edited, use Tiptap editor for description
         if (isEditingText && isSelected) {
           contentToRender = (
-            <div className="w-full h-full flex flex-col">
+            <div className="w-full h-full flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg overflow-hidden">
               {/* Rich Text Editor for Description */}
-              <div className="flex-shrink-0 max-h-[40%] overflow-hidden p-3">
+              <div className="flex-shrink-0 max-h-[40%] overflow-hidden p-4 bg-white border-b border-slate-200">
+                <div className="flex items-center space-x-2 mb-3">
+                  <div className="w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center">
+                    <Code2 className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <span className="text-sm font-medium text-slate-700">Opis zadania</span>
+                </div>
                 <TextTileEditor
                   textTile={{
                     ...tile,
@@ -367,36 +373,49 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
               </div>
               
               {/* Code Editor Section with Toolbar */}
-              <div className="flex-1 flex flex-col border-t border-gray-200">
+              <div className="flex-1 flex flex-col">
                 {/* Code Toolbar */}
-                <div className="flex items-center justify-between bg-gray-800 border-b border-gray-700 px-3 py-2">
-                  <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-between bg-slate-800 border-b border-slate-700 px-4 py-3 shadow-sm">
+                  <div className="flex items-center space-x-3">
                     {/* Run Button */}
                     <button
-                      className="flex items-center justify-center w-8 h-8 bg-green-600 hover:bg-green-700 rounded-lg transition-colors group"
+                      className="flex items-center justify-center w-9 h-9 bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md group"
                       title="Uruchom kod"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="w-0 h-0 border-l-[6px] border-l-white border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent ml-0.5"></div>
+                      <Play className="w-4 h-4 text-white fill-white" />
                     </button>
                     
                     {/* Stop Button */}
                     <button
-                      className="flex items-center justify-center w-8 h-8 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                      className="flex items-center justify-center w-9 h-9 bg-red-600 hover:bg-red-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
                       title="Zatrzymaj kod"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="w-3 h-3 bg-white rounded-sm"></div>
+                      <Square className="w-4 h-4 text-white fill-white" />
                     </button>
+                    
+                    {/* Separator */}
+                    <div className="w-px h-5 bg-slate-600"></div>
+                    
+                    {/* Status Indicator */}
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-slate-500 rounded-full"></div>
+                      <span className="text-xs text-slate-400">Gotowy</span>
+                    </div>
                   </div>
                   
                   {/* Language Indicator */}
-                  <div className="text-xs text-gray-400 font-mono">
+                  <div className="flex items-center space-x-2">
+                    <Code2 className="w-4 h-4 text-slate-400" />
+                    <span className="text-xs text-slate-300 font-mono font-medium uppercase tracking-wider">
                     {programmingTile.content.language.toUpperCase()}
+                    </span>
                   </div>
                 </div>
                 
                 {/* Code Textarea */}
+                <div className="flex-1 relative">
                 <textarea
                   value={programmingTile.content.code}
                   onChange={(e) => onUpdateTile(tile.id, {
@@ -405,10 +424,10 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                       code: e.target.value
                     }
                   })}
-                  className="flex-1 w-full p-4 bg-gray-900 text-green-400 font-mono text-sm resize-none border-none outline-none"
+                  className="w-full h-full p-6 bg-slate-900 text-emerald-400 font-mono text-sm resize-none border-none outline-none leading-relaxed"
                   style={{
                     fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
-                    lineHeight: '1.5',
+                    lineHeight: '1.6',
                     tabSize: 4
                   }}
                   placeholder={`# Napisz swój kod ${programmingTile.content.language} tutaj...`}
@@ -436,22 +455,38 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                     }
                   }}
                 />
+                
+                {/* Line numbers overlay (visual enhancement) */}
+                <div className="absolute left-2 top-6 text-slate-600 text-sm font-mono leading-relaxed pointer-events-none select-none">
+                  {programmingTile.content.code.split('\n').map((_, index) => (
+                    <div key={index} className="h-[1.6em] flex items-center">
+                      <span className="text-xs">{index + 1}</span>
+                    </div>
+                  ))}
+                </div>
+                </div>
               </div>
             </div>
           );
         } else {
           // Normal programming tile display
           contentToRender = (
-            <div className="w-full h-full flex flex-col">
+            <div className="w-full h-full flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg overflow-hidden">
               {/* Description Section */}
               <div 
-                className="flex-shrink-0 max-h-[40%] overflow-hidden p-3"
+                className="flex-shrink-0 max-h-[40%] overflow-hidden p-4 bg-white border-b border-slate-200"
                 style={{
                   backgroundColor: programmingTile.content.backgroundColor,
                   fontSize: `${programmingTile.content.fontSize}px`,
                   fontFamily: programmingTile.content.fontFamily,
                 }}
               >
+                <div className="flex items-center space-x-2 mb-3">
+                  <div className="w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center">
+                    <Code2 className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <span className="text-sm font-medium text-slate-700">Opis zadania</span>
+                </div>
                 <div
                   className="break-words rich-text-content tile-formatted-text w-full h-full overflow-auto"
                   style={{
@@ -465,44 +500,67 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
               </div>
               
               {/* Code Section with Toolbar */}
-              <div className="flex-1 flex flex-col border-t border-gray-200">
+              <div className="flex-1 flex flex-col">
                 {/* Code Toolbar */}
-                <div className="flex items-center justify-between bg-gray-800 border-b border-gray-700 px-3 py-2">
-                  <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-between bg-slate-800 border-b border-slate-700 px-4 py-3 shadow-sm">
+                  <div className="flex items-center space-x-3">
                     {/* Run Button */}
                     <button
-                      className="flex items-center justify-center w-8 h-8 bg-green-600 hover:bg-green-700 rounded-lg transition-colors group"
+                      className="flex items-center justify-center w-9 h-9 bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md group"
                       title="Uruchom kod"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="w-0 h-0 border-l-[6px] border-l-white border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent ml-0.5"></div>
+                      <Play className="w-4 h-4 text-white fill-white" />
                     </button>
                     
                     {/* Stop Button */}
                     <button
-                      className="flex items-center justify-center w-8 h-8 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                      className="flex items-center justify-center w-9 h-9 bg-red-600 hover:bg-red-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
                       title="Zatrzymaj kod"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="w-3 h-3 bg-white rounded-sm"></div>
+                      <Square className="w-4 h-4 text-white fill-white" />
                     </button>
+                    
+                    {/* Separator */}
+                    <div className="w-px h-5 bg-slate-600"></div>
+                    
+                    {/* Status Indicator */}
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-slate-500 rounded-full"></div>
+                      <span className="text-xs text-slate-400">Gotowy</span>
+                    </div>
                   </div>
                   
                   {/* Language Indicator */}
-                  <div className="text-xs text-gray-400 font-mono">
+                  <div className="flex items-center space-x-2">
+                    <Code2 className="w-4 h-4 text-slate-400" />
+                    <span className="text-xs text-slate-300 font-mono font-medium uppercase tracking-wider">
                     {programmingTile.content.language.toUpperCase()}
+                    </span>
                   </div>
                 </div>
                 
                 {/* Code Display */}
+                <div className="flex-1 relative">
                 <div 
-                  className="flex-1 w-full p-4 bg-gray-900 text-green-400 font-mono text-sm overflow-auto whitespace-pre-wrap"
+                  className="w-full h-full p-6 bg-slate-900 text-emerald-400 font-mono text-sm overflow-auto whitespace-pre-wrap leading-relaxed"
                   style={{
                     fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
-                    lineHeight: '1.5'
+                    lineHeight: '1.6'
                   }}
                 >
                   {programmingTile.content.code || `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`}
+                </div>
+                
+                {/* Line numbers overlay (visual enhancement) */}
+                <div className="absolute left-2 top-6 text-slate-600 text-sm font-mono leading-relaxed pointer-events-none select-none">
+                  {(programmingTile.content.code || `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`).split('\n').map((_, index) => (
+                    <div key={index} className="h-[1.6em] flex items-center">
+                      <span className="text-xs">{index + 1}</span>
+                    </div>
+                  ))}
+                </div>
                 </div>
               </div>
             </div>
