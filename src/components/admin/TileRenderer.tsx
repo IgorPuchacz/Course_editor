@@ -425,6 +425,10 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
           boxShadow: '0 28px 65px -36px rgba(15, 23, 42, 0.65)'
         };
 
+        const defaultCodePlaceholder = `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`;
+        const codeDisplayContent = programmingTile.content.code || defaultCodePlaceholder;
+        const codeLines = codeDisplayContent.split('\n');
+
         const renderDescriptionBlock = (content: React.ReactNode) => (
           <div
             className="flex-shrink-0 max-h-[45%] overflow-hidden rounded-2xl border transition-colors duration-300"
@@ -526,46 +530,17 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                   </div>
 
                   <div className="flex-1 relative">
-                    <textarea
-                      value={programmingTile.content.code}
-                      onChange={(e) => onUpdateTile(tile.id, {
-                        content: {
-                          ...programmingTile.content,
-                          code: e.target.value
-                        }
-                      })}
-                      className="w-full h-full px-14 py-6 bg-transparent text-emerald-400 font-mono text-sm resize-none border-none outline-none leading-relaxed"
+                    <div
+                      className="w-full h-full px-14 py-6 text-emerald-400 font-mono text-sm overflow-auto whitespace-pre leading-loose"
                       style={{
                         fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
-                        lineHeight: '1.65',
-                        tabSize: 4
+                        lineHeight: '1.65'
                       }}
-                      placeholder={`# Napisz swój kod ${programmingTile.content.language} tutaj...`}
-                      spellCheck={false}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Tab') {
-                          e.preventDefault();
-                          const textarea = e.target as HTMLTextAreaElement;
-                          const start = textarea.selectionStart;
-                          const end = textarea.selectionEnd;
-                          const value = textarea.value;
-                          const newValue = value.substring(0, start) + '    ' + value.substring(end);
-
-                          onUpdateTile(tile.id, {
-                            content: {
-                              ...programmingTile.content,
-                              code: newValue
-                            }
-                          });
-
-                          setTimeout(() => {
-                            textarea.selectionStart = textarea.selectionEnd = start + 4;
-                          }, 0);
-                        }
-                      }}
-                    />
+                    >
+                      {codeDisplayContent}
+                    </div>
                     <div className="pointer-events-none select-none absolute left-5 top-6 text-xs font-mono leading-relaxed" style={{ color: 'rgba(148, 163, 184, 0.55)' }}>
-                      {programmingTile.content.code.split('\n').map((_, index) => (
+                      {codeLines.map((_, index) => (
                         <div key={index} className="h-[1.65em] flex items-center">
                           <span>{index + 1}</span>
                         </div>
@@ -643,10 +618,10 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                         lineHeight: '1.65'
                       }}
                     >
-                      {programmingTile.content.code || `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`}
+                      {codeDisplayContent}
                     </div>
                     <div className="pointer-events-none select-none absolute left-5 top-6 text-xs font-mono leading-relaxed" style={{ color: 'rgba(148, 163, 184, 0.55)' }}>
-                      {(programmingTile.content.code || `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`).split('\n').map((_, index) => (
+                      {codeLines.map((_, index) => (
                         <div key={index} className="h-[1.65em] flex items-center">
                           <span>{index + 1}</span>
                         </div>

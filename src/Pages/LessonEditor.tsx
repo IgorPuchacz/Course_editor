@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Save, RotateCcw, Grid, Edit } from 'lucide-react';
 import { Lesson, Course } from '../types/course.ts';
-import { LessonContent, LessonTile, TextTile } from '../types/lessonEditor.ts';
+import { LessonContent, LessonTile, ProgrammingTile, TextTile } from '../types/lessonEditor.ts';
 import { useLessonEditor } from '../hooks/useLessonEditor.ts';
 import { LessonContentService } from '../services/lessonContentService.ts';
 import { TilePalette } from '../components/admin/TilePalette.tsx';
@@ -21,6 +21,10 @@ interface LessonEditorProps {
   course: Course;
   onBack: () => void;
 }
+
+const isRichTextTile = (tile: LessonTile | null): tile is TextTile | ProgrammingTile => {
+  return !!tile && (tile.type === 'text' || tile.type === 'programming');
+};
 
 export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBack }) => {
   const { toasts, removeToast, success, error, warning } = useToast();
@@ -316,6 +320,9 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
   }
 
 
+  const selectedTile = lessonContent.tiles.find(t => t.id === editorState.selectedTileId) || null;
+  const selectedRichTextTile = isRichTextTile(selectedTile) ? selectedTile : null;
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col max-w-full overflow-hidden">
       <ToastContainer toasts={toasts} onClose={removeToast} />
@@ -413,7 +420,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
             // Editing Panel - when tile is selected
             <div className="h-full">
               <TileSideEditor
-                tile={lessonContent.tiles.find(t => t.id === editorState.selectedTileId) as TextTile}
+                tile={selectedTile}
                 onUpdateTile={handleUpdateTile}
                 onSelectTile={handleSelectTile}
               />
@@ -441,7 +448,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
             isTextEditing={editorState.mode === 'textEditing'}
             onFinishTextEditing={handleFinishTextEditing}
             editor={activeEditor}
-            selectedTile={lessonContent.tiles.find(t => t.id === editorState.selectedTileId) as TextTile | undefined}
+            selectedTile={selectedRichTextTile}
             onUpdateTile={handleUpdateTile}
           />
 
