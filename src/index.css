@@ -326,3 +326,67 @@
   margin: 0.25rem 0 !important;
   line-height: 1.5 !important;
 }
+
+/* Toast Animations */
+@keyframes progressBar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Toast entrance animation */
+@keyframes slide-in-from-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Toast exit animation */
+@keyframes slide-out-to-right {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Animation classes */
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.animate-out {
+  animation-fill-mode: both;
+}
+
+.slide-in-from-right-full {
+  animation-name: slide-in-from-right;
+}
+
+.slide-out-to-right-full {
+  animation-name: slide-out-to-right;
+}
+
+.duration-300 {
+  animation-duration: 300ms;
+}
+
+/* Toast progress bar styling */
+.toast-container {
+  cursor: default;
+}
+
+.toast-container:hover {
+  transform: translateY(-2px);
+}

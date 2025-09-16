@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 import { Toast } from '../../hooks/useToast';
 
@@ -8,13 +8,35 @@ interface ToastProps {
 }
 
 const ToastComponent: React.FC<ToastProps> = ({ toast, onClose }) => {
+  const duration = toast.duration || 5000;
+  const [isExiting, setIsExiting] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+
   useEffect(() => {
+    if (isPaused) return;
+    
     const timer = setTimeout(() => {
-      onClose(toast.id);
-    }, toast.duration || 5000);
+      handleClose();
+    }, duration);
 
     return () => clearTimeout(timer);
-  }, [toast.id, toast.duration, onClose]);
+  }, [toast.id, duration, onClose, isPaused]);
+
+  const handleClose = () => {
+    setIsExiting(true);
+    // Wait for exit animation to complete before removing
+    setTimeout(() => {
+      onClose(toast.id);
+    }, 300);
+  };
+
+  const handleMouseEnter = () => {
+    setIsPaused(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsPaused(false);
+  };
 
   const getIcon = () => {
     switch (toast.type) {
@@ -25,38 +47,87 @@ const ToastComponent: React.FC<ToastProps> = ({ toast, onClose }) => {
     }
   };
 
-  const getBgColor = () => {
+  const getColors = () => {
     switch (toast.type) {
-      case 'success': return 'bg-green-50 border-green-200';
-      case 'error': return 'bg-red-50 border-red-200';
-      case 'warning': return 'bg-yellow-50 border-yellow-200';
-      case 'info': return 'bg-blue-50 border-blue-200';
+      case 'success': 
+        return { 
+          bg: 'bg-green-50 border-green-200', 
+          progress: 'bg-green-500',
+          progressDark: 'bg-green-600'
+        };
+      case 'error': 
+        return { 
+          bg: 'bg-red-50 border-red-200', 
+          progress: 'bg-red-500',
+          progressDark: 'bg-red-600'
+        };
+      case 'warning': 
+        return { 
+          bg: 'bg-yellow-50 border-yellow-200', 
+          progress: 'bg-yellow-500',
+          progressDark: 'bg-yellow-600'
+        };
+      case 'info': 
+        return { 
+          bg: 'bg-blue-50 border-blue-200', 
+          progress: 'bg-blue-500',
+          progressDark: 'bg-blue-600'
+        };
+      default:
+        return { 
+          bg: 'bg-gray-50 border-gray-200', 
+          progress: 'bg-gray-500',
+          progressDark: 'bg-gray-600'
+        };
     }
   };
 
+  const colors = getColors();
+
   return (
-    <div className={`min-w-[300px] max-w-sm ${getBgColor()} border rounded-lg shadow-lg p-4 mb-4`}>
-      <div className="flex items-start">
-        <div className="flex-shrink-0">
-          {getIcon()}
-        </div>
-        <div className="ml-3 w-0 flex-1">
-          <p className="text-sm font-medium text-gray-900">
-            {toast.title}
-          </p>
-          {toast.message && (
-            <p className="mt-1 text-sm text-gray-500">
-              {toast.message}
+    <div 
+      className={`toast-container min-w-[300px] max-w-sm ${colors.bg} border rounded-lg shadow-lg mb-4 overflow-hidden relative transition-all duration-300 hover:shadow-xl ${
+        isExiting ? 'animate-out slide-out-to-right-full' : 'animate-in slide-in-from-right-full'
+      }`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Progress Bar Background */}
+      <div className={`absolute inset-0 ${colors.progress} opacity-20`} />
+      
+      {/* Animated Progress Bar */}
+      <div 
+        className={`absolute inset-0 ${colors.progressDark} opacity-30 origin-left`}
+        style={{
+          animation: `progressBar ${duration}ms linear forwards`,
+          animationPlayState: isPaused ? 'paused' : 'running'
+        }}
+      />
+      
+      {/* Content */}
+      <div className="relative p-4">
+        <div className="flex items-start">
+          <div className="flex-shrink-0">
+            {getIcon()}
+          </div>
+          <div className="ml-3 w-0 flex-1">
+            <p className="text-sm font-medium text-gray-900">
+              {toast.title}
             </p>
-          )}
-        </div>
-        <div className="ml-4 flex-shrink-0 flex">
-          <button
-            onClick={() => onClose(toast.id)}
-            className="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none"
-          >
-            <X className="w-4 h-4" />
-          </button>
+            {toast.message && (
+              <p className="mt-1 text-sm text-gray-500">
+                {toast.message}
+              </p>
+            )}
+          </div>
+          <div className="ml-4 flex-shrink-0 flex">
+            <button
+              onClick={handleClose}
+              className="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none transition-colors duration-200 hover:bg-gray-50 p-1"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
