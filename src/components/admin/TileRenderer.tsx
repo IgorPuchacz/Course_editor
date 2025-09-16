@@ -14,6 +14,80 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import TextAlign from '../../extensions/TextAlign';
 
+type RGBColor = { r: number; g: number; b: number };
+
+const clampChannel = (value: number) => Math.min(255, Math.max(0, Math.round(value)));
+
+const parseColor = (color: string): RGBColor | null => {
+  if (!color) return null;
+
+  const trimmed = color.trim();
+
+  if (trimmed.startsWith('#')) {
+    let hex = trimmed.slice(1);
+    if (hex.length === 3) {
+      hex = hex.split('').map((char) => `${char}${char}`).join('');
+    }
+
+    if (hex.length !== 6) return null;
+
+    const numeric = Number.parseInt(hex, 16);
+    if (Number.isNaN(numeric)) return null;
+
+    return {
+      r: (numeric >> 16) & 255,
+      g: (numeric >> 8) & 255,
+      b: numeric & 255
+    };
+  }
+
+  const rgbMatch = trimmed.match(/rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+  if (rgbMatch) {
+    return {
+      r: clampChannel(Number(rgbMatch[1])),
+      g: clampChannel(Number(rgbMatch[2])),
+      b: clampChannel(Number(rgbMatch[3]))
+    };
+  }
+
+  return null;
+};
+
+const adjustColor = (color: string, amount: number, mode: 'lighten' | 'darken'): RGBColor | null => {
+  const rgb = parseColor(color);
+  if (!rgb) return null;
+
+  const adjust = (channel: number) => {
+    if (mode === 'lighten') {
+      return clampChannel(channel + (255 - channel) * amount);
+    }
+    return clampChannel(channel * (1 - amount));
+  };
+
+  return {
+    r: adjust(rgb.r),
+    g: adjust(rgb.g),
+    b: adjust(rgb.b)
+  };
+};
+
+const lightenColor = (color: string, amount = 0.12) => adjustColor(color, amount, 'lighten');
+const darkenColor = (color: string, amount = 0.16) => adjustColor(color, amount, 'darken');
+
+const rgbToCss = (color: RGBColor | null, fallback: string) =>
+  color ? `rgb(${color.r}, ${color.g}, ${color.b})` : fallback;
+
+const rgbaToCss = (color: RGBColor | null, alpha: number, fallback: string) =>
+  color ? `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})` : fallback;
+
+const isColorDark = (color: string) => {
+  const rgb = parseColor(color);
+  if (!rgb) return false;
+
+  const luminance = (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255;
+  return luminance < 0.5;
+};
+
 interface TileRendererProps {
   tile: LessonTile;
   isSelected: boolean;
@@ -159,6 +233,9 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
+  let containerClassOverride = '';
+  let containerStyleOverride: React.CSSProperties | undefined;
+
   // Check if this is a frameless text tile
   const isFramelessTextTile = tile.type === 'text' && !(tile as TextTile).content.showBorder;
 
@@ -219,6 +296,9 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   };
 
   const renderTileContent = () => {
+    containerClassOverride = '';
+    containerStyleOverride = undefined;
+
     let contentToRender: JSX.Element;
 
     switch (tile.type) {
@@ -328,239 +408,244 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 
       case 'programming': {
         const programmingTile = tile as ProgrammingTile;
+        const baseColor = programmingTile.content.backgroundColor || '#ffffff';
+        const isDarkBackground = isColorDark(baseColor);
+        const gradientStart = rgbToCss(lightenColor(baseColor, 0.04), baseColor);
+        const gradientEnd = rgbToCss(lightenColor(baseColor, 0.14), baseColor);
+        const containerBorderColor = rgbaToCss(
+          isDarkBackground ? lightenColor(baseColor, 0.22) : darkenColor(baseColor, 0.18),
+          isDarkBackground ? 0.45 : 0.32,
+          isDarkBackground ? 'rgba(255, 255, 255, 0.28)' : 'rgba(15, 23, 42, 0.18)'
+        );
+        const containerShadowColor = rgbaToCss(
+          darkenColor(baseColor, isDarkBackground ? 0.18 : 0.42),
+          isDarkBackground ? 0.45 : 0.32,
+          'rgba(15, 23, 42, 0.28)'
+        );
 
-        // If this programming tile is being edited, use Tiptap editor for description
+        containerClassOverride = 'rounded-2xl transition-all duration-300';
+        containerStyleOverride = {
+          background: `linear-gradient(135deg, ${gradientStart} 0%, ${gradientEnd} 100%)`,
+          border: programmingTile.content.showBorder ? `1px solid ${containerBorderColor}` : 'none',
+          boxShadow: programmingTile.content.showBorder ? `0 24px 55px -32px ${containerShadowColor}` : 'none'
+        };
+
+        const surfacePaddingClass = 'flex flex-col flex-1 gap-5 p-6 pb-7';
+        const descriptionWrapperClasses = `flex-shrink-0 rounded-2xl px-5 py-4 transition-colors duration-300 ${
+          isDarkBackground
+            ? 'bg-white/10 border border-white/20 text-slate-100 shadow-inner shadow-black/10'
+            : 'bg-white/80 border border-white/60 text-slate-800 shadow-sm'
+        }`;
+        const descriptionMetaClass = isDarkBackground ? 'text-slate-300/90' : 'text-slate-500';
+        const codeShellClasses = `flex-1 flex flex-col rounded-2xl overflow-hidden transition-colors duration-300 ${
+          isDarkBackground
+            ? 'bg-white/8 border border-white/15 shadow-[0_26px_55px_-34px_rgba(15,23,42,0.8)]'
+            : 'bg-white/60 border border-white/60 shadow-[0_28px_55px_-34px_rgba(15,23,42,0.3)]'
+        }`;
+        const toolbarClasses = `flex items-center justify-between px-5 py-3 ${
+          isDarkBackground
+            ? 'bg-slate-900/90 border-b border-white/10 text-slate-100'
+            : 'bg-slate-900 border-b border-slate-800 text-slate-100'
+        }`;
+        const statusTextClass = isDarkBackground ? 'text-slate-300' : 'text-slate-400';
+        const statusDotClass = isDarkBackground ? 'bg-emerald-400/70' : 'bg-emerald-400/80';
+        const descriptionHeadingClass = isDarkBackground ? 'text-slate-100' : 'text-slate-700';
+        const languageBadgeClass = isDarkBackground ? 'text-slate-200' : 'text-slate-100';
+        const iconWrapperClass = isDarkBackground
+          ? 'bg-white/15 text-white shadow-inner shadow-black/20'
+          : 'bg-blue-100 text-blue-600 shadow-inner shadow-blue-200/60';
+        const descriptionEditorBackground = rgbToCss(
+          lightenColor(baseColor, isDarkBackground ? 0.18 : 0.06),
+          baseColor
+        );
+        const descriptionHtml =
+          programmingTile.content.richDescription ||
+          `<p style="margin: 0;">${programmingTile.content.description || 'Kliknij dwukrotnie, aby edytować opis zadania'}</p>`;
+        const renderCodeEditorToolbar = () => (
+          <div className={toolbarClasses}>
+            <div className="flex items-center space-x-3">
+              <button
+                className="flex items-center justify-center w-9 h-9 bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md group"
+                title="Uruchom kod"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Play className="w-4 h-4 text-white fill-white" />
+              </button>
+              <button
+                className="flex items-center justify-center w-9 h-9 bg-red-600 hover:bg-red-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                title="Zatrzymaj kod"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Square className="w-4 h-4 text-white fill-white" />
+              </button>
+              <div className="w-px h-5 bg-slate-600/60"></div>
+              <div className="flex items-center space-x-2">
+                <div className={`w-2 h-2 rounded-full ${statusDotClass}`}></div>
+                <span className={`text-xs ${statusTextClass}`}>Gotowy</span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Code2 className="w-4 h-4 text-slate-300" />
+              <span className={`text-xs font-mono font-medium uppercase tracking-[0.3em] ${languageBadgeClass}`}>
+                {programmingTile.content.language.toUpperCase()}
+              </span>
+            </div>
+          </div>
+        );
+
         if (isEditingText && isSelected) {
           contentToRender = (
-            <div className="w-full h-full flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg overflow-hidden">
-              {/* Rich Text Editor for Description */}
-              <div className="flex-shrink-0 max-h-[40%] overflow-hidden p-4 bg-white border-b border-slate-200">
-                <div className="flex items-center space-x-2 mb-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center">
-                    <Code2 className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <span className="text-sm font-medium text-slate-700">Opis zadania</span>
-                </div>
-                <TextTileEditor
-                  textTile={{
-                    ...tile,
-                    type: 'text',
-                    content: {
-                      text: programmingTile.content.description,
-                      richText: programmingTile.content.richDescription,
-                      fontFamily: programmingTile.content.fontFamily,
-                      fontSize: programmingTile.content.fontSize,
-                      verticalAlign: 'top',
-                      backgroundColor: programmingTile.content.backgroundColor,
-                      showBorder: programmingTile.content.showBorder,
-                    }
-                  } as TextTile}
-                  tileId={tile.id}
-                  onUpdateTile={(tileId, updates) => {
-                    if (updates.content) {
-                      onUpdateTile(tileId, {
-                        content: {
-                          ...programmingTile.content,
-                          description: updates.content.text || programmingTile.content.description,
-                          richDescription: updates.content.richText || programmingTile.content.richDescription,
-                        }
-                      });
-                    }
-                  }}
-                  onFinishTextEditing={onFinishTextEditing}
-                  onEditorReady={onEditorReady}
-                />
-              </div>
-              
-              {/* Code Editor Section with Toolbar */}
-              <div className="flex-1 flex flex-col m-3 mt-0 rounded-lg overflow-hidden shadow-sm">
-                {/* Code Toolbar */}
-                <div className="flex items-center justify-between bg-slate-800 border-b border-slate-700 px-4 py-3 shadow-sm">
-                  <div className="flex items-center space-x-3">
-                    {/* Run Button */}
-                    <button
-                      className="flex items-center justify-center w-9 h-9 bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md group"
-                      title="Uruchom kod"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Play className="w-4 h-4 text-white fill-white" />
-                    </button>
-                    
-                    {/* Stop Button */}
-                    <button
-                      className="flex items-center justify-center w-9 h-9 bg-red-600 hover:bg-red-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
-                      title="Zatrzymaj kod"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Square className="w-4 h-4 text-white fill-white" />
-                    </button>
-                    
-                    {/* Separator */}
-                    <div className="w-px h-5 bg-slate-600"></div>
-                    
-                    {/* Status Indicator */}
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-slate-500 rounded-full"></div>
-                      <span className="text-xs text-slate-400">Gotowy</span>
+            <div className="w-full h-full flex flex-col">
+              <div className={surfacePaddingClass}>
+                <div className={descriptionWrapperClasses} style={{ maxHeight: '45%' }}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${iconWrapperClass}`}>
+                        <Code2 className="w-4 h-4" />
+                      </div>
+                      <span className={`text-sm font-semibold ${descriptionHeadingClass}`}>Opis zadania</span>
                     </div>
-                  </div>
-                  
-                  {/* Language Indicator */}
-                  <div className="flex items-center space-x-2">
-                    <Code2 className="w-4 h-4 text-slate-400" />
-                    <span className="text-xs text-slate-300 font-mono font-medium uppercase tracking-wider">
-                    {programmingTile.content.language.toUpperCase()}
+                    <span className={`text-[10px] uppercase tracking-[0.28em] font-medium ${descriptionMetaClass}`}>
+                      Tryb edycji
                     </span>
                   </div>
-                </div>
-                
-                {/* Code Textarea */}
-                <div className="flex-1 relative bg-slate-900">
-                <textarea
-                  value={programmingTile.content.code}
-                  onChange={(e) => onUpdateTile(tile.id, {
-                    content: {
-                      ...programmingTile.content,
-                      code: e.target.value
-                    }
-                  })}
-                  className="w-full h-full p-6 bg-slate-900 text-emerald-400 font-mono text-sm resize-none border-none outline-none leading-relaxed"
-                  style={{
-                    fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
-                    lineHeight: '1.6',
-                    tabSize: 4
-                  }}
-                  placeholder={`# Napisz swój kod ${programmingTile.content.language} tutaj...`}
-                  spellCheck={false}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Tab') {
-                      e.preventDefault();
-                      const textarea = e.target as HTMLTextAreaElement;
-                      const start = textarea.selectionStart;
-                      const end = textarea.selectionEnd;
-                      const value = textarea.value;
-                      const newValue = value.substring(0, start) + '    ' + value.substring(end);
-                      
-                      onUpdateTile(tile.id, {
+                  <div
+                    className={`rounded-xl overflow-hidden border ${
+                      isDarkBackground ? 'border-white/10 bg-white/5' : 'border-white/70 bg-white/90'
+                    } shadow-inner`}
+                  >
+                    <TextTileEditor
+                      textTile={{
+                        ...tile,
+                        type: 'text',
                         content: {
-                          ...programmingTile.content,
-                          code: newValue
+                          text: programmingTile.content.description,
+                          richText: programmingTile.content.richDescription,
+                          fontFamily: programmingTile.content.fontFamily,
+                          fontSize: programmingTile.content.fontSize,
+                          verticalAlign: 'top',
+                          backgroundColor: descriptionEditorBackground,
+                          showBorder: true
                         }
-                      });
-                      
-                      // Set cursor position after the inserted tab
-                      setTimeout(() => {
-                        textarea.selectionStart = textarea.selectionEnd = start + 4;
-                      }, 0);
-                    }
-                  }}
-                />
-                
-                {/* Line numbers overlay (visual enhancement) */}
-                <div className="absolute left-2 top-6 text-slate-600 text-sm font-mono leading-relaxed pointer-events-none select-none">
-                  {programmingTile.content.code.split('\n').map((_, index) => (
-                    <div key={index} className="h-[1.6em] flex items-center">
-                      <span className="text-xs">{index + 1}</span>
-                    </div>
-                  ))}
+                      } as TextTile}
+                      tileId={tile.id}
+                      onUpdateTile={(tileId, updates) => {
+                        if (updates.content) {
+                          onUpdateTile(tileId, {
+                            content: {
+                              ...programmingTile.content,
+                              description: updates.content.text || programmingTile.content.description,
+                              richDescription: updates.content.richText || programmingTile.content.richDescription
+                            }
+                          });
+                        }
+                      }}
+                      onFinishTextEditing={onFinishTextEditing}
+                      onEditorReady={onEditorReady}
+                    />
+                  </div>
                 </div>
+                <div className={codeShellClasses}>
+                  {renderCodeEditorToolbar()}
+                  <div className="flex-1 relative bg-slate-900">
+                    <textarea
+                      value={programmingTile.content.code}
+                      onChange={(e) =>
+                        onUpdateTile(tile.id, {
+                          content: {
+                            ...programmingTile.content,
+                            code: e.target.value
+                          }
+                        })
+                      }
+                      className="w-full h-full p-6 bg-slate-900 text-emerald-400 font-mono text-sm resize-none border-none outline-none leading-relaxed"
+                      style={{
+                        fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
+                        lineHeight: '1.6',
+                        tabSize: 4
+                      }}
+                      placeholder={`# Napisz swój kod ${programmingTile.content.language} tutaj...`}
+                      spellCheck={false}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Tab') {
+                          e.preventDefault();
+                          const textarea = e.target as HTMLTextAreaElement;
+                          const start = textarea.selectionStart;
+                          const end = textarea.selectionEnd;
+                          const value = textarea.value;
+                          const newValue = value.substring(0, start) + '    ' + value.substring(end);
+                          onUpdateTile(tile.id, {
+                            content: {
+                              ...programmingTile.content,
+                              code: newValue
+                            }
+                          });
+                          setTimeout(() => {
+                            textarea.selectionStart = textarea.selectionEnd = start + 4;
+                          }, 0);
+                        }
+                      }}
+                    />
+                    <div className="absolute left-3 top-6 text-slate-600 text-xs font-mono leading-relaxed pointer-events-none select-none">
+                      {programmingTile.content.code.split('\n').map((_, index) => (
+                        <div key={index} className="h-[1.6em] flex items-center">
+                          <span>{index + 1}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           );
         } else {
-          // Normal programming tile display
+          const codeValue =
+            programmingTile.content.code ||
+            `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`;
+
           contentToRender = (
-            <div className="w-full h-full flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg overflow-hidden">
-              {/* Description Section */}
-              <div 
-                className="flex-shrink-0 max-h-[40%] overflow-hidden p-4 bg-white border-b border-slate-200"
-                style={{
-                  backgroundColor: programmingTile.content.backgroundColor,
-                  fontSize: `${programmingTile.content.fontSize}px`,
-                  fontFamily: programmingTile.content.fontFamily,
-                }}
-              >
-                <div className="flex items-center space-x-2 mb-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center">
-                    <Code2 className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <span className="text-sm font-medium text-slate-700">Opis zadania</span>
-                </div>
-                <div
-                  className="break-words rich-text-content tile-formatted-text w-full h-full overflow-auto"
-                  style={{
-                    minHeight: '1em',
-                    outline: 'none'
-                  }}
-                  dangerouslySetInnerHTML={{
-                    __html: programmingTile.content.richDescription || `<p style="margin: 0;">${programmingTile.content.description || 'Kliknij dwukrotnie, aby edytować opis zadania'}</p>`
-                  }}
-                />
-              </div>
-              
-              {/* Code Section with Toolbar */}
-              <div className="flex-1 flex flex-col m-3 mt-0 rounded-lg overflow-hidden shadow-sm">
-                {/* Code Toolbar */}
-                <div className="flex items-center justify-between bg-slate-800 border-b border-slate-700 px-4 py-3 shadow-sm">
-                  <div className="flex items-center space-x-3">
-                    {/* Run Button */}
-                    <button
-                      className="flex items-center justify-center w-9 h-9 bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md group"
-                      title="Uruchom kod"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Play className="w-4 h-4 text-white fill-white" />
-                    </button>
-                    
-                    {/* Stop Button */}
-                    <button
-                      className="flex items-center justify-center w-9 h-9 bg-red-600 hover:bg-red-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
-                      title="Zatrzymaj kod"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Square className="w-4 h-4 text-white fill-white" />
-                    </button>
-                    
-                    {/* Separator */}
-                    <div className="w-px h-5 bg-slate-600"></div>
-                    
-                    {/* Status Indicator */}
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-slate-500 rounded-full"></div>
-                      <span className="text-xs text-slate-400">Gotowy</span>
+            <div className="w-full h-full flex flex-col">
+              <div className={surfacePaddingClass}>
+                <div className={descriptionWrapperClasses} style={{ maxHeight: '45%' }}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${iconWrapperClass}`}>
+                        <Code2 className="w-4 h-4" />
+                      </div>
+                      <span className={`text-sm font-semibold ${descriptionHeadingClass}`}>Opis zadania</span>
                     </div>
-                  </div>
-                  
-                  {/* Language Indicator */}
-                  <div className="flex items-center space-x-2">
-                    <Code2 className="w-4 h-4 text-slate-400" />
-                    <span className="text-xs text-slate-300 font-mono font-medium uppercase tracking-wider">
-                    {programmingTile.content.language.toUpperCase()}
+                    <span className={`text-[10px] uppercase tracking-[0.28em] font-medium ${descriptionMetaClass}`}>
+                      Treść zadania
                     </span>
                   </div>
+                  <div
+                    className={`rich-text-content tile-formatted-text break-words leading-relaxed ${
+                      isDarkBackground ? 'text-slate-100/90' : 'text-slate-700'
+                    }`}
+                    style={{ minHeight: '1em', maxHeight: 'calc(100% - 1rem)', overflow: 'auto' }}
+                    dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+                  />
                 </div>
-                
-                {/* Code Display */}
-                <div className="flex-1 relative bg-slate-900">
-                <div 
-                  className="w-full h-full p-6 bg-slate-900 text-emerald-400 font-mono text-sm overflow-auto whitespace-pre-wrap leading-relaxed"
-                  style={{
-                    fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
-                    lineHeight: '1.6'
-                  }}
-                >
-                  {programmingTile.content.code || `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`}
-                </div>
-                
-                {/* Line numbers overlay (visual enhancement) */}
-                <div className="absolute left-2 top-6 text-slate-600 text-sm font-mono leading-relaxed pointer-events-none select-none">
-                  {(programmingTile.content.code || `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`).split('\n').map((_, index) => (
-                    <div key={index} className="h-[1.6em] flex items-center">
-                      <span className="text-xs">{index + 1}</span>
+                <div className={codeShellClasses}>
+                  {renderCodeEditorToolbar()}
+                  <div className="flex-1 relative bg-slate-900">
+                    <div
+                      className="w-full h-full p-6 bg-slate-900 text-emerald-400 font-mono text-sm overflow-auto whitespace-pre-wrap leading-relaxed"
+                      style={{
+                        fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
+                        lineHeight: '1.6'
+                      }}
+                    >
+                      {codeValue}
                     </div>
-                  ))}
-                </div>
+                    <div className="absolute left-3 top-6 text-slate-600 text-xs font-mono leading-relaxed pointer-events-none select-none">
+                      {codeValue.split('\n').map((_, index) => (
+                        <div key={index} className="h-[1.6em] flex items-center">
+                          <span>{index + 1}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -704,19 +789,30 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       onMouseLeave={handleMouseLeave}
     >
       {/* Tile Content */}
-      <div 
+      <div
         className={`w-full h-full overflow-hidden ${
-          isFramelessTextTile 
-            ? '' 
+          containerClassOverride
+            ? containerClassOverride
+            : isFramelessTextTile
+            ? ''
             : 'bg-white border border-gray-200 shadow-sm rounded-lg'
         }`}
-        style={isFramelessTextTile ? {
-          cursor: isSelected && (isEditing || isEditingText) ? (isDraggingImage ? 'grabbing' : 'grab') : 'default',
-          userSelect: 'none',
-          border: 'none',
-          boxShadow: 'none',
-          borderRadius: '0'
-        } : undefined}
+        style={containerStyleOverride
+          ? containerStyleOverride
+          : isFramelessTextTile
+          ? {
+              cursor:
+                isSelected && (isEditing || isEditingText)
+                  ? isDraggingImage
+                    ? 'grabbing'
+                    : 'grab'
+                  : 'default',
+              userSelect: 'none',
+              border: 'none',
+              boxShadow: 'none',
+              borderRadius: '0'
+            }
+          : undefined}
       >
         {renderTileContent()}
       </div>
