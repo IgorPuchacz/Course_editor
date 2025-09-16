@@ -10,7 +10,17 @@ interface ToastProps {
 const ToastComponent: React.FC<ToastProps> = ({ toast, onClose }) => {
   const duration = toast.duration || 5000;
   const [isExiting, setIsExiting] = useState(false);
+  const [isEntering, setIsEntering] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
+
+  // Handle entrance animation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsEntering(false);
+    }, 50); // Short delay to trigger entrance animation
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (isPaused) return;
@@ -27,7 +37,7 @@ const ToastComponent: React.FC<ToastProps> = ({ toast, onClose }) => {
     // Wait for exit animation to complete before removing
     setTimeout(() => {
       onClose(toast.id);
-    }, 300);
+    }, 400); // Slightly longer to match animation duration
   };
 
   const handleMouseEnter = () => {
@@ -86,8 +96,12 @@ const ToastComponent: React.FC<ToastProps> = ({ toast, onClose }) => {
 
   return (
     <div 
-      className={`toast-container min-w-[300px] max-w-sm ${colors.bg} border rounded-lg shadow-lg mb-4 overflow-hidden relative transition-all duration-300 hover:shadow-xl ${
-        isExiting ? 'animate-out slide-out-to-right-full' : 'animate-in slide-in-from-right-full'
+      className={`toast-container min-w-[300px] max-w-sm ${colors.bg} border rounded-lg shadow-lg mb-4 overflow-hidden relative transition-all duration-300 hover:shadow-xl transform ${
+        isExiting 
+          ? 'animate-toast-exit' 
+          : isEntering 
+            ? 'animate-toast-enter-start' 
+            : 'animate-toast-enter-end'
       }`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
