@@ -17,7 +17,7 @@ export interface GridPosition {
 
 export interface LessonTile {
   id: string;
-  type: 'text' | 'image' | 'visualization' | 'quiz';
+  type: 'text' | 'image' | 'visualization' | 'quiz' | 'programming';
   position: Position;
   size: Size;
   gridPosition: GridPosition;
@@ -85,6 +85,21 @@ export interface QuizTile extends LessonTile {
     multipleCorrect: boolean;
   };
 }
+
+export interface ProgrammingTile extends LessonTile {
+  type: 'programming';
+  content: {
+    description: string; // Plain text fallback for description
+    richDescription?: string; // HTML content with formatting for description
+    fontFamily: string;
+    fontSize: number;
+    backgroundColor: string;
+    showBorder: boolean;
+    code: string; // Python code in textarea
+    language: string; // Programming language (default: 'python')
+  };
+}
+
 export interface CanvasSettings {
   width: number; // Grid columns (fixed at 5)
   height: number; // Grid rows (dynamic)

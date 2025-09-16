@@ -1,5 +1,5 @@
 import React from 'react';
-import { Type, Image, Puzzle, Eye, HelpCircle, Plus } from 'lucide-react';
+import { Type, Image, Puzzle, Eye, HelpCircle, Plus, Code } from 'lucide-react';
 import { TilePaletteItem } from '../../types/lessonEditor';
 
 interface TilePaletteProps {
@@ -35,6 +35,13 @@ const TILE_TYPES: TilePaletteItem[] = [
     description: 'Utwórz quiz z pytaniami i odpowiedziami',
     icon: 'HelpCircle',
     defaultSize: { col: 0, row: 0, colSpan: 3, rowSpan: 2 }
+  },
+  {
+    type: 'programming',
+    title: 'Zadanie programistyczne',
+    description: 'Dodaj zadanie z edytorem kodu',
+    icon: 'Code',
+    defaultSize: { col: 0, row: 0, colSpan: 4, rowSpan: 3 }
   }
 ];
 
@@ -45,6 +52,7 @@ const getIcon = (iconName: string) => {
     case 'Puzzle': return Puzzle;
     case 'Eye': return Eye;
     case 'HelpCircle': return HelpCircle;
+    case 'Code': return Code;
     default: return Type;
   }
 };
