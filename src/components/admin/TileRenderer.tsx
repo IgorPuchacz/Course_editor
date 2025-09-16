@@ -429,8 +429,6 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                   }}
                 />
               </div>
-              </div>
-            </div>
           );
         }
 
