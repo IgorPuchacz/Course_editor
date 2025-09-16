@@ -5,7 +5,7 @@ import { FontSizeSelector } from './FontSizeSelector';
 import { TextColorPicker } from './TextColorPicker';
 import { FontSelector } from './FontSelector.tsx';
 import { AlignmentControls } from './AlignmentControls';
-import { LessonTile, TextTile } from '../../types/lessonEditor.ts';
+import { LessonTile, ProgrammingTile, TextTile } from '../../types/lessonEditor.ts';
 
 
 interface TopToolbarProps {
@@ -16,7 +16,7 @@ interface TopToolbarProps {
   isTextEditing: boolean;
   onFinishTextEditing?: () => void;
   editor?: Editor | null;
-  selectedTile?: TextTile | null;
+  selectedTile?: TextTile | ProgrammingTile | null;
   onUpdateTile?: (tileId: string, updates: Partial<LessonTile>) => void;
   className?: string;
 }
