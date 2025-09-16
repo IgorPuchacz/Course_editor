@@ -373,7 +373,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
               </div>
               
               {/* Code Editor Section with Toolbar */}
-              <div className="flex-1 flex flex-col">
+              <div className="flex-1 flex flex-col m-3 mt-0 rounded-lg overflow-hidden shadow-sm">
                 {/* Code Toolbar */}
                 <div className="flex items-center justify-between bg-slate-800 border-b border-slate-700 px-4 py-3 shadow-sm">
                   <div className="flex items-center space-x-3">
@@ -415,7 +415,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                 </div>
                 
                 {/* Code Textarea */}
-                <div className="flex-1 relative">
+                <div className="flex-1 relative bg-slate-900">
                 <textarea
                   value={programmingTile.content.code}
                   onChange={(e) => onUpdateTile(tile.id, {
@@ -500,7 +500,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
               </div>
               
               {/* Code Section with Toolbar */}
-              <div className="flex-1 flex flex-col">
+              <div className="flex-1 flex flex-col m-3 mt-0 rounded-lg overflow-hidden shadow-sm">
                 {/* Code Toolbar */}
                 <div className="flex items-center justify-between bg-slate-800 border-b border-slate-700 px-4 py-3 shadow-sm">
                   <div className="flex items-center space-x-3">
@@ -542,7 +542,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                 </div>
                 
                 {/* Code Display */}
-                <div className="flex-1 relative">
+                <div className="flex-1 relative bg-slate-900">
                 <div 
                   className="w-full h-full p-6 bg-slate-900 text-emerald-400 font-mono text-sm overflow-auto whitespace-pre-wrap leading-relaxed"
                   style={{
