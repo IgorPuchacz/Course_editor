@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Puzzle, HelpCircle, Move, Trash2, Play, Square, Code2 } from 'lucide-react';
-import { LessonTile, TextTile, ImageTile, InteractiveTile, QuizTile, ProgrammingTile } from '../../types/lessonEditor';
+import { Puzzle, HelpCircle, Move, Trash2, Play, Square, Code2, ArrowUpDown } from 'lucide-react';
+import { LessonTile, TextTile, ImageTile, InteractiveTile, QuizTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -13,6 +13,8 @@ import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import TextAlign from '../../extensions/TextAlign';
+import { SequencingInteractive } from './SequencingInteractive';
+import { SequencingEditor } from './SequencingEditor';
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
   if (!hex) return null;
@@ -91,7 +93,7 @@ interface TileRendererProps {
   onEditorReady: (editor: Editor | null) => void;
 }
 
-interface TextEditorProps {
+interface RichTextEditorProps {
   textTile: TextTile;
   tileId: string;
   onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
@@ -100,7 +102,7 @@ interface TextEditorProps {
   textColor?: string;
 }
 
-const TextTileEditor: React.FC<TextEditorProps> = ({ textTile, tileId, onUpdateTile, onFinishTextEditing, onEditorReady, textColor }) => {
+const RichTextEditor: React.FC<RichTextEditorProps> = ({ textTile, tileId, onUpdateTile, onFinishTextEditing, onEditorReady, textColor }) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -471,7 +473,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         // If this programming tile is being edited, use Tiptap editor for description
         if (isEditingText && isSelected) {
           contentToRender = (
-            <div className="w-full h-full flex flex-col rounded-2xl transition-all duration-300" style={containerStyle}>
+            <RichTextEditor
               <div className="flex flex-col flex-1 gap-5 p-5">
                 {renderDescriptionBlock(
                   <TextTileEditor

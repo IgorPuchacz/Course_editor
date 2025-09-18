@@ -1,5 +1,5 @@
 import { LessonContent, LessonTile, TextTile } from '../types/lessonEditor';
-import { ProgrammingTile } from '../types/lessonEditor';
+import { ProgrammingTile, SequencingTile } from '../types/lessonEditor';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
 
@@ -314,6 +314,67 @@ export class LessonContentService {
         language: 'python',
         startingCode: '',
         endingCode: ''
+      },
+      created_at: now,
+      updated_at: now,
+      z_index: 1
+    };
+  }
+
+  /**
+   * Create a new sequencing tile
+   */
+  static createSequencingTile(position: { x: number; y: number }): SequencingTile {
+    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+    
+    const gridPos = GridUtils.pixelToGrid(position, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    // Default to 3x3 grid size for sequencing tiles
+    gridPos.colSpan = 3;
+    gridPos.rowSpan = 3;
+
+    const pixelPos = GridUtils.gridToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    return {
+      id,
+      type: 'sequencing',
+      position: pixelPos,
+      size: pixelSize,
+      gridPosition: gridPos,
+      content: {
+        question: 'Ułóż elementy w prawidłowej kolejności',
+        richQuestion: '<p style="margin: 0;">Ułóż elementy w prawidłowej kolejności</p>',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        backgroundColor: '#ffffff',
+        showBorder: true,
+        items: [
+          { id: 'item-1', text: 'Pierwszy element', correctPosition: 0 },
+          { id: 'item-2', text: 'Drugi element', correctPosition: 1 },
+          { id: 'item-3', text: 'Trzeci element', correctPosition: 2 }
+        ],
+        correctFeedback: 'Świetnie! Prawidłowa kolejność.',
+        incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.',
+        allowMultipleAttempts: true,
+        showPositionNumbers: true
       },
       created_at: now,
       updated_at: now,

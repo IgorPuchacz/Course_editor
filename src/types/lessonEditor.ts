@@ -17,7 +17,7 @@ export interface GridPosition {
 
 export interface LessonTile {
   id: string;
-  type: 'text' | 'image' | 'visualization' | 'quiz' | 'programming';
+  type: 'text' | 'image' | 'visualization' | 'quiz' | 'programming' | 'sequencing';
   position: Position;
   size: Size;
   gridPosition: GridPosition;
@@ -99,6 +99,27 @@ export interface ProgrammingTile extends LessonTile {
     language: string; // Programming language (default: 'python')
     startingCode?: string; // Code that appears at the beginning (non-editable for student)
     endingCode?: string; // Code that appears at the end (non-editable for student)
+  };
+}
+
+export interface SequencingTile extends LessonTile {
+  type: 'sequencing';
+  content: {
+    question: string; // The main question/prompt
+    richQuestion?: string; // HTML content with formatting for question
+    fontFamily: string;
+    fontSize: number;
+    backgroundColor: string;
+    showBorder: boolean;
+    items: Array<{
+      id: string;
+      text: string;
+      correctPosition: number; // 0-based index for correct order
+    }>;
+    correctFeedback: string;
+    incorrectFeedback: string;
+    allowMultipleAttempts: boolean;
+    showPositionNumbers: boolean;
   };
 }
 

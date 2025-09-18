@@ -1,5 +1,5 @@
 import React from 'react';
-import { Type, Image, Puzzle, Eye, HelpCircle, Plus, Code } from 'lucide-react';
+import { Type, Image, Puzzle, Eye, HelpCircle, Plus, Code, ArrowUpDown } from 'lucide-react';
 import { TilePaletteItem } from '../../types/lessonEditor';
 
 interface TilePaletteProps {
@@ -42,6 +42,13 @@ const TILE_TYPES: TilePaletteItem[] = [
     description: 'Dodaj zadanie z edytorem kodu',
     icon: 'Code',
     defaultSize: { col: 0, row: 0, colSpan: 4, rowSpan: 3 }
+  },
+  {
+    type: 'sequencing',
+    title: 'Ćwiczenie sekwencyjne',
+    description: 'Interaktywne ćwiczenie układania w kolejności',
+    icon: 'ArrowUpDown',
+    defaultSize: { col: 0, row: 0, colSpan: 3, rowSpan: 3 }
   }
 ];
 
@@ -53,6 +60,7 @@ const getIcon = (iconName: string) => {
     case 'Eye': return Eye;
     case 'HelpCircle': return HelpCircle;
     case 'Code': return Code;
+    case 'ArrowUpDown': return ArrowUpDown;
     default: return Type;
   }
 };
