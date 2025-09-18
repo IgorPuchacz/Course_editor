@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Puzzle, HelpCircle, Move, Trash2, Play, Square, Code2, ArrowUpDown } from 'lucide-react';
-import { LessonTile, TextTile, ImageTile, InteractiveTile, QuizTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor';
+import { HelpCircle, Move, Trash2, Play, Square, Code2, Sparkles } from 'lucide-react';
+import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -14,7 +14,6 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import TextAlign from '../../extensions/TextAlign';
 import { SequencingInteractive } from './SequencingInteractive';
-import { SequencingEditor } from './side editor/SequencingEditor.tsx';
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
   if (!hex) return null;
@@ -707,9 +706,69 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 
       case 'sequencing': {
         const sequencingTile = tile as SequencingTile;
-        contentToRender = (
-          <SequencingInteractive tile={sequencingTile} />
-        );
+        const accentColor = sequencingTile.content.backgroundColor || '#0f172a';
+        const textColor = getReadableTextColor(accentColor);
+
+        if (isEditingText && isSelected) {
+          const questionEditorTile = {
+            ...tile,
+            type: 'text',
+            content: {
+              text: sequencingTile.content.question,
+              richText: sequencingTile.content.richQuestion,
+              fontFamily: sequencingTile.content.fontFamily,
+              fontSize: sequencingTile.content.fontSize,
+              verticalAlign: sequencingTile.content.verticalAlign,
+              backgroundColor: sequencingTile.content.backgroundColor,
+              showBorder: sequencingTile.content.showBorder
+            }
+          } as TextTile;
+
+          contentToRender = (
+            <SequencingInteractive
+              tile={sequencingTile}
+              isPreview
+              headerSlot={
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <RichTextEditor
+                      textTile={questionEditorTile}
+                      tileId={tile.id}
+                      textColor={textColor}
+                      onUpdateTile={(tileId, updates) => {
+                        if (!updates.content) return;
+
+                        onUpdateTile(tileId, {
+                          content: {
+                            ...sequencingTile.content,
+                            question: updates.content.text ?? sequencingTile.content.question,
+                            richQuestion: updates.content.richText ?? sequencingTile.content.richQuestion,
+                            fontFamily: updates.content.fontFamily ?? sequencingTile.content.fontFamily,
+                            fontSize: updates.content.fontSize ?? sequencingTile.content.fontSize,
+                            verticalAlign: updates.content.verticalAlign ?? sequencingTile.content.verticalAlign
+                          }
+                        });
+                      }}
+                      onFinishTextEditing={onFinishTextEditing}
+                      onEditorReady={onEditorReady}
+                    />
+                  </div>
+                  <div
+                    className="flex items-center gap-2 text-xs font-medium"
+                    style={{ color: withAlpha(textColor, textColor === '#0f172a' ? 0.65 : 0.75) }}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Ćwiczenie sekwencyjne</span>
+                  </div>
+                </div>
+              }
+            />
+          );
+        } else {
+          contentToRender = (
+            <SequencingInteractive tile={sequencingTile} onRequestTextEditing={onDoubleClick} />
+          );
+        }
         break;
       }
 
@@ -771,7 +830,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         height: tile.size.height
       }}
       onMouseDown={isDraggingImage ? undefined : onMouseDown}
-      onDoubleClick={onDoubleClick}
+      onDoubleClick={tile.type === 'sequencing' ? undefined : onDoubleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >

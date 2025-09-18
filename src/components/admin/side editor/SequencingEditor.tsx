@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown, RotateCcw } from 'lucide-react';
+import { Plus, Trash2, GripVertical, RotateCcw } from 'lucide-react';
 import { SequencingTile } from '../../../types/lessonEditor.ts';
 
 interface SequencingEditorProps {
@@ -43,28 +43,6 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
     const updatedItems = tile.content.items
       .filter(item => item.id !== itemId)
       .map((item, index) => ({ ...item, correctPosition: index }));
-    handleContentUpdate('items', updatedItems);
-  };
-
-  const moveItem = (itemId: string, direction: 'up' | 'down') => {
-    const items = [...tile.content.items];
-    const currentIndex = items.findIndex(item => item.id === itemId);
-    
-    if (currentIndex === -1) return;
-    
-    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-    
-    if (newIndex < 0 || newIndex >= items.length) return;
-    
-    // Swap items
-    [items[currentIndex], items[newIndex]] = [items[newIndex], items[currentIndex]];
-    
-    // Update correct positions
-    const updatedItems = items.map((item, index) => ({
-      ...item,
-      correctPosition: index
-    }));
-    
     handleContentUpdate('items', updatedItems);
   };
 
@@ -119,18 +97,8 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Question Settings */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Pytanie/Polecenie
-        </label>
-        <textarea
-          value={tile.content.question}
-          onChange={(e) => handleContentUpdate('question', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-vertical"
-          rows={2}
-          placeholder="Wprowadź pytanie lub polecenie dla uczniów"
-        />
+      <div className="p-4 rounded-lg border border-blue-100 bg-blue-50 text-sm text-blue-700">
+        Dwukrotnie kliknij kafelek, aby wybrać między testowaniem zadania a edycją polecenia w trybie RichText.
       </div>
 
       {/* Items Management */}
@@ -201,8 +169,6 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
             ⚠️ Dodaj co najmniej 2 elementy, aby ćwiczenie było funkcjonalne
           </div>
         )}
-      </div>
-
       </div>
 
       {/* Background Color */}
