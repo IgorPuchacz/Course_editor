@@ -199,6 +199,8 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
                   disabled={index === tile.content.items.length - 1}
                   className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   title="Przesuń w dół"
+                >
+                  <ArrowDown className="w-3 h-3" />
                 </button>
                 <button
                   onClick={() => removeItem(item.id)}
