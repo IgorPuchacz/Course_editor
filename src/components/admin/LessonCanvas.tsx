@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import { Type } from 'lucide-react';
-import { LessonContent, LessonTile, EditorState } from '../../types/lessonEditor.ts';
+import { LessonContent, LessonTile, EditorState, SequencingTile } from '../../types/lessonEditor.ts';
 import { EditorAction } from '../../state/editorReducer.ts';
 import { TileRenderer } from './TileRenderer.tsx';
 import { GridUtils } from '../../utils/gridUtils.ts';
@@ -18,6 +18,7 @@ interface LessonCanvasProps {
   onFinishTextEditing: () => void;
   showGrid?: boolean;
   onEditorReady: (editor: Editor | null) => void;
+  onSequencingDoubleClick?: (tile: SequencingTile) => void;
 }
 
 export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({ 
@@ -30,7 +31,8 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
   onAddTile,
   onFinishTextEditing,
   showGrid = true,
-  onEditorReady
+  onEditorReady,
+  onSequencingDoubleClick
 }, ref) => {
   const {
     dragPreview,
@@ -50,6 +52,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
     onDeleteTile,
     onAddTile,
     canvasRef: ref as React.RefObject<HTMLDivElement>,
+    onSequencingDoubleClick,
   });
 
   // Calculate canvas dimensions

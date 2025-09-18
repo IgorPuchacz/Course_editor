@@ -13,6 +13,7 @@ interface UseTileInteractionsProps {
   onDeleteTile: (tileId: string) => void;
   onAddTile: (tileType: string, position: { x: number; y: number }) => void;
   canvasRef: RefObject<HTMLDivElement>;
+  onSequencingDoubleClick?: (tile: SequencingTile) => void;
 }
 
 export const useTileInteractions = ({
@@ -23,13 +24,20 @@ export const useTileInteractions = ({
   onSelectTile,
   onDeleteTile,
   onAddTile,
-  canvasRef
+  canvasRef,
+  onSequencingDoubleClick
 }: UseTileInteractionsProps) => {
   const [dragPreview, setDragPreview] = useState<GridPosition | null>(null);
   const [resizePreview, setResizePreview] = useState<{ tileId: string; gridPosition: GridPosition } | null>(null);
 
   const handleTileDoubleClick = (tile: LessonTile) => {
-    if (tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing') {
+    if (tile.type === 'sequencing') {
+      onSelectTile(tile.id);
+      onSequencingDoubleClick?.(tile as SequencingTile);
+      return;
+    }
+
+    if (tile.type === 'text' || tile.type === 'programming') {
       dispatch({ type: 'startTextEditing', tileId: tile.id });
     } else if (tile.type === 'image') {
       dispatch({ type: 'startImageEditing', tileId: tile.id });

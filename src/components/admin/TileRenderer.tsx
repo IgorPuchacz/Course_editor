@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Puzzle, HelpCircle, Move, Trash2, Play, Square, Code2, ArrowUpDown } from 'lucide-react';
-import { LessonTile, TextTile, ImageTile, InteractiveTile, QuizTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor';
+import { HelpCircle, Move, Trash2, Play, Square, Code2 } from 'lucide-react';
+import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -14,7 +14,6 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import TextAlign from '../../extensions/TextAlign';
 import { SequencingInteractive } from './SequencingInteractive';
-import { SequencingEditor } from './side editor/SequencingEditor.tsx';
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
   if (!hex) return null;
@@ -198,6 +197,115 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ textTile, tileId, onUpd
       <EditorContent
         editor={editor}
         className="w-full focus:outline-none break-words rich-text-content tile-formatted-text"
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+      />
+    </div>
+  );
+};
+
+interface SequencingQuestionEditorProps {
+  sequencingTile: SequencingTile;
+  tileId: string;
+  onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
+  onFinishTextEditing: () => void;
+  onEditorReady: (editor: Editor | null) => void;
+  textColor: string;
+}
+
+const SequencingQuestionEditor: React.FC<SequencingQuestionEditorProps> = ({
+  sequencingTile,
+  tileId,
+  onUpdateTile,
+  onFinishTextEditing,
+  onEditorReady,
+  textColor,
+}) => {
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        bulletList: false,
+        orderedList: false,
+        listItem: false,
+      }),
+      BulletList.configure({
+        HTMLAttributes: { class: 'bullet-list' },
+        keepMarks: true,
+        keepAttributes: true,
+      }),
+      OrderedList.configure({
+        HTMLAttributes: { class: 'ordered-list' },
+        keepMarks: true,
+        keepAttributes: true,
+      }),
+      ListItem,
+      Underline,
+      TextStyle,
+      Color.configure({ types: ['textStyle'] }),
+      FontFamily.configure({ types: ['textStyle'] }),
+      FontSize,
+      TextAlign.configure({ types: ['paragraph'] }),
+    ],
+    content:
+      sequencingTile.content.richQuestion ||
+      `<p style="margin: 0;">${sequencingTile.content.question || ''}</p>`,
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML();
+      const plain = editor.getText();
+      onUpdateTile(tileId, {
+        content: {
+          question: plain,
+          richQuestion: html,
+        },
+      });
+    },
+    autofocus: true,
+  });
+
+  useEffect(() => {
+    onEditorReady(editor);
+    return () => onEditorReady(null);
+  }, [editor, onEditorReady]);
+
+  if (!editor) return null;
+
+  const handleBlur = (e: React.FocusEvent) => {
+    const toolbar = document.querySelector('.top-toolbar');
+    if (toolbar && e.relatedTarget && toolbar.contains(e.relatedTarget as Node)) {
+      e.preventDefault();
+      editor.commands.focus();
+      return;
+    }
+    onFinishTextEditing();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      if (editor.isActive('listItem')) {
+        if (e.shiftKey) {
+          editor.chain().focus().liftListItem('listItem').run();
+        } else {
+          editor.chain().focus().sinkListItem('listItem').run();
+        }
+      } else {
+        editor.chain().focus().insertContent('\t').run();
+      }
+    }
+  };
+
+  return (
+    <div
+      className="w-full"
+      style={{
+        fontFamily: sequencingTile.content.fontFamily,
+        fontSize: `${sequencingTile.content.fontSize}px`,
+        color: textColor,
+      }}
+    >
+      <EditorContent
+        editor={editor}
+        className="w-full focus:outline-none break-words leading-snug font-semibold min-h-[3.5rem]"
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
       />
@@ -707,9 +815,29 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 
       case 'sequencing': {
         const sequencingTile = tile as SequencingTile;
-        contentToRender = (
-          <SequencingInteractive tile={sequencingTile} />
-        );
+        if (isEditingText && isSelected) {
+          const questionTextColor = getReadableTextColor(sequencingTile.content.backgroundColor || '#0f172a');
+          contentToRender = (
+            <SequencingInteractive
+              tile={sequencingTile}
+              isPreview
+              questionContent={(
+                <SequencingQuestionEditor
+                  sequencingTile={sequencingTile}
+                  tileId={tile.id}
+                  onUpdateTile={onUpdateTile}
+                  onFinishTextEditing={onFinishTextEditing}
+                  onEditorReady={onEditorReady}
+                  textColor={questionTextColor}
+                />
+              )}
+            />
+          );
+        } else {
+          contentToRender = (
+            <SequencingInteractive tile={sequencingTile} />
+          );
+        }
         break;
       }
 

@@ -38,6 +38,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
   
   const { editorState, dispatch } = useLessonEditor();
   const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
+  const [sequencingActionTile, setSequencingActionTile] = useState<SequencingTile | null>(null);
 
   // Confirmation dialog state
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -67,6 +68,12 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       return () => clearTimeout(autoSaveTimer);
     }
   }, [editorState.hasUnsavedChanges, lessonContent]);
+
+  useEffect(() => {
+    if (sequencingActionTile && editorState.selectedTileId !== sequencingActionTile.id) {
+      setSequencingActionTile(null);
+    }
+  }, [editorState.selectedTileId, sequencingActionTile]);
 
   const loadLessonContent = async () => {
     try {
@@ -327,10 +334,14 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
   const selectedTile = lessonContent.tiles.find(t => t.id === editorState.selectedTileId) || null;
   const selectedRichTextTile = isRichTextTile(selectedTile) ? selectedTile : null;
 
+  const handleSequencingDoubleClick = (tile: SequencingTile) => {
+    setSequencingActionTile(tile);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col max-w-full overflow-hidden">
       <ToastContainer toasts={toasts} onClose={removeToast} />
-      
+
       <ConfirmDialog
         isOpen={confirmDialog.isOpen}
         title={confirmDialog.title}
@@ -341,6 +352,47 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
         onConfirm={confirmDialog.onConfirm}
         onCancel={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
       />
+
+      {sequencingActionTile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Wybierz działanie dla zadania sekwencyjnego</h3>
+              <p className="text-sm text-gray-600 mt-1">
+                Czy chcesz edytować treść polecenia czy przetestować działanie kafelka jak uczeń?
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  dispatch({ type: 'startTextEditing', tileId: sequencingActionTile.id });
+                  setSequencingActionTile(null);
+                }}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-blue-200 bg-blue-50 text-blue-800 hover:bg-blue-100 transition-colors"
+              >
+                <span className="text-sm font-medium">Edytuj treść polecenia</span>
+                <span className="text-xs uppercase tracking-widest">RichText</span>
+              </button>
+
+              <button
+                onClick={() => setSequencingActionTile(null)}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 transition-colors"
+              >
+                <span className="text-sm font-medium">Przetestuj działanie kafelka</span>
+                <span className="text-xs uppercase tracking-widest">Tryb ucznia</span>
+              </button>
+            </div>
+
+            <button
+              onClick={() => setSequencingActionTile(null)}
+              className="w-full px-4 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Zamknij
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
@@ -470,6 +522,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
               dispatch={dispatch}
               showGrid={editorState.showGrid}
               onEditorReady={setActiveEditor}
+              onSequencingDoubleClick={handleSequencingDoubleClick}
             />
           </div>
         </div>

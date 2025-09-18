@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   CheckCircle,
   XCircle,
@@ -13,6 +13,7 @@ import { SequencingTile } from '../../types/lessonEditor';
 interface SequencingInteractiveProps {
   tile: SequencingTile;
   isPreview?: boolean;
+  questionContent?: React.ReactNode;
 }
 
 interface DraggedItem {
@@ -29,9 +30,65 @@ interface DragState {
   index?: number;
 }
 
+const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
+  if (!hex) return null;
+
+  let normalized = hex.trim();
+  if (normalized.startsWith('#')) {
+    normalized = normalized.slice(1);
+  }
+
+  if (normalized.length === 3) {
+    normalized = normalized.split('').map(char => `${char}${char}`).join('');
+  }
+
+  if (normalized.length !== 6) return null;
+
+  const intValue = Number.parseInt(normalized, 16);
+  if (Number.isNaN(intValue)) return null;
+
+  return {
+    r: (intValue >> 16) & 255,
+    g: (intValue >> 8) & 255,
+    b: intValue & 255
+  };
+};
+
+const channelToLinear = (value: number): number => {
+  const scaled = value / 255;
+  return scaled <= 0.03928 ? scaled / 12.92 : Math.pow((scaled + 0.055) / 1.055, 2.4);
+};
+
+const getReadableTextColor = (hex: string): string => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return '#f8fafc';
+
+  const luminance = (0.2126 * channelToLinear(rgb.r)) +
+    (0.7152 * channelToLinear(rgb.g)) +
+    (0.0722 * channelToLinear(rgb.b));
+
+  return luminance > 0.55 ? '#0f172a' : '#f8fafc';
+};
+
+const lightenChannel = (channel: number, amount: number) => Math.min(255, Math.round(channel + ((255 - channel) * amount)));
+const darkenChannel = (channel: number, amount: number) => Math.max(0, Math.round(channel * (1 - amount)));
+
+const lightenColor = (hex: string, amount: number): string | null => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return null;
+  return `rgb(${lightenChannel(rgb.r, amount)}, ${lightenChannel(rgb.g, amount)}, ${lightenChannel(rgb.b, amount)})`;
+};
+
+const darkenColor = (hex: string, amount: number): string | null => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return null;
+  return `rgb(${darkenChannel(rgb.r, amount)}, ${darkenChannel(rgb.g, amount)}, ${darkenChannel(rgb.b, amount)})`;
+};
+
 export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   tile,
-  isPreview = false
+  isPreview = false,
+  questionContent
 }) => {
   const [availableItems, setAvailableItems] = useState<DraggedItem[]>([]);
   const [placedItems, setPlacedItems] = useState<(DraggedItem | null)[]>([]);
@@ -45,25 +102,85 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   const canInteract = !isPreview;
   const sequenceComplete = placedItems.length > 0 && placedItems.every(item => item !== null);
 
-  const cardBackground = tile.content.backgroundColor || 'rgba(2, 6, 23, 0.86)';
+  const fallbackBackground = 'rgba(2, 6, 23, 0.86)';
+  const backgroundColorValue = tile.content.backgroundColor?.trim();
+  const isHexBackground = Boolean(backgroundColorValue && /^#([0-9a-fA-F]{3}){1,2}$/.test(backgroundColorValue));
+  const cardBackground = backgroundColorValue || fallbackBackground;
+  const textColor = useMemo(() => {
+    if (isHexBackground && backgroundColorValue) {
+      return getReadableTextColor(backgroundColorValue);
+    }
+    return '#f8fafc';
+  }, [backgroundColorValue, isHexBackground]);
+
+  const gradientBackground = useMemo(() => {
+    if (isHexBackground && backgroundColorValue) {
+      const light = lightenColor(backgroundColorValue, 0.08);
+      const dark = darkenColor(backgroundColorValue, 0.16);
+      if (light && dark) {
+        return `linear-gradient(160deg, ${light}, ${dark})`;
+      }
+    }
+    return 'linear-gradient(160deg, rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.82))';
+  }, [backgroundColorValue, isHexBackground]);
+
   const showBorder = tile.content.showBorder !== false;
+
+  const correctOrderIds = useMemo(() => {
+    return [...tile.content.items]
+      .sort((a, b) => a.correctPosition - b.correctPosition)
+      .map(item => item.id);
+  }, [tile.content.items]);
+
+  const shuffleItems = useCallback(() => {
+    const baseItems = tile.content.items.map((item, index) => ({
+      id: item.id,
+      text: item.text,
+      originalIndex: index
+    }));
+
+    if (baseItems.length <= 1) {
+      return baseItems;
+    }
+
+    const isCorrectOrder = (items: typeof baseItems) => {
+      if (items.length !== correctOrderIds.length) return false;
+      return items.every((item, index) => item.id === correctOrderIds[index]);
+    };
+
+    let attempts = 0;
+    let shuffled = [...baseItems].sort(() => Math.random() - 0.5);
+
+    while (isCorrectOrder(shuffled) && attempts < 20) {
+      shuffled = [...baseItems].sort(() => Math.random() - 0.5);
+      attempts += 1;
+    }
+
+    if (isCorrectOrder(shuffled)) {
+      const rotated = [...shuffled];
+      const first = rotated.shift();
+      if (first) {
+        rotated.push(first);
+        shuffled = rotated;
+      }
+    }
+
+    return shuffled.map(item => ({
+      id: item.id,
+      text: item.text,
+      originalIndex: item.originalIndex
+    }));
+  }, [correctOrderIds, tile.content.items]);
 
   // Initialize with randomized order
   useEffect(() => {
-    const shuffledItems = [...tile.content.items]
-      .map((item, index) => ({
-        id: item.id,
-        text: item.text,
-        originalIndex: index
-      }))
-      .sort(() => Math.random() - 0.5);
-
+    const shuffledItems = shuffleItems();
     setAvailableItems(shuffledItems);
-    setPlacedItems(new Array(shuffledItems.length).fill(null));
+    setPlacedItems(new Array(tile.content.items.length).fill(null));
     setIsChecked(false);
     setIsCorrect(null);
     setAttempts(0);
-  }, [tile.content.items]);
+  }, [shuffleItems, tile.content.items.length]);
 
   const resetCheckState = () => {
     if (isChecked) {
@@ -214,16 +331,9 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   };
 
   const resetSequence = () => {
-    const shuffledItems = [...tile.content.items]
-      .map((item, index) => ({
-        id: item.id,
-        text: item.text,
-        originalIndex: index
-      }))
-      .sort(() => Math.random() - 0.5);
-
+    const shuffledItems = shuffleItems();
     setAvailableItems(shuffledItems);
-    setPlacedItems(new Array(shuffledItems.length).fill(null));
+    setPlacedItems(new Array(tile.content.items.length).fill(null));
     setIsChecked(false);
     setIsCorrect(null);
   };
@@ -267,24 +377,26 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   return (
     <div className="w-full h-full">
       <div
-        className={`w-full h-full rounded-3xl ${showBorder ? 'border border-slate-800/60' : ''} text-slate-100 shadow-2xl shadow-slate-950/40 flex flex-col gap-6 p-6 overflow-hidden`}
+        className={`w-full h-full rounded-3xl ${showBorder ? 'border border-slate-800/60' : ''} shadow-2xl shadow-slate-950/40 flex flex-col gap-6 p-6 overflow-hidden`}
         style={{
           backgroundColor: cardBackground,
-          backgroundImage: 'linear-gradient(160deg, rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.82))'
+          backgroundImage: gradientBackground,
+          color: textColor
         }}
       >
         {/* Question */}
         <div className="flex items-start justify-between gap-4">
-          <div
-            className="text-lg font-semibold leading-snug flex-1"
-            style={{
-              fontFamily: tile.content.fontFamily,
-              fontSize: `${tile.content.fontSize}px`
-            }}
-            dangerouslySetInnerHTML={{
-              __html: tile.content.richQuestion || tile.content.question
-            }}
-          />
+          <div className="text-lg font-semibold leading-snug flex-1" style={{ fontFamily: tile.content.fontFamily, fontSize: `${tile.content.fontSize}px` }}>
+            {questionContent ?? (
+              <div
+                className="break-words rich-text-content"
+                style={{ color: textColor }}
+                dangerouslySetInnerHTML={{
+                  __html: tile.content.richQuestion || tile.content.question
+                }}
+              />
+            )}
+          </div>
 
           <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
             <Sparkles className="w-4 h-4" />
@@ -347,11 +459,11 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
           {/* Sequence area */}
           <div className="flex flex-col rounded-2xl border border-emerald-500/20 bg-emerald-500/5">
             <div className="flex items-center justify-between px-5 py-4 border-b border-emerald-500/20">
-              <div className="flex items-center gap-2 text-sm font-semibold text-emerald-200">
+              <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: textColor }}>
                 <CheckCircle className="w-4 h-4" />
                 <span>Twoja sekwencja</span>
               </div>
-              <span className="text-xs text-emerald-200/70">{placedItems.filter(Boolean).length} / {tile.content.items.length}</span>
+              <span className="text-xs" style={{ color: textColor, opacity: 0.7 }}>{placedItems.filter(Boolean).length} / {tile.content.items.length}</span>
             </div>
 
             <div className="flex-1 overflow-auto px-5 py-4 space-y-3">
