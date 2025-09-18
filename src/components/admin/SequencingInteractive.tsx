@@ -256,7 +256,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   };
 
   return (
-    <div className="w-full h-full p-6">
+    <div className="w-full h-full">
       <div className="w-full h-full rounded-3xl border border-slate-800 bg-slate-950/80 text-slate-100 shadow-2xl shadow-slate-950/40 flex flex-col gap-6 p-6 overflow-hidden">
         {/* Question */}
         <div className="flex items-start justify-between gap-4">
