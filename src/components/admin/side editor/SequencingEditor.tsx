@@ -251,39 +251,6 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
         </div>
       </div>
 
-      {/* Exercise Options */}
-      <div className="space-y-4">
-        <label className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
-          <input
-            type="checkbox"
-            checked={tile.content.allowMultipleAttempts}
-            onChange={(e) => handleContentUpdate('allowMultipleAttempts', e.target.checked)}
-            className="w-5 h-5 text-blue-600"
-          />
-          <div>
-            <span className="text-sm font-medium text-gray-900">Pozwól na wielokrotne próby</span>
-            <p className="text-xs text-gray-600 mt-1">
-              Uczniowie mogą próbować układać elementy do momentu uzyskania prawidłowej odpowiedzi
-            </p>
-          </div>
-        </label>
-
-        <label className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
-          <input
-            type="checkbox"
-            checked={tile.content.showPositionNumbers}
-            onChange={(e) => handleContentUpdate('showPositionNumbers', e.target.checked)}
-            className="w-5 h-5 text-blue-600"
-          />
-          <div>
-            <span className="text-sm font-medium text-gray-900">Pokaż numery pozycji</span>
-            <p className="text-xs text-gray-600 mt-1">
-              Wyświetl numery pozycji przy elementach, aby ułatwić układanie
-            </p>
-          </div>
-        </label>
-      </div>
-
       {/* Background Color */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">Kolor tła kafelka</label>

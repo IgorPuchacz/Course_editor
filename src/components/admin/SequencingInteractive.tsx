@@ -42,8 +42,11 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [isPoolHighlighted, setIsPoolHighlighted] = useState(false);
 
-  const canInteract = !isPreview && (!isChecked || !isCorrect || tile.content.allowMultipleAttempts);
+  const canInteract = !isPreview;
   const sequenceComplete = placedItems.length > 0 && placedItems.every(item => item !== null);
+
+  const cardBackground = tile.content.backgroundColor || 'rgba(2, 6, 23, 0.86)';
+  const showBorder = tile.content.showBorder !== false;
 
   // Initialize with randomized order
   useEffect(() => {
@@ -77,6 +80,11 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
       source,
       index
     });
+    try {
+      e.dataTransfer.setData('text/plain', itemId);
+    } catch {
+      // Some browsers may throw when setting data with unsupported formats; ignore.
+    }
     e.dataTransfer.effectAllowed = 'move';
   };
 
@@ -221,7 +229,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   };
 
   const getItemClasses = (itemId: string) => {
-    let baseClasses = 'flex items-center gap-4 px-4 py-3 rounded-xl border border-slate-800/70 bg-slate-800/60 text-slate-100 shadow-sm shadow-slate-900/30 transition-transform duration-200 select-none';
+    let baseClasses = 'flex items-center gap-4 px-4 py-3 rounded-xl border border-slate-800/70 bg-slate-800/60 text-slate-100 shadow-sm shadow-slate-900/30 transition-transform duration-200 select-none cursor-grab active:cursor-grabbing';
 
     if (dragState?.id === itemId) {
       baseClasses += ' opacity-60 scale-[0.98]';
@@ -258,7 +266,13 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
 
   return (
     <div className="w-full h-full">
-      <div className="w-full h-full rounded-3xl border border-slate-800 bg-slate-950/80 text-slate-100 shadow-2xl shadow-slate-950/40 flex flex-col gap-6 p-6 overflow-hidden">
+      <div
+        className={`w-full h-full rounded-3xl ${showBorder ? 'border border-slate-800/60' : ''} text-slate-100 shadow-2xl shadow-slate-950/40 flex flex-col gap-6 p-6 overflow-hidden`}
+        style={{
+          backgroundColor: cardBackground,
+          backgroundImage: 'linear-gradient(160deg, rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.82))'
+        }}
+      >
         {/* Question */}
         <div className="flex items-start justify-between gap-4">
           <div
@@ -355,12 +369,19 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                   </div>
                   {item ? (
                     <div
-                      className="flex-1 flex items-center justify-between gap-4"
+                      className={`flex-1 flex items-center justify-between gap-4 cursor-grab active:cursor-grabbing ${
+                        dragState?.id === item.id ? 'opacity-60 scale-[0.98]' : ''
+                      }`}
                       draggable={canInteract}
                       onDragStart={(e) => handleDragStart(e, item.id, 'sequence', index)}
                       onDragEnd={handleDragEnd}
                     >
-                      <span className="text-sm font-medium text-slate-100">{item.text}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-slate-900/70 text-slate-400">
+                          <GripVertical className="h-4 w-4" />
+                        </div>
+                        <span className="text-sm font-medium text-slate-100 text-left break-words">{item.text}</span>
+                      </div>
                     </div>
                   ) : (
                     <span className="flex-1 text-sm text-slate-500 italic">
@@ -421,17 +442,15 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
             </div>
 
             <div className="flex items-center gap-3">
-              {(!isChecked || (isChecked && !isCorrect && tile.content.allowMultipleAttempts)) && (
-                <button
-                  onClick={checkSequence}
-                  disabled={!sequenceComplete}
-                  className="px-6 py-2 rounded-xl bg-emerald-500 text-slate-950 font-semibold shadow-lg shadow-emerald-500/30 transition-transform duration-200 disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
-                >
-                  Sprawdź kolejność
-                </button>
-              )}
+              <button
+                onClick={checkSequence}
+                disabled={!sequenceComplete || (isChecked && isCorrect)}
+                className="px-6 py-2 rounded-xl bg-emerald-500 text-slate-950 font-semibold shadow-lg shadow-emerald-500/30 transition-transform duration-200 disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
+              >
+                {isChecked && isCorrect ? 'Sekwencja sprawdzona' : 'Sprawdź kolejność'}
+              </button>
 
-              {(isChecked && !isCorrect && tile.content.allowMultipleAttempts) && (
+              {(isChecked && !isCorrect) && (
                 <button
                   onClick={resetSequence}
                   className="px-4 py-2 rounded-xl bg-slate-800 text-slate-100 font-medium border border-slate-700/80 hover:bg-slate-700 transition-colors flex items-center gap-2"
