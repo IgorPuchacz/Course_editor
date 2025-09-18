@@ -708,7 +708,15 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       case 'sequencing': {
         const sequencingTile = tile as SequencingTile;
         contentToRender = (
-          <SequencingInteractive tile={sequencingTile} />
+          <SequencingInteractive
+            tile={sequencingTile}
+            isSelected={isSelected}
+            isEditingText={isEditingText}
+            onUpdateTile={(tileId, updates) => onUpdateTile(tileId, updates)}
+            onFinishTextEditing={onFinishTextEditing}
+            onEditorReady={onEditorReady}
+            onRequestEditMode={onDoubleClick}
+          />
         );
         break;
       }

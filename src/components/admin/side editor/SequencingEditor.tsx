@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown, RotateCcw } from 'lucide-react';
+import { Plus, Trash2, GripVertical, RotateCcw } from 'lucide-react';
 import { SequencingTile } from '../../../types/lessonEditor.ts';
 
 interface SequencingEditorProps {
@@ -119,18 +119,15 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Question Settings */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Pytanie/Polecenie
-        </label>
-        <textarea
-          value={tile.content.question}
-          onChange={(e) => handleContentUpdate('question', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-vertical"
-          rows={2}
-          placeholder="Wprowadź pytanie lub polecenie dla uczniów"
-        />
+      <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+        <p className="text-sm font-medium text-blue-800">
+          Treść polecenia edytujesz bezpośrednio na kafelku.
+        </p>
+        <p className="text-xs text-blue-700 mt-1">
+          Kliknij dwukrotnie kafelek na planszy, a następnie wybierz w oknie wyboru opcję
+          <span className="font-semibold"> „Edytuj treść”</span>, aby włączyć edytor RichText lub
+          <span className="font-semibold"> „Testuj kafelek”</span>, by przejść do podglądu ćwiczenia.
+        </p>
       </div>
 
       {/* Items Management */}
@@ -203,17 +200,27 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
         )}
       </div>
 
-      </div>
-
       {/* Background Color */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">Kolor tła kafelka</label>
-        <input
-          type="color"
-          value={tile.content.backgroundColor}
-          onChange={(e) => handleContentUpdate('backgroundColor', e.target.value)}
-          className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
-        />
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Kolor tła kafelka</label>
+        <div className="flex items-center gap-3">
+          <input
+            type="color"
+            value={tile.content.backgroundColor}
+            onChange={(e) => handleContentUpdate('backgroundColor', e.target.value)}
+            className="w-16 h-12 border border-gray-300 rounded-lg cursor-pointer"
+          />
+          <input
+            type="text"
+            value={tile.content.backgroundColor}
+            onChange={(e) => handleContentUpdate('backgroundColor', e.target.value)}
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            placeholder="#0F172A"
+          />
+        </div>
+        <p className="text-xs text-gray-500">
+          Wybrany kolor wpływa również na gradient kafelka, dzięki czemu łatwo dopasujesz kafelek do motywu lekcji.
+        </p>
       </div>
     </div>
   );
