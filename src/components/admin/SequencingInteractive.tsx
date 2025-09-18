@@ -418,11 +418,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
         {/* Action Buttons */}
         {!isPreview && (
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="text-xs text-slate-500 flex items-center gap-2">
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-700/70 text-[10px] font-semibold text-slate-300">i</span>
-              <span>Przeciągnij elementy z puli, aby ułożyć sekwencję w prawidłowej kolejności.</span>
-            </div>
-
             <div className="flex items-center gap-3">
               {(!isChecked || (isChecked && !isCorrect && tile.content.allowMultipleAttempts)) && (
                 <button
