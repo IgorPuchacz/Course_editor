@@ -476,7 +476,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
             <RichTextEditor
               <div className="flex flex-col flex-1 gap-5 p-5">
                 {renderDescriptionBlock(
-                  <TextTileEditor
+                  <RichTextEditor
                     textTile={{
                       ...tile,
                       type: 'text',

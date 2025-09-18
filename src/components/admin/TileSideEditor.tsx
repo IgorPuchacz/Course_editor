@@ -253,6 +253,11 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
         );
       }
 
+      case 'sequencing': {
+        const sequencingTile = tile as SequencingTile;
+        return <SequencingEditor tile={sequencingTile} onUpdateTile={onUpdateTile} />;
+      }
+
       default:
         return (
           <div className="text-center text-gray-500 py-8">
