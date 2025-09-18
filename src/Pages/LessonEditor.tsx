@@ -186,8 +186,8 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
           updated_at: updates.updated_at || new Date().toISOString()
         };
         
-        // Special handling for text tiles to ensure rich text is preserved
-        if (tile.type === 'text' && updates.content) {
+        // Special handling for text-based tiles to ensure content properties are merged
+        if ((tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing') && updates.content) {
           updatedTile.content = {
             ...tile.content,
             ...updates.content

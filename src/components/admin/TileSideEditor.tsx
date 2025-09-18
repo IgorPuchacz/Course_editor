@@ -1,8 +1,9 @@
 import React from 'react';
 import { Type, X } from 'lucide-react';
-import { TextTile, ImageTile, LessonTile, ProgrammingTile } from '../../types/lessonEditor.ts';
+import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor.ts';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
+import { SequencingEditor } from './SequencingEditor.tsx';
 
 interface TileSideEditorProps {
   tile: LessonTile | undefined;
