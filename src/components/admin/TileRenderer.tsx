@@ -685,7 +685,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         }
         break;
       }
-        
+
       case 'quiz': {
           const quizTile = tile as QuizTile;
           contentToRender = (
@@ -704,6 +704,14 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
           );
           break;
         }
+
+      case 'sequencing': {
+        const sequencingTile = tile as SequencingTile;
+        contentToRender = (
+          <SequencingInteractive tile={sequencingTile} />
+        );
+        break;
+      }
 
       default:
         contentToRender = (
