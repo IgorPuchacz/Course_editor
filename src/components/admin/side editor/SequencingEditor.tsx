@@ -137,7 +137,7 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
       <div>
         <div className="flex items-center justify-between mb-3">
           <label className="block text-sm font-medium text-gray-700">
-            Elementy ({tile.content.items.length})
+            Poprawna kolejność ({tile.content.items.length})
           </label>
           <div className="flex items-center space-x-2">
             <button
