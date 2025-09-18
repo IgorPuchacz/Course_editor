@@ -14,7 +14,7 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import TextAlign from '../../extensions/TextAlign';
 import { SequencingInteractive } from './SequencingInteractive';
-import { SequencingEditor } from './SequencingEditor';
+import { SequencingEditor } from './side editor/SequencingEditor.tsx';
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
   if (!hex) return null;
@@ -679,59 +679,6 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          );
-        }
-        break;
-      }
-
-      case 'interactive': {
-          const interactiveTile = tile as InteractiveTile;
-        
-        // Render quiz functionality if interaction type is quiz
-        if (interactiveTile.content.interactionType === 'quiz') {
-          contentToRender = (
-            <div className="w-full h-full bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg p-4 flex flex-col">
-              <div className="flex items-center space-x-2 mb-2">
-                <HelpCircle className="w-5 h-5 text-purple-600" />
-                <h4 className="font-semibold text-purple-900 text-sm">
-                  {interactiveTile.content.title}
-                </h4>
-              </div>
-              <p className="text-purple-700 text-xs mb-3 flex-1 overflow-hidden">
-                {interactiveTile.content.data?.question || 'Pytanie quiz...'}
-              </p>
-              <div className="space-y-1">
-                {interactiveTile.content.data?.answers?.slice(0, 3).map((answer: string, index: number) => (
-                  <div key={index} className="flex items-center space-x-2 text-xs">
-                    <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                    <span className="text-purple-700 truncate">{answer}</span>
-                  </div>
-                ))}
-                {interactiveTile.content.data?.answers?.length > 3 && (
-                  <div className="text-xs text-purple-600">
-                    +{interactiveTile.content.data.answers.length - 3} więcej...
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        } else {
-          // Default interactive tile rendering
-          contentToRender = (
-            <div className="w-full h-full bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg p-4 flex flex-col">
-              <div className="flex items-center space-x-2 mb-2">
-                <Puzzle className="w-5 h-5 text-purple-600" />
-                <h4 className="font-semibold text-purple-900 text-sm">
-                  {interactiveTile.content.title}
-                </h4>
-              </div>
-              <p className="text-purple-700 text-xs flex-1 overflow-hidden">
-                {interactiveTile.content.description}
-              </p>
-              <div className="mt-2 text-xs text-purple-600">
-                Typ: {interactiveTile.content.interactionType}
               </div>
             </div>
           );

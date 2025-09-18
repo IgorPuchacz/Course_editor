@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown, RotateCcw } from 'lucide-react';
-import { SequencingTile } from '../../types/lessonEditor';
+import { SequencingTile } from '../../../types/lessonEditor.ts';
 
 interface SequencingEditorProps {
   tile: SequencingTile;
@@ -293,24 +293,6 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
           onChange={(e) => handleContentUpdate('backgroundColor', e.target.value)}
           className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
         />
-      </div>
-
-      {/* Border Toggle */}
-      <div>
-        <label className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
-          <input
-            type="checkbox"
-            checked={tile.content.showBorder}
-            onChange={(e) => handleContentUpdate('showBorder', e.target.checked)}
-            className="w-5 h-5 text-blue-600"
-          />
-          <div>
-            <span className="text-sm font-medium text-gray-900">Pokaż obramowanie kafelka</span>
-            <p className="text-xs text-gray-600 mt-1">
-              Wyświetl ramkę wokół całego kafelka
-            </p>
-          </div>
-        </label>
       </div>
     </div>
   );

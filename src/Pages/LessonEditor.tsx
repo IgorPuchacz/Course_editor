@@ -5,10 +5,10 @@ import { LessonContent, LessonTile, ProgrammingTile, TextTile } from '../types/l
 import { SequencingTile } from '../types/lessonEditor.ts';
 import { useLessonEditor } from '../hooks/useLessonEditor.ts';
 import { LessonContentService } from '../services/lessonContentService.ts';
-import { TilePalette } from '../components/admin/TilePalette.tsx';
+import { TilePalette } from '../components/admin/side editor/TilePalette.tsx';
 import { LessonCanvas } from '../components/admin/LessonCanvas.tsx';
-import { TileSideEditor } from '../components/admin/TileSideEditor.tsx';
-import { TopToolbar } from '../components/admin/TopToolbar.tsx';
+import { TileSideEditor } from '../components/admin/side editor/TileSideEditor.tsx';
+import { TopToolbar } from '../components/admin/top editor/TopToolbar.tsx';
 import { Editor } from '@tiptap/react';
 import { ToastContainer } from '../components/common/Toast.tsx';
 import { useToast } from '../hooks/useToast.ts';
