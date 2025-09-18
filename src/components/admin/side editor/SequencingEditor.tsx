@@ -137,7 +137,7 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
       <div>
         <div className="flex items-center justify-between mb-3">
           <label className="block text-sm font-medium text-gray-700">
-            Elementy do uporządkowania ({tile.content.items.length})
+            Poprawna kolejność ({tile.content.items.length})
           </label>
           <div className="flex items-center space-x-2">
             <button
@@ -172,9 +172,6 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
             >
               <div className="flex items-center space-x-2">
                 <GripVertical className="w-4 h-4 text-gray-400 cursor-grab" />
-                <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium">
-                  {index + 1}
-                </div>
               </div>
               
               <input
@@ -186,22 +183,6 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
               />
               
               <div className="flex items-center space-x-1">
-                <button
-                  onClick={() => moveItem(item.id, 'up')}
-                  disabled={index === 0}
-                  className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                  title="Przesuń w górę"
-                >
-                  <ArrowUp className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={() => moveItem(item.id, 'down')}
-                  disabled={index === tile.content.items.length - 1}
-                  className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                  title="Przesuń w dół"
-                >
-                  <ArrowDown className="w-3 h-3" />
-                </button>
                 <button
                   onClick={() => removeItem(item.id)}
                   disabled={tile.content.items.length <= 2}
@@ -222,33 +203,6 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
         )}
       </div>
 
-      {/* Feedback Settings */}
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Komunikat przy prawidłowej odpowiedzi
-          </label>
-          <input
-            type="text"
-            value={tile.content.correctFeedback}
-            onChange={(e) => handleContentUpdate('correctFeedback', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            placeholder="np. Świetnie! Prawidłowa kolejność."
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Komunikat przy błędnej odpowiedzi
-          </label>
-          <input
-            type="text"
-            value={tile.content.incorrectFeedback}
-            onChange={(e) => handleContentUpdate('incorrectFeedback', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            placeholder="np. Spróbuj ponownie. Sprawdź kolejność elementów."
-          />
-        </div>
       </div>
 
       {/* Background Color */}

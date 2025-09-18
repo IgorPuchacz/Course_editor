@@ -315,7 +315,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                 <Shuffle className="w-4 h-4" />
                 <span>Pula elementów</span>
               </div>
-              <span className="text-xs text-slate-400">{availableItems.length} pozostało</span>
             </div>
 
             <div className="flex-1 overflow-auto px-5 py-4 space-y-3">
@@ -436,11 +435,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
         {/* Action Buttons */}
         {!isPreview && (
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="text-xs text-slate-500 flex items-center gap-2">
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-700/70 text-[10px] font-semibold text-slate-300">i</span>
-              <span>Przeciągnij elementy z puli, aby ułożyć sekwencję w prawidłowej kolejności.</span>
-            </div>
-
             <div className="flex items-center gap-3">
               <button
                 onClick={checkSequence}
