@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   CheckCircle,
   XCircle,
@@ -13,6 +13,8 @@ import { SequencingTile } from '../../types/lessonEditor';
 interface SequencingInteractiveProps {
   tile: SequencingTile;
   isPreview?: boolean;
+  onRequestTextEditing?: () => void;
+  headerSlot?: React.ReactNode;
 }
 
 interface DraggedItem {
@@ -29,9 +31,73 @@ interface DragState {
   index?: number;
 }
 
+const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
+  if (!hex) return null;
+
+  let normalized = hex.replace('#', '').trim();
+  if (normalized.length === 3) {
+    normalized = normalized
+      .split('')
+      .map(char => `${char}${char}`)
+      .join('');
+  }
+
+  if (normalized.length !== 6) return null;
+
+  const intValue = Number.parseInt(normalized, 16);
+  if (Number.isNaN(intValue)) return null;
+
+  return {
+    r: (intValue >> 16) & 255,
+    g: (intValue >> 8) & 255,
+    b: intValue & 255
+  };
+};
+
+const channelToLinear = (value: number): number => {
+  const scaled = value / 255;
+  return scaled <= 0.03928 ? scaled / 12.92 : Math.pow((scaled + 0.055) / 1.055, 2.4);
+};
+
+const getReadableTextColor = (hex: string): string => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return '#f8fafc';
+
+  const luminance =
+    0.2126 * channelToLinear(rgb.r) +
+    0.7152 * channelToLinear(rgb.g) +
+    0.0722 * channelToLinear(rgb.b);
+
+  return luminance > 0.6 ? '#0f172a' : '#f8fafc';
+};
+
+const lightenColor = (hex: string, amount: number): string => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return hex;
+
+  const lightenChannel = (channel: number) => Math.round(channel + (255 - channel) * amount);
+  return `rgb(${lightenChannel(rgb.r)}, ${lightenChannel(rgb.g)}, ${lightenChannel(rgb.b)})`;
+};
+
+const darkenColor = (hex: string, amount: number): string => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return hex;
+
+  const darkenChannel = (channel: number) => Math.round(channel * (1 - amount));
+  return `rgb(${darkenChannel(rgb.r)}, ${darkenChannel(rgb.g)}, ${darkenChannel(rgb.b)})`;
+};
+
+const withAlpha = (hex: string, alpha: number): string => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return `rgba(15, 23, 42, ${alpha})`;
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+};
+
 export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   tile,
-  isPreview = false
+  isPreview = false,
+  onRequestTextEditing,
+  headerSlot
 }) => {
   const [availableItems, setAvailableItems] = useState<DraggedItem[]>([]);
   const [placedItems, setPlacedItems] = useState<(DraggedItem | null)[]>([]);
@@ -41,29 +107,96 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [isPoolHighlighted, setIsPoolHighlighted] = useState(false);
+  const [isModePromptVisible, setIsModePromptVisible] = useState(false);
+  const modePromptRef = useRef<HTMLDivElement>(null);
 
   const canInteract = !isPreview;
   const sequenceComplete = placedItems.length > 0 && placedItems.every(item => item !== null);
 
-  const cardBackground = tile.content.backgroundColor || 'rgba(2, 6, 23, 0.86)';
+  const accentColor = tile.content.backgroundColor || '#0f172a';
+  const textColor = useMemo(() => getReadableTextColor(accentColor), [accentColor]);
+  const gradientStart = useMemo(() => lightenColor(accentColor, 0.08), [accentColor]);
+  const gradientEnd = useMemo(() => darkenColor(accentColor, 0.08), [accentColor]);
+  const borderColor = useMemo(
+    () => withAlpha(textColor, textColor === '#0f172a' ? 0.16 : 0.32),
+    [textColor]
+  );
   const showBorder = tile.content.showBorder !== false;
 
-  // Initialize with randomized order
-  useEffect(() => {
-    const shuffledItems = [...tile.content.items]
-      .map((item, index) => ({
+  const correctOrderIds = useMemo(
+    () =>
+      [...tile.content.items]
+        .sort((a, b) => a.correctPosition - b.correctPosition)
+        .map(item => item.id),
+    [tile.content.items]
+  );
+
+  const buildInitialPool = useCallback((): DraggedItem[] => {
+    const normalized = [...tile.content.items]
+      .sort((a, b) => a.correctPosition - b.correctPosition)
+      .map(item => ({
         id: item.id,
         text: item.text,
-        originalIndex: index
-      }))
-      .sort(() => Math.random() - 0.5);
+        originalIndex: item.correctPosition
+      }));
+
+    if (normalized.length <= 1) {
+      return normalized;
+    }
+
+    const maxAttempts = 20;
+    let attemptsCount = 0;
+    let shuffled = [...normalized];
+
+    const isCorrectSequence = (items: DraggedItem[]) =>
+      items.every((item, index) => item.id === correctOrderIds[index]);
+
+    do {
+      shuffled = [...normalized].sort(() => Math.random() - 0.5);
+      attemptsCount += 1;
+    } while (attemptsCount < maxAttempts && isCorrectSequence(shuffled));
+
+    if (isCorrectSequence(shuffled)) {
+      const [first, ...rest] = shuffled;
+      shuffled = [...rest, first];
+    }
+
+    return shuffled;
+  }, [correctOrderIds, tile.content.items]);
+
+  useEffect(() => {
+    const shuffledItems = buildInitialPool();
 
     setAvailableItems(shuffledItems);
     setPlacedItems(new Array(shuffledItems.length).fill(null));
     setIsChecked(false);
     setIsCorrect(null);
     setAttempts(0);
-  }, [tile.content.items]);
+  }, [buildInitialPool]);
+
+  useEffect(() => {
+    if (!isModePromptVisible) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modePromptRef.current && !modePromptRef.current.contains(event.target as Node)) {
+        setIsModePromptVisible(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsModePromptVisible(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isModePromptVisible]);
 
   const resetCheckState = () => {
     if (isChecked) {
@@ -202,11 +335,12 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   };
 
   const checkSequence = () => {
-    const isSequenceCorrect = placedItems.every((item, index) => {
-      if (!item) return false;
-      const originalItem = tile.content.items.find(original => original.id === item.id);
-      return originalItem && originalItem.correctPosition === index;
-    }) && placedItems.length === tile.content.items.length;
+    const isSequenceCorrect =
+      placedItems.every((item, index) => {
+        if (!item) return false;
+        const originalItem = tile.content.items.find(original => original.id === item.id);
+        return originalItem && originalItem.correctPosition === index;
+      }) && placedItems.length === tile.content.items.length;
 
     setIsCorrect(isSequenceCorrect);
     setIsChecked(true);
@@ -214,13 +348,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   };
 
   const resetSequence = () => {
-    const shuffledItems = [...tile.content.items]
-      .map((item, index) => ({
-        id: item.id,
-        text: item.text,
-        originalIndex: index
-      }))
-      .sort(() => Math.random() - 0.5);
+    const shuffledItems = buildInitialPool();
 
     setAvailableItems(shuffledItems);
     setPlacedItems(new Array(shuffledItems.length).fill(null));
@@ -229,7 +357,8 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   };
 
   const getItemClasses = (itemId: string) => {
-    let baseClasses = 'flex items-center gap-4 px-4 py-3 rounded-xl border border-slate-800/70 bg-slate-800/60 text-slate-100 shadow-sm shadow-slate-900/30 transition-transform duration-200 select-none cursor-grab active:cursor-grabbing';
+    let baseClasses =
+      'flex items-center gap-4 px-4 py-3 rounded-xl border border-slate-800/70 bg-slate-800/60 text-slate-100 shadow-sm shadow-slate-900/30 transition-transform duration-200 select-none cursor-grab active:cursor-grabbing';
 
     if (dragState?.id === itemId) {
       baseClasses += ' opacity-60 scale-[0.98]';
@@ -245,9 +374,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
       baseClasses += ' border-emerald-400/70 bg-emerald-400/10 shadow-lg shadow-emerald-500/10';
     } else if (isChecked && isCorrect !== null) {
       const placedItem = placedItems[index];
-      const originalItem = placedItem
-        ? tile.content.items.find(item => item.id === placedItem.id)
-        : null;
+      const originalItem = placedItem ? tile.content.items.find(item => item.id === placedItem.id) : null;
       const isInCorrectPosition = originalItem && originalItem.correctPosition === index;
 
       if (isInCorrectPosition) {
@@ -264,42 +391,63 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
     return baseClasses;
   };
 
+  const handleTileDoubleClick = (event: React.MouseEvent) => {
+    if (isPreview) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (!onRequestTextEditing) {
+      return;
+    }
+
+    setIsModePromptVisible(true);
+  };
+
+  const handleEditSelection = () => {
+    setIsModePromptVisible(false);
+    onRequestTextEditing?.();
+  };
+
   return (
-    <div className="w-full h-full">
+    <div className="relative w-full h-full" onDoubleClick={handleTileDoubleClick}>
       <div
-        className={`w-full h-full rounded-3xl ${showBorder ? 'border border-slate-800/60' : ''} text-slate-100 shadow-2xl shadow-slate-950/40 flex flex-col gap-6 p-6 overflow-hidden`}
+        className={`w-full h-full rounded-3xl ${showBorder ? 'border' : ''} shadow-2xl shadow-slate-950/40 flex flex-col gap-6 p-6 overflow-hidden`}
         style={{
-          backgroundColor: cardBackground,
-          backgroundImage: 'linear-gradient(160deg, rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.82))'
+          backgroundColor: accentColor,
+          backgroundImage: `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`,
+          color: textColor,
+          borderColor: showBorder ? borderColor : undefined
         }}
       >
-        {/* Question */}
-        <div className="flex items-start justify-between gap-4">
-          <div
-            className="text-lg font-semibold leading-snug flex-1"
-            style={{
-              fontFamily: tile.content.fontFamily,
-              fontSize: `${tile.content.fontSize}px`
-            }}
-            dangerouslySetInnerHTML={{
-              __html: tile.content.richQuestion || tile.content.question
-            }}
-          />
+        {headerSlot ? (
+          headerSlot
+        ) : (
+          <div className="flex items-start justify-between gap-4">
+            <div
+              className="text-lg font-semibold leading-snug flex-1"
+              style={{
+                fontFamily: tile.content.fontFamily,
+                fontSize: `${tile.content.fontSize}px`
+              }}
+              dangerouslySetInnerHTML={{
+                __html: tile.content.richQuestion || tile.content.question
+              }}
+            />
 
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
-            <Sparkles className="w-4 h-4" />
-            <span>Ćwiczenie sekwencyjne</span>
+            <div className="flex items-center gap-2 text-xs font-medium" style={{ color: withAlpha(textColor, 0.7) }}>
+              <Sparkles className="w-4 h-4" />
+              <span>Ćwiczenie sekwencyjne</span>
+            </div>
           </div>
-        </div>
+        )}
 
         {attempts > 0 && (
-          <div className="text-xs uppercase tracking-[0.32em] text-slate-500">
+          <div className="text-xs uppercase tracking-[0.32em]" style={{ color: withAlpha(textColor, 0.55) }}>
             Próba #{attempts}
           </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0">
-          {/* Available items */}
           <div
             className={`flex flex-col rounded-2xl border transition-all duration-200 ${
               isPoolHighlighted
@@ -324,11 +472,11 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                   <span>Przeciągnij elementy na prawą stronę</span>
                 </div>
               ) : (
-                availableItems.map((item) => (
+                availableItems.map(item => (
                   <div
                     key={item.id}
                     draggable={canInteract}
-                    onDragStart={(e) => handleDragStart(e, item.id, 'pool')}
+                    onDragStart={e => handleDragStart(e, item.id, 'pool')}
                     onDragEnd={handleDragEnd}
                     className={getItemClasses(item.id)}
                   >
@@ -344,14 +492,15 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
             </div>
           </div>
 
-          {/* Sequence area */}
           <div className="flex flex-col rounded-2xl border border-emerald-500/20 bg-emerald-500/5">
             <div className="flex items-center justify-between px-5 py-4 border-b border-emerald-500/20">
               <div className="flex items-center gap-2 text-sm font-semibold text-emerald-200">
                 <CheckCircle className="w-4 h-4" />
                 <span>Twoja sekwencja</span>
               </div>
-              <span className="text-xs text-emerald-200/70">{placedItems.filter(Boolean).length} / {tile.content.items.length}</span>
+              <span className="text-xs text-emerald-200/70">
+                {placedItems.filter(Boolean).length} / {tile.content.items.length}
+              </span>
             </div>
 
             <div className="flex-1 overflow-auto px-5 py-4 space-y-3">
@@ -359,9 +508,9 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                 <div
                   key={index}
                   className={getSlotClasses(index, Boolean(item))}
-                  onDragOver={(e) => handleSlotDragOver(e, index)}
+                  onDragOver={e => handleSlotDragOver(e, index)}
                   onDragLeave={handleSlotDragLeave}
-                  onDrop={(e) => handleDropToSlot(e, index)}
+                  onDrop={e => handleDropToSlot(e, index)}
                 >
                   <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-200 text-sm font-semibold border border-emerald-500/30">
                     {index + 1}
@@ -372,7 +521,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                         dragState?.id === item.id ? 'opacity-60 scale-[0.98]' : ''
                       }`}
                       draggable={canInteract}
-                      onDragStart={(e) => handleDragStart(e, item.id, 'sequence', index)}
+                      onDragStart={e => handleDragStart(e, item.id, 'sequence', index)}
                       onDragEnd={handleDragEnd}
                     >
                       <div className="flex items-center gap-3">
@@ -383,56 +532,46 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                       </div>
                     </div>
                   ) : (
-                    <span className="flex-1 text-sm text-slate-500 italic">
-                      Upuść element w tym miejscu
-                    </span>
+                    <span className="flex-1 text-sm text-slate-500 italic">Upuść element w tym miejscu</span>
                   )}
 
-                  {isChecked && isCorrect !== null && item && (
-                    (() => {
-                      const originalItem = tile.content.items.find(original => original.id === item.id);
-                      const isInCorrectPosition = originalItem && originalItem.correctPosition === index;
+                  {isChecked && isCorrect !== null && item && (() => {
+                    const originalItem = tile.content.items.find(original => original.id === item.id);
+                    const isInCorrectPosition = originalItem && originalItem.correctPosition === index;
 
-                      return isInCorrectPosition ? (
-                        <CheckCircle className="w-5 h-5 text-emerald-400" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-rose-400" />
-                      );
-                    })()
-                  )}
+                    return isInCorrectPosition ? (
+                      <CheckCircle className="w-5 h-5 text-emerald-400" />
+                    ) : (
+                      <XCircle className="w-5 h-5 text-rose-400" />
+                    );
+                  })()}
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Feedback */}
         {isChecked && isCorrect !== null && (
-          <div className={`rounded-2xl border px-6 py-4 flex items-center justify-between ${
-            isCorrect
-              ? 'border-emerald-400/40 bg-emerald-500/10 text-emerald-100'
-              : 'border-rose-400/40 bg-rose-500/10 text-rose-100'
-          }`}>
+          <div
+            className={`rounded-2xl border px-6 py-4 flex items-center justify-between ${
+              isCorrect
+                ? 'border-emerald-400/40 bg-emerald-500/10 text-emerald-100'
+                : 'border-rose-400/40 bg-rose-500/10 text-rose-100'
+            }`}
+          >
             <div className="flex items-center gap-3 text-sm font-medium">
               {isCorrect ? (
                 <CheckCircle className="w-5 h-5 text-emerald-300" />
               ) : (
                 <XCircle className="w-5 h-5 text-rose-300" />
               )}
-              <span>
-                {isCorrect ? tile.content.correctFeedback : tile.content.incorrectFeedback}
-              </span>
+              <span>{isCorrect ? tile.content.correctFeedback : tile.content.incorrectFeedback}</span>
             </div>
 
-            {!isCorrect && (
-              <div className="text-xs text-slate-200/70">
-                Spróbuj ponownie, przenosząc elementy.
-              </div>
-            )}
+            {!isCorrect && <div className="text-xs text-slate-200/70">Spróbuj ponownie, przenosząc elementy.</div>}
           </div>
         )}
 
-        {/* Action Buttons */}
         {!isPreview && (
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -444,7 +583,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                 {isChecked && isCorrect ? 'Sekwencja sprawdzona' : 'Sprawdź kolejność'}
               </button>
 
-              {(isChecked && !isCorrect) && (
+              {isChecked && !isCorrect && (
                 <button
                   onClick={resetSequence}
                   className="px-4 py-2 rounded-xl bg-slate-800 text-slate-100 font-medium border border-slate-700/80 hover:bg-slate-700 transition-colors flex items-center gap-2"
@@ -457,6 +596,50 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
           </div>
         )}
       </div>
+
+      {isModePromptVisible && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+          <div
+            ref={modePromptRef}
+            className="w-full max-w-md mx-4 rounded-2xl bg-white shadow-2xl border border-slate-200 p-6 space-y-4"
+          >
+            <div className="space-y-1">
+              <h3 className="text-lg font-semibold text-slate-900">Co chcesz zrobić?</h3>
+              <p className="text-sm text-slate-500">
+                Możesz przetestować zadanie jak uczeń lub przejść do edycji polecenia w trybie RichText.
+              </p>
+            </div>
+
+            <div className="grid gap-3">
+              <button
+                type="button"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-colors duration-200 flex items-center justify-between"
+                onClick={() => setIsModePromptVisible(false)}
+              >
+                <span className="font-medium">Przetestuj zadanie</span>
+                <Sparkles className="w-4 h-4 text-slate-400" />
+              </button>
+
+              <button
+                type="button"
+                className="w-full px-4 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition-colors duration-200 flex items-center justify-between"
+                onClick={handleEditSelection}
+              >
+                <span className="font-medium">Edytuj polecenie</span>
+                <Shuffle className="w-4 h-4 text-white/90" />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              className="w-full text-sm text-slate-400 hover:text-slate-600 transition-colors duration-200"
+              onClick={() => setIsModePromptVisible(false)}
+            >
+              Anuluj
+            </button>
+          </div>
+        </div>
+      )}
     </div>
-);
+  );
 };
