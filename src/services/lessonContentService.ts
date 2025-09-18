@@ -373,9 +373,7 @@ export class LessonContentService {
           { id: 'item-3', text: 'Trzeci element', correctPosition: 2 }
         ],
         correctFeedback: 'Świetnie! Prawidłowa kolejność.',
-        incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.',
-        allowMultipleAttempts: true,
-        showPositionNumbers: true
+        incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.'
       },
       created_at: now,
       updated_at: now,

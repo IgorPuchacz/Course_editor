@@ -119,8 +119,6 @@ export interface SequencingTile extends LessonTile {
     }>;
     correctFeedback: string;
     incorrectFeedback: string;
-    allowMultipleAttempts: boolean;
-    showPositionNumbers: boolean;
   };
 }
 
