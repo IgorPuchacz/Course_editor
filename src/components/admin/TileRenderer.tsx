@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Puzzle, HelpCircle, Move, Trash2, Play, Square, Code2, ArrowUpDown } from 'lucide-react';
-import { LessonTile, TextTile, ImageTile, InteractiveTile, QuizTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor';
+import { HelpCircle, Move, Trash2, Play, Square, Code2 } from 'lucide-react';
+import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -14,7 +14,6 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import TextAlign from '../../extensions/TextAlign';
 import { SequencingInteractive } from './SequencingInteractive';
-import { SequencingEditor } from './side editor/SequencingEditor.tsx';
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
   if (!hex) return null;
@@ -222,6 +221,9 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   onEditorReady
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [showSequencingModePrompt, setShowSequencingModePrompt] = useState(false);
+  const [sequencingResetSignal, setSequencingResetSignal] = useState(0);
+  const [isSequencingTestMode, setIsSequencingTestMode] = useState(false);
 
   // Check if this is a frameless text tile
   const isFramelessTextTile = tile.type === 'text' && !(tile as TextTile).content.showBorder;
@@ -282,6 +284,33 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       setIsHovered(false);
     }
   };
+
+  const handleTileDoubleClickInternal = () => {
+    if (tile.type === 'sequencing') {
+      setShowSequencingModePrompt(true);
+      return;
+    }
+
+    onDoubleClick();
+  };
+
+  useEffect(() => {
+    if (tile.type !== 'sequencing') return;
+
+    if (!isSelected) {
+      setShowSequencingModePrompt(false);
+      setIsSequencingTestMode(false);
+    }
+  }, [isSelected, tile.type]);
+
+  useEffect(() => {
+    if (tile.type !== 'sequencing') return;
+
+    if (isEditingText) {
+      setShowSequencingModePrompt(false);
+      setIsSequencingTestMode(false);
+    }
+  }, [isEditingText, tile.type]);
 
   const renderTileContent = () => {
     let contentToRender: JSX.Element;
@@ -707,9 +736,63 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 
       case 'sequencing': {
         const sequencingTile = tile as SequencingTile;
-        contentToRender = (
-          <SequencingInteractive tile={sequencingTile} />
-        );
+        const sequencingBaseColor = sequencingTile.content.backgroundColor || '#020617';
+        const sequencingTextColor = getReadableTextColor(sequencingBaseColor);
+        const sequencingGradient = `linear-gradient(160deg, ${withAlpha(sequencingBaseColor, 0.94)}, ${withAlpha(sequencingBaseColor, 0.86)})`;
+
+        if (isEditingText && isSelected) {
+          contentToRender = (
+            <div
+              className="w-full h-full rounded-3xl overflow-hidden"
+              style={{ backgroundImage: sequencingGradient }}
+            >
+              <RichTextEditor
+                textTile={{
+                  ...tile,
+                  type: 'text',
+                  content: {
+                    text: sequencingTile.content.question,
+                    richText: sequencingTile.content.richQuestion,
+                    fontFamily: sequencingTile.content.fontFamily,
+                    fontSize: sequencingTile.content.fontSize,
+                    verticalAlign: sequencingTile.content.verticalAlign,
+                    backgroundColor: sequencingTile.content.backgroundColor,
+                    showBorder: sequencingTile.content.showBorder
+                  }
+                } as TextTile}
+                tileId={tile.id}
+                textColor={sequencingTextColor}
+                onUpdateTile={(tileId, updates) => {
+                  if (!updates.content) return;
+
+                  onUpdateTile(tileId, {
+                    content: {
+                      ...sequencingTile.content,
+                      question: updates.content.text ?? sequencingTile.content.question,
+                      richQuestion: updates.content.richText ?? sequencingTile.content.richQuestion,
+                      fontFamily: updates.content.fontFamily ?? sequencingTile.content.fontFamily,
+                      fontSize: updates.content.fontSize ?? sequencingTile.content.fontSize,
+                      verticalAlign: updates.content.verticalAlign ?? sequencingTile.content.verticalAlign,
+                      backgroundColor: updates.content.backgroundColor ?? sequencingTile.content.backgroundColor,
+                      showBorder: updates.content.showBorder ?? sequencingTile.content.showBorder
+                    }
+                  });
+                }}
+                onFinishTextEditing={onFinishTextEditing}
+                onEditorReady={onEditorReady}
+              />
+            </div>
+          );
+        } else {
+          contentToRender = (
+            <SequencingInteractive
+              tile={sequencingTile}
+              resetSignal={sequencingResetSignal}
+              isTestMode={isSequencingTestMode}
+              onExitTestMode={isSequencingTestMode ? () => setIsSequencingTestMode(false) : undefined}
+            />
+          );
+        }
         break;
       }
 
@@ -771,7 +854,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         height: tile.size.height
       }}
       onMouseDown={isDraggingImage ? undefined : onMouseDown}
-      onDoubleClick={onDoubleClick}
+      onDoubleClick={handleTileDoubleClickInternal}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -792,6 +875,67 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       >
         {renderTileContent()}
       </div>
+
+      {tile.type === 'sequencing' && showSequencingModePrompt && !isEditingText && (
+        <div
+          className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm"
+          onClick={() => setShowSequencingModePrompt(false)}
+        >
+          <div
+            className="w-[min(360px,90%)] rounded-2xl bg-white/95 p-6 text-slate-900 shadow-2xl shadow-slate-900/40 space-y-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="space-y-1">
+              <h3 className="text-lg font-semibold text-slate-900">Wybierz działanie</h3>
+              <p className="text-sm text-slate-500">
+                Czy chcesz przetestować zadanie sekwencyjne czy edytować jego treść?
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSequencingTestMode(true);
+                  setSequencingResetSignal((value) => value + 1);
+                  setShowSequencingModePrompt(false);
+                }}
+                className="w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-left shadow-sm transition-colors hover:bg-emerald-100"
+              >
+                <div className="text-sm font-semibold text-emerald-700">Testuj jako uczeń</div>
+                <p className="text-xs text-emerald-600">
+                  Losowo ułóż elementy i sprawdź działanie kafelka w trybie ćwiczenia.
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSequencingTestMode(false);
+                  setShowSequencingModePrompt(false);
+                  onDoubleClick();
+                }}
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-left shadow-sm transition-colors hover:bg-slate-50"
+              >
+                <div className="text-sm font-semibold text-slate-800">Edytuj treść polecenia</div>
+                <p className="text-xs text-slate-500">
+                  Otwórz edytor RichText i dopracuj polecenie lub instrukcję dla uczniów.
+                </p>
+              </button>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowSequencingModePrompt(false)}
+                className="text-sm font-medium text-slate-500 transition-colors hover:text-slate-700"
+              >
+                Anuluj
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tile Controls */}
       {(isSelected || isHovered) && !isEditingText && !isImageEditing && (

@@ -1,5 +1,5 @@
 import { useState, useEffect, RefObject } from 'react';
-import { LessonContent, LessonTile, GridPosition, EditorState, TextTile, ImageTile, SequencingTile } from '../types/lessonEditor';
+import { LessonContent, LessonTile, GridPosition, EditorState, TextTile, ImageTile } from '../types/lessonEditor';
 import { EditorAction } from '../state/editorReducer';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown, RotateCcw } from 'lucide-react';
+import { Plus, Trash2, GripVertical, RotateCcw, Info } from 'lucide-react';
 import { SequencingTile } from '../../../types/lessonEditor.ts';
 
 interface SequencingEditorProps {
@@ -13,7 +13,10 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
 }) => {
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
 
-  const handleContentUpdate = (field: string, value: any) => {
+  const handleContentUpdate = <K extends keyof SequencingTile['content']>(
+    field: K,
+    value: SequencingTile['content'][K]
+  ) => {
     onUpdateTile(tile.id, {
       content: {
         ...tile.content,
@@ -23,7 +26,11 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
     });
   };
 
-  const handleItemUpdate = (itemId: string, field: string, value: any) => {
+  const handleItemUpdate = <K extends keyof SequencingTile['content']['items'][number]>(
+    itemId: string,
+    field: K,
+    value: SequencingTile['content']['items'][number][K]
+  ) => {
     const updatedItems = tile.content.items.map(item =>
       item.id === itemId ? { ...item, [field]: value } : item
     );
@@ -43,28 +50,6 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
     const updatedItems = tile.content.items
       .filter(item => item.id !== itemId)
       .map((item, index) => ({ ...item, correctPosition: index }));
-    handleContentUpdate('items', updatedItems);
-  };
-
-  const moveItem = (itemId: string, direction: 'up' | 'down') => {
-    const items = [...tile.content.items];
-    const currentIndex = items.findIndex(item => item.id === itemId);
-    
-    if (currentIndex === -1) return;
-    
-    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-    
-    if (newIndex < 0 || newIndex >= items.length) return;
-    
-    // Swap items
-    [items[currentIndex], items[newIndex]] = [items[newIndex], items[currentIndex]];
-    
-    // Update correct positions
-    const updatedItems = items.map((item, index) => ({
-      ...item,
-      correctPosition: index
-    }));
-    
     handleContentUpdate('items', updatedItems);
   };
 
@@ -119,23 +104,45 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Question Settings */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Pytanie/Polecenie
-        </label>
-        <textarea
-          value={tile.content.question}
-          onChange={(e) => handleContentUpdate('question', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-vertical"
-          rows={2}
-          placeholder="Wprowadź pytanie lub polecenie dla uczniów"
-        />
+      <div className="flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50/80 px-4 py-3 text-sm text-blue-700">
+        <div className="mt-0.5 rounded-full bg-blue-100 p-2 text-blue-600">
+          <Info className="h-4 w-4" />
+        </div>
+        <div className="space-y-1">
+          <p className="text-sm font-semibold text-blue-800">Edytuj polecenie bezpośrednio na kafelku</p>
+          <p className="text-xs leading-relaxed text-blue-600">
+            Podwójne kliknięcie kafelka otworzy menu, w którym możesz przełączyć się w tryb edycji RichText lub przetestować zadanie oczami ucznia.
+          </p>
+        </div>
       </div>
 
-      {/* Items Management */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
+      <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">Kolor tła kafelka</label>
+          <input
+            type="color"
+            value={tile.content.backgroundColor}
+            onChange={(e) => handleContentUpdate('backgroundColor', e.target.value)}
+            className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
+          />
+        </div>
+
+        <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+          <input
+            type="checkbox"
+            checked={tile.content.showBorder !== false}
+            onChange={(e) => handleContentUpdate('showBorder', e.target.checked)}
+            className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <div>
+            <span className="text-sm font-medium text-gray-800">Pokaż delikatne obramowanie</span>
+            <p className="text-xs text-gray-500">Wyłącz, jeśli kafelek ma płynnie łączyć się z tłem.</p>
+          </div>
+        </label>
+      </div>
+
+      <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-4">
+        <div className="flex items-center justify-between">
           <label className="block text-sm font-medium text-gray-700">
             Poprawna kolejność ({tile.content.items.length})
           </label>
@@ -159,7 +166,7 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
         </div>
 
         <div className="space-y-2 max-h-64 overflow-y-auto">
-          {tile.content.items.map((item, index) => (
+          {tile.content.items.map((item) => (
             <div
               key={item.id}
               draggable
@@ -173,7 +180,7 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
               <div className="flex items-center space-x-2">
                 <GripVertical className="w-4 h-4 text-gray-400 cursor-grab" />
               </div>
-              
+
               <input
                 type="text"
                 value={item.text}
@@ -181,7 +188,7 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
                 className="flex-1 px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Tekst elementu"
               />
-              
+
               <div className="flex items-center space-x-1">
                 <button
                   onClick={() => removeItem(item.id)}
@@ -197,23 +204,10 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
         </div>
 
         {tile.content.items.length < 2 && (
-          <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded mt-2">
+          <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
             ⚠️ Dodaj co najmniej 2 elementy, aby ćwiczenie było funkcjonalne
           </div>
         )}
-      </div>
-
-      </div>
-
-      {/* Background Color */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">Kolor tła kafelka</label>
-        <input
-          type="color"
-          value={tile.content.backgroundColor}
-          onChange={(e) => handleContentUpdate('backgroundColor', e.target.value)}
-          className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
-        />
       </div>
     </div>
   );

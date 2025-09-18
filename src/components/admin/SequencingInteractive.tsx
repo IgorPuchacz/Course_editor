@@ -13,6 +13,9 @@ import { SequencingTile } from '../../types/lessonEditor';
 interface SequencingInteractiveProps {
   tile: SequencingTile;
   isPreview?: boolean;
+  resetSignal?: number;
+  isTestMode?: boolean;
+  onExitTestMode?: () => void;
 }
 
 interface DraggedItem {
@@ -29,9 +32,74 @@ interface DragState {
   index?: number;
 }
 
+const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
+  if (!hex) return null;
+
+  let normalized = hex.trim();
+  if (normalized.startsWith('#')) {
+    normalized = normalized.slice(1);
+  }
+
+  if (normalized.length === 3) {
+    normalized = normalized.split('').map(char => `${char}${char}`).join('');
+  }
+
+  if (normalized.length !== 6) return null;
+
+  const intValue = Number.parseInt(normalized, 16);
+  if (Number.isNaN(intValue)) return null;
+
+  return {
+    r: (intValue >> 16) & 255,
+    g: (intValue >> 8) & 255,
+    b: intValue & 255
+  };
+};
+
+const withAlpha = (hex: string, alpha: number): string => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return `rgba(15, 23, 42, ${alpha})`;
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+};
+
+const shuffleWithGuard = (items: DraggedItem[]): DraggedItem[] => {
+  if (items.length <= 1) {
+    return [...items];
+  }
+
+  const isInOriginalOrder = (candidate: DraggedItem[]) =>
+    candidate.every((item, index) => item.originalIndex === index);
+
+  let attempts = 0;
+  let shuffled = [...items];
+
+  while (attempts < 10) {
+    shuffled = [...items];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    if (!isInOriginalOrder(shuffled)) {
+      return shuffled;
+    }
+    attempts += 1;
+  }
+
+  const reversed = [...items].reverse();
+  if (!isInOriginalOrder(reversed)) {
+    return reversed;
+  }
+
+  return shuffled;
+};
+
 export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   tile,
-  isPreview = false
+  isPreview = false,
+  resetSignal = 0,
+  isTestMode = false,
+  onExitTestMode
 }) => {
   const [availableItems, setAvailableItems] = useState<DraggedItem[]>([]);
   const [placedItems, setPlacedItems] = useState<(DraggedItem | null)[]>([]);
@@ -45,25 +113,26 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   const canInteract = !isPreview;
   const sequenceComplete = placedItems.length > 0 && placedItems.every(item => item !== null);
 
-  const cardBackground = tile.content.backgroundColor || 'rgba(2, 6, 23, 0.86)';
+  const baseColor = tile.content.backgroundColor || '#020617';
+  const gradientStart = withAlpha(baseColor, 0.94);
+  const gradientEnd = withAlpha(baseColor, 0.86);
   const showBorder = tile.content.showBorder !== false;
 
   // Initialize with randomized order
   useEffect(() => {
-    const shuffledItems = [...tile.content.items]
-      .map((item, index) => ({
-        id: item.id,
-        text: item.text,
-        originalIndex: index
-      }))
-      .sort(() => Math.random() - 0.5);
+    const poolItems = tile.content.items.map((item, index) => ({
+      id: item.id,
+      text: item.text,
+      originalIndex: index
+    }));
+    const shuffledItems = shuffleWithGuard(poolItems);
 
     setAvailableItems(shuffledItems);
     setPlacedItems(new Array(shuffledItems.length).fill(null));
     setIsChecked(false);
     setIsCorrect(null);
     setAttempts(0);
-  }, [tile.content.items]);
+  }, [tile.content.items, resetSignal]);
 
   const resetCheckState = () => {
     if (isChecked) {
@@ -214,13 +283,12 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   };
 
   const resetSequence = () => {
-    const shuffledItems = [...tile.content.items]
-      .map((item, index) => ({
-        id: item.id,
-        text: item.text,
-        originalIndex: index
-      }))
-      .sort(() => Math.random() - 0.5);
+    const poolItems = tile.content.items.map((item, index) => ({
+      id: item.id,
+      text: item.text,
+      originalIndex: index
+    }));
+    const shuffledItems = shuffleWithGuard(poolItems);
 
     setAvailableItems(shuffledItems);
     setPlacedItems(new Array(shuffledItems.length).fill(null));
@@ -269,27 +337,49 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
       <div
         className={`w-full h-full rounded-3xl ${showBorder ? 'border border-slate-800/60' : ''} text-slate-100 shadow-2xl shadow-slate-950/40 flex flex-col gap-6 p-6 overflow-hidden`}
         style={{
-          backgroundColor: cardBackground,
-          backgroundImage: 'linear-gradient(160deg, rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.82))'
+          backgroundImage: `linear-gradient(160deg, ${gradientStart}, ${gradientEnd})`
         }}
       >
         {/* Question */}
-        <div className="flex items-start justify-between gap-4">
-          <div
-            className="text-lg font-semibold leading-snug flex-1"
-            style={{
-              fontFamily: tile.content.fontFamily,
-              fontSize: `${tile.content.fontSize}px`
-            }}
-            dangerouslySetInnerHTML={{
-              __html: tile.content.richQuestion || tile.content.question
-            }}
-          />
+        <div className="flex flex-col gap-3">
+          <div className="flex items-start justify-between gap-4">
+            <div
+              className="text-lg font-semibold leading-snug flex-1"
+              style={{
+                fontFamily: tile.content.fontFamily,
+                fontSize: `${tile.content.fontSize}px`
+              }}
+              dangerouslySetInnerHTML={{
+                __html: tile.content.richQuestion || tile.content.question
+              }}
+            />
 
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
-            <Sparkles className="w-4 h-4" />
-            <span>Ćwiczenie sekwencyjne</span>
+            <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
+              <Sparkles className="w-4 h-4" />
+              <span>Ćwiczenie sekwencyjne</span>
+            </div>
           </div>
+
+          {isTestMode && (
+            <div className="flex items-center justify-between rounded-xl border border-emerald-400/50 bg-emerald-500/15 px-4 py-2 text-xs text-emerald-100 shadow-sm shadow-emerald-500/20">
+              <div className="flex items-center gap-2 font-semibold uppercase tracking-[0.18em]">
+                <ArrowLeftRight className="w-4 h-4" />
+                <span>Tryb testowy</span>
+              </div>
+              {onExitTestMode && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onExitTestMode();
+                  }}
+                  className="text-[11px] font-semibold text-emerald-200 hover:text-white transition-colors"
+                >
+                  Zakończ
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {attempts > 0 && (
