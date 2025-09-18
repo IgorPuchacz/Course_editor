@@ -205,7 +205,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
           <div className="space-y-6">
             {/* Background Color */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Kolor tła opisu</label>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Kolor tła</label>
               <input
                 type="color"
                 value={programmingTile.content.backgroundColor}
@@ -214,31 +214,13 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
               />
             </div>
 
-            {/* Programming Language */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Język programowania
-              </label>
-              <select
-                value={programmingTile.content.language}
-                onChange={(e) => handleContentUpdate('language', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-              >
-                <option value="python">Python</option>
-                <option value="javascript">JavaScript</option>
-                <option value="java">Java</option>
-                <option value="cpp">C++</option>
-                <option value="csharp">C#</option>
-              </select>
-            </div>
-
             {/* Starting Code */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Kod początkowy
               </label>
               <p className="text-xs text-gray-600 mb-2">
-                Kod wyświetlany na początku edytora (niemodyfikowalny dla ucznia)
+                Kod niemodyfikowalny dla ucznia
               </p>
               <textarea
                 value={programmingTile.content.startingCode || ''}
@@ -256,7 +238,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                 Kod końcowy
               </label>
               <p className="text-xs text-gray-600 mb-2">
-                Kod wyświetlany na końcu edytora (niemodyfikowalny dla ucznia)
+                Kod niemodyfikowalny dla ucznia
               </p>
               <textarea
                 value={programmingTile.content.endingCode || ''}
@@ -266,23 +248,6 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                 placeholder="np. print(value1, value2)"
                 style={{ fontFamily: "'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace" }}
               />
-            </div>
-            {/* Info Box */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-start space-x-3">
-                <div className="w-5 h-5 text-blue-600 mt-0.5">
-                  <svg fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-blue-900 mb-1">Zadanie programistyczne</h4>
-                  <p className="text-xs text-blue-700">
-                    Górna sekcja zawiera opis zadania z formatowaniem tekstu. Dolna sekcja to edytor kodu z opcjonalnym kodem początkowym i końcowym.
-                    Uczniowie będą mogli edytować tylko środkową część kodu.
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         );

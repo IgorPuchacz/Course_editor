@@ -285,6 +285,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
     let contentToRender: JSX.Element;
 
     switch (tile.type) {
+
       case 'text':
         {
           const textTile = tile as TextTile;
@@ -425,27 +426,20 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
           boxShadow: '0 28px 65px -36px rgba(15, 23, 42, 0.65)'
         };
 
-        const defaultCodePlaceholder = `# Napisz swój kod ${programmingTile.content.language} tutaj...\nprint("Hello, World!")`;
-        
         // Build the complete code display content
         let codeDisplayContent = '';
-        
+
         // Add starting code if provided
         if (programmingTile.content.startingCode) {
           codeDisplayContent += programmingTile.content.startingCode + '\n\n';
         }
-        
+
         // Add placeholder text
         codeDisplayContent += 'wpisz swój kod tutaj';
-        
+
         // Add ending code if provided
         if (programmingTile.content.endingCode) {
           codeDisplayContent += '\n\n' + programmingTile.content.endingCode;
-        }
-        
-        // If no starting or ending code, use default placeholder
-        if (!programmingTile.content.startingCode && !programmingTile.content.endingCode) {
-          codeDisplayContent = programmingTile.content.code || defaultCodePlaceholder;
         }
         
         const codeLines = codeDisplayContent.split('\n');
@@ -574,7 +568,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                       )}
                       {/* Fallback to default content if no starting/ending code */}
                       {!programmingTile.content.startingCode && !programmingTile.content.endingCode && (
-                        <span>{programmingTile.content.code || defaultCodePlaceholder}</span>
+                        <span>{programmingTile.content.code}</span>
                       )}
                     </pre>
                     <div className="pointer-events-none select-none absolute left-5 top-6 text-xs font-mono leading-relaxed" style={{ color: 'rgba(148, 163, 184, 0.55)' }}>
@@ -589,8 +583,11 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
               </div>
             </div>
           );
-        } else {
-          // Normal programming tile display
+        }
+
+        // If tile is not being edited at the moment
+        else {
+
           contentToRender = (
             <div className="w-full h-full flex flex-col rounded-2xl transition-all duration-300" style={containerStyle}>
               <div className="flex flex-col flex-1 gap-5 p-5">
@@ -663,16 +660,12 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                           {'\n\n'}
                         </>
                       )}
-                      <span style={{ color: '#f8fafc' }}>wpisz swój kod tutaj</span>
+                      <span>{programmingTile.content.code}</span>
                       {programmingTile.content.endingCode && (
                         <>
                           {'\n\n'}
                           <span style={{ color: '#94a3b8' }}>{programmingTile.content.endingCode}</span>
                         </>
-                      )}
-                      {/* Fallback to default content if no starting/ending code */}
-                      {!programmingTile.content.startingCode && !programmingTile.content.endingCode && (
-                        <span>{programmingTile.content.code || defaultCodePlaceholder}</span>
                       )}
                     </pre>
                     <div className="pointer-events-none select-none absolute left-5 top-6 text-xs font-mono leading-relaxed" style={{ color: 'rgba(148, 163, 184, 0.55)' }}>

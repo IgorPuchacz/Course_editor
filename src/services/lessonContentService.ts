@@ -310,7 +310,7 @@ export class LessonContentService {
         fontSize: 14,
         backgroundColor: '#ffffff',
         showBorder: true,
-        code: '# Napisz swój kod tutaj\nprint("Hello, World!")',
+        code: 'Wpisz swój kod tutaj',
         language: 'python',
         startingCode: '',
         endingCode: ''
