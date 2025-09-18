@@ -205,118 +205,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ textTile, tileId, onUpd
   );
 };
 
-interface TextTileEditorProps {
-  textTile: TextTile;
-  tileId: string;
-  onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
-  onFinishTextEditing: () => void;
-  onEditorReady: (editor: Editor | null) => void;
-  textColor?: string;
-}
-
-const TextTileEditor: React.FC<TextTileEditorProps> = ({ textTile, tileId, onUpdateTile, onFinishTextEditing, onEditorReady, textColor }) => {
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        bulletList: false,
-        orderedList: false,
-        listItem: false,
-      }),
-      BulletList.configure({
-        HTMLAttributes: { class: 'bullet-list' },
-        keepMarks: true,
-        keepAttributes: true,
-      }),
-      OrderedList.configure({
-        HTMLAttributes: { class: 'ordered-list' },
-        keepMarks: true,
-        keepAttributes: true,
-      }),
-      ListItem,
-      Underline,
-      TextStyle,
-      Color.configure({ types: ['textStyle'] }),
-      FontFamily.configure({ types: ['textStyle'] }),
-      FontSize,
-      TextAlign.configure({ types: ['paragraph'] }),
-    ],
-    content:
-      textTile.content.richText ||
-      `<p style="margin: 0;">${textTile.content.text || ''}</p>`,
-    onUpdate: ({ editor }) => {
-      const html = editor.getHTML();
-      const plain = editor.getText();
-      onUpdateTile(tileId, {
-        content: {
-          ...textTile.content,
-          text: plain,
-          richText: html
-        }
-      });
-    },
-    autofocus: true
-  });
-
-  useEffect(() => {
-    onEditorReady(editor);
-    return () => onEditorReady(null);
-  }, [editor, onEditorReady]);
-
-  if (!editor) return null;
-
-  const handleBlur = (e: React.FocusEvent) => {
-    const toolbar = document.querySelector('.top-toolbar');
-    if (toolbar && e.relatedTarget && toolbar.contains(e.relatedTarget as Node)) {
-      e.preventDefault();
-      editor.commands.focus();
-      return;
-    }
-    onFinishTextEditing();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      if (editor.isActive('listItem')) {
-        if (e.shiftKey) {
-          editor.chain().focus().liftListItem('listItem').run();
-        } else {
-          editor.chain().focus().sinkListItem('listItem').run();
-        }
-      } else {
-        editor.chain().focus().insertContent('\t').run();
-      }
-    }
-  };
-
-  return (
-    <div
-      className="w-full h-full p-3 overflow-hidden relative tile-text-content tiptap-editor"
-      style={{
-        backgroundColor: textTile.content.backgroundColor,
-        fontSize: `${textTile.content.fontSize}px`,
-        fontFamily: textTile.content.fontFamily,
-        color: textColor,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent:
-          textTile.content.verticalAlign === 'center'
-            ? 'center'
-            : textTile.content.verticalAlign === 'bottom'
-            ? 'flex-end'
-            : 'flex-start',
-      }}
-    >
-      <EditorContent
-        editor={editor}
-        className="w-full focus:outline-none break-words rich-text-content tile-formatted-text"
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-      />
-    </div>
-  );
-};
-
 export const TileRenderer: React.FC<TileRendererProps> = ({
   tile,
   isSelected,
@@ -407,7 +295,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
           // If this text tile is being edited, use Tiptap editor
           if (isEditingText && isSelected) {
             contentToRender = (
-              <TextTileEditor
+              <RichTextEditor
                 textTile={textTile}
                 tileId={tile.id}
                 onUpdateTile={onUpdateTile}
@@ -588,7 +476,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
             <div className="w-full h-full flex flex-col rounded-2xl transition-all duration-300" style={containerStyle}>
               <div className="flex flex-col flex-1 gap-5 p-5">
                 {renderDescriptionBlock(
-                  <TextTileEditor
+                  <RichTextEditor
                     textTile={{
                       ...tile,
                       type: 'text',
