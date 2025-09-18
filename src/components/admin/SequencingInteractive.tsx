@@ -108,9 +108,10 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [isPoolHighlighted, setIsPoolHighlighted] = useState(false);
   const [isModePromptVisible, setIsModePromptVisible] = useState(false);
+  const [isTestingMode, setIsTestingMode] = useState(false);
   const modePromptRef = useRef<HTMLDivElement>(null);
 
-  const canInteract = !isPreview;
+  const canInteract = !isPreview && isTestingMode;
   const sequenceComplete = placedItems.length > 0 && placedItems.every(item => item !== null);
 
   const accentColor = tile.content.backgroundColor || '#0f172a';
@@ -122,6 +123,51 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
     [textColor]
   );
   const showBorder = tile.content.showBorder !== false;
+
+  const isDarkBackground = textColor === '#f8fafc';
+  const surfaceTone = useCallback(
+    (lightAmount: number, darkAmount: number) =>
+      isDarkBackground ? lightenColor(accentColor, lightAmount) : darkenColor(accentColor, darkAmount),
+    [accentColor, isDarkBackground]
+  );
+
+  const baseSurface = useMemo(() => surfaceTone(0.14, 0.1), [surfaceTone]);
+  const raisedSurface = useMemo(() => surfaceTone(0.22, 0.18), [surfaceTone]);
+  const mutedSurface = useMemo(() => surfaceTone(0.28, 0.26), [surfaceTone]);
+  const strongBorder = useMemo(() => surfaceTone(0.08, 0.22), [surfaceTone]);
+  const subtleBorder = useMemo(() => surfaceTone(0.18, 0.16), [surfaceTone]);
+  const highlightSurface = useMemo(() => surfaceTone(0.34, 0.32), [surfaceTone]);
+  const mutedTextColor = useMemo(
+    () => (isDarkBackground ? lightenColor(accentColor, 0.48) : darkenColor(accentColor, 0.36)),
+    [accentColor, isDarkBackground]
+  );
+  const softTextColor = useMemo(
+    () => (isDarkBackground ? lightenColor(accentColor, 0.42) : darkenColor(accentColor, 0.42)),
+    [accentColor, isDarkBackground]
+  );
+  const badgeBackground = useMemo(() => surfaceTone(0.3, 0.28), [surfaceTone]);
+  const badgeBorder = useMemo(() => surfaceTone(0.24, 0.26), [surfaceTone]);
+  const badgeTextColor = useMemo(() => (isDarkBackground ? '#0f172a' : '#f8fafc'), [isDarkBackground]);
+  const buttonPrimaryBackground = useMemo(() => surfaceTone(0.32, 0.34), [surfaceTone]);
+  const buttonPrimaryText = useMemo(() => (isDarkBackground ? '#0f172a' : '#f8fafc'), [isDarkBackground]);
+  const buttonSecondaryBackground = useMemo(() => surfaceTone(0.24, 0.26), [surfaceTone]);
+  const buttonSecondaryBorder = useMemo(() => surfaceTone(0.18, 0.2), [surfaceTone]);
+  const positiveAccent = useMemo(() => surfaceTone(0.26, 0.24), [surfaceTone]);
+  const negativeAccent = useMemo(() => surfaceTone(0.12, 0.3), [surfaceTone]);
+  const positiveIconColor = useMemo(
+    () => (isDarkBackground ? lightenColor(accentColor, 0.46) : darkenColor(accentColor, 0.46)),
+    [accentColor, isDarkBackground]
+  );
+  const negativeIconColor = useMemo(
+    () => (isDarkBackground ? lightenColor(accentColor, 0.2) : darkenColor(accentColor, 0.54)),
+    [accentColor, isDarkBackground]
+  );
+
+  useEffect(() => {
+    if (isPreview) {
+      setIsTestingMode(false);
+    }
+  }, [isPreview]);
 
   const correctOrderIds = useMemo(
     () =>
@@ -358,37 +404,79 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
 
   const getItemClasses = (itemId: string) => {
     let baseClasses =
-      'flex items-center gap-4 px-4 py-3 rounded-xl border border-slate-800/70 bg-slate-800/60 text-slate-100 shadow-sm shadow-slate-900/30 transition-transform duration-200 select-none cursor-grab active:cursor-grabbing';
+      'flex items-center gap-4 px-4 py-3 rounded-xl border transition-transform duration-200 select-none shadow-sm';
+
+    baseClasses += canInteract ? ' cursor-grab active:cursor-grabbing' : ' cursor-default';
 
     if (dragState?.id === itemId) {
-      baseClasses += ' opacity-60 scale-[0.98]';
+      baseClasses += ' scale-[0.98]';
     }
 
     return baseClasses;
   };
 
-  const getSlotClasses = (index: number, hasItem: boolean) => {
-    let baseClasses = 'relative flex items-center gap-4 px-4 py-3 rounded-xl border-2 transition-all duration-200 min-h-[72px]';
+  const getSlotClasses = (index: number) => {
+    let baseClasses = 'relative flex items-center gap-4 px-4 py-3 rounded-xl border-2 transition-all duration-200 min-h-[72px] shadow-sm';
 
     if (dragOverSlot === index) {
-      baseClasses += ' border-emerald-400/70 bg-emerald-400/10 shadow-lg shadow-emerald-500/10';
-    } else if (isChecked && isCorrect !== null) {
+      baseClasses += ' shadow-lg';
+    }
+
+    return baseClasses;
+  };
+
+  const getSlotStyle = (index: number, hasItem: boolean) => {
+    if (dragOverSlot === index) {
+      return {
+        backgroundColor: highlightSurface,
+        borderColor: strongBorder
+      };
+    }
+
+    if (isChecked && isCorrect !== null) {
       const placedItem = placedItems[index];
       const originalItem = placedItem ? tile.content.items.find(item => item.id === placedItem.id) : null;
       const isInCorrectPosition = originalItem && originalItem.correctPosition === index;
 
       if (isInCorrectPosition) {
-        baseClasses += ' border-emerald-400/60 bg-emerald-400/5';
-      } else {
-        baseClasses += ' border-rose-400/60 bg-rose-400/5';
+        return {
+          backgroundColor: raisedSurface,
+          borderColor: strongBorder
+        };
       }
-    } else if (hasItem) {
-      baseClasses += ' border-slate-700/80 bg-slate-800/40';
-    } else {
-      baseClasses += ' border-dashed border-slate-700/80 bg-slate-900/30 hover:border-emerald-400/60 hover:bg-emerald-400/5';
+
+      return {
+        backgroundColor: baseSurface,
+        borderColor: strongBorder
+      };
     }
 
-    return baseClasses;
+    if (hasItem) {
+      return {
+        backgroundColor: raisedSurface,
+        borderColor: subtleBorder
+      };
+    }
+
+    return {
+      backgroundColor: mutedSurface,
+      borderColor: subtleBorder,
+      borderStyle: 'dashed' as const
+    };
+  };
+
+  const getItemStyle = (itemId: string) => ({
+    backgroundColor: raisedSurface,
+    borderColor: subtleBorder,
+    color: textColor,
+    opacity: dragState?.id === itemId ? 0.85 : 1,
+    boxShadow: isDarkBackground ? '0 10px 24px rgba(8, 15, 26, 0.28)' : '0 10px 24px rgba(15, 23, 42, 0.16)'
+  });
+
+  const stopPropagationInTesting = (event: React.MouseEvent) => {
+    if (isTestingMode) {
+      event.stopPropagation();
+    }
   };
 
   const handleTileDoubleClick = (event: React.MouseEvent) => {
@@ -406,6 +494,25 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   const handleEditSelection = () => {
     setIsModePromptVisible(false);
     onRequestTextEditing?.();
+  };
+
+  const handleStartTesting = () => {
+    setIsModePromptVisible(false);
+    setIsTestingMode(true);
+    resetSequence();
+    setAttempts(0);
+  };
+
+  const handleContinueTesting = () => {
+    setIsModePromptVisible(false);
+    setIsTestingMode(true);
+  };
+
+  const handleStopTesting = () => {
+    setIsModePromptVisible(false);
+    setIsTestingMode(false);
+    resetSequence();
+    setAttempts(0);
   };
 
   return (
@@ -434,7 +541,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
               }}
             />
 
-            <div className="flex items-center gap-2 text-xs font-medium" style={{ color: withAlpha(textColor, 0.7) }}>
+            <div className="flex items-center gap-2 text-xs font-medium" style={{ color: softTextColor }}>
               <Sparkles className="w-4 h-4" />
               <span>Ćwiczenie sekwencyjne</span>
             </div>
@@ -442,24 +549,63 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
         )}
 
         {attempts > 0 && (
-          <div className="text-xs uppercase tracking-[0.32em]" style={{ color: withAlpha(textColor, 0.55) }}>
+          <div className="text-xs uppercase tracking-[0.32em]" style={{ color: mutedTextColor }}>
             Próba #{attempts}
+          </div>
+        )}
+
+        {isTestingMode && !isPreview && (
+          <div
+            className="flex items-center justify-between gap-3 rounded-2xl px-4 py-3 border"
+            style={{ backgroundColor: raisedSurface, borderColor: strongBorder, color: textColor }}
+          >
+            <div className="text-sm font-medium">Tryb testowy aktywny</div>
+            <button
+              type="button"
+              onClick={handleStopTesting}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wide"
+              style={{
+                backgroundColor: buttonSecondaryBackground,
+                border: `1px solid ${buttonSecondaryBorder}`,
+                color: textColor,
+                letterSpacing: '0.08em'
+              }}
+            >
+              Zakończ testowanie
+            </button>
+          </div>
+        )}
+
+        {!isTestingMode && !isPreview && (
+          <div
+            className="rounded-2xl border px-4 py-3 text-sm"
+            style={{ backgroundColor: baseSurface, borderColor: subtleBorder, color: mutedTextColor }}
+          >
+            Dwukrotnie kliknij kafelek, aby uruchomić tryb testowy i sprawdzić zadanie.
           </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0">
           <div
-            className={`flex flex-col rounded-2xl border transition-all duration-200 ${
-              isPoolHighlighted
-                ? 'border-emerald-400/70 bg-emerald-400/10 shadow-lg shadow-emerald-500/10'
-                : 'border-slate-800/70 bg-slate-900/40'
-            }`}
+            className="flex flex-col rounded-2xl border transition-all duration-200 shadow-sm"
             onDragOver={handlePoolDragOver}
             onDragLeave={handlePoolDragLeave}
             onDrop={handleDropToPool}
+            style={{
+              backgroundColor: isPoolHighlighted ? highlightSurface : baseSurface,
+              borderColor: isPoolHighlighted ? strongBorder : subtleBorder,
+              boxShadow: isPoolHighlighted
+                ? isDarkBackground
+                  ? '0 18px 36px rgba(8, 15, 26, 0.3)'
+                  : '0 18px 36px rgba(15, 23, 42, 0.18)'
+                : undefined
+            }}
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
-              <div className="flex items-center gap-2 text-sm font-semibold text-slate-200">
+            <div
+              className="flex items-center justify-between px-5 py-4 border-b"
+              style={{ borderColor: subtleBorder, color: textColor }}
+            >
+              <div className="flex items-center gap-2 text-sm font-semibold">
                 <Shuffle className="w-4 h-4" />
                 <span>Pula elementów</span>
               </div>
@@ -467,7 +613,10 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
 
             <div className="flex-1 overflow-auto px-5 py-4 space-y-3">
               {availableItems.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-2 text-center text-sm text-slate-500 py-10">
+                <div
+                  className="flex flex-col items-center justify-center gap-2 text-center text-sm py-10"
+                  style={{ color: mutedTextColor }}
+                >
                   <ArrowLeftRight className="w-5 h-5" />
                   <span>Przeciągnij elementy na prawą stronę</span>
                 </div>
@@ -478,13 +627,24 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                     draggable={canInteract}
                     onDragStart={e => handleDragStart(e, item.id, 'pool')}
                     onDragEnd={handleDragEnd}
+                    onMouseDown={stopPropagationInTesting}
                     className={getItemClasses(item.id)}
+                    style={getItemStyle(item.id)}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-slate-900/70 text-slate-400">
+                      <div
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border"
+                        style={{
+                          backgroundColor: mutedSurface,
+                          borderColor: subtleBorder,
+                          color: softTextColor
+                        }}
+                      >
                         <GripVertical className="h-4 w-4" />
                       </div>
-                      <span className="text-sm font-medium text-slate-100">{item.text}</span>
+                      <span className="text-sm font-medium" style={{ color: textColor }}>
+                        {item.text}
+                      </span>
                     </div>
                   </div>
                 ))
@@ -492,13 +652,19 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-col rounded-2xl border border-emerald-500/20 bg-emerald-500/5">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-emerald-500/20">
-              <div className="flex items-center gap-2 text-sm font-semibold text-emerald-200">
+          <div
+            className="flex flex-col rounded-2xl border shadow-sm"
+            style={{ backgroundColor: baseSurface, borderColor: subtleBorder }}
+          >
+            <div
+              className="flex items-center justify-between px-5 py-4 border-b"
+              style={{ borderColor: subtleBorder, color: textColor }}
+            >
+              <div className="flex items-center gap-2 text-sm font-semibold">
                 <CheckCircle className="w-4 h-4" />
                 <span>Twoja sekwencja</span>
               </div>
-              <span className="text-xs text-emerald-200/70">
+              <span className="text-xs font-medium" style={{ color: mutedTextColor }}>
                 {placedItems.filter(Boolean).length} / {tile.content.items.length}
               </span>
             </div>
@@ -507,32 +673,54 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
               {placedItems.map((item, index) => (
                 <div
                   key={index}
-                  className={getSlotClasses(index, Boolean(item))}
+                  className={getSlotClasses(index)}
+                  style={getSlotStyle(index, Boolean(item))}
                   onDragOver={e => handleSlotDragOver(e, index)}
                   onDragLeave={handleSlotDragLeave}
                   onDrop={e => handleDropToSlot(e, index)}
+                  onMouseDown={stopPropagationInTesting}
                 >
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-200 text-sm font-semibold border border-emerald-500/30">
+                  <div
+                    className="flex items-center justify-center w-8 h-8 rounded-lg border text-sm font-semibold"
+                    style={{
+                      backgroundColor: badgeBackground,
+                      borderColor: badgeBorder,
+                      color: badgeTextColor
+                    }}
+                  >
                     {index + 1}
                   </div>
                   {item ? (
                     <div
-                      className={`flex-1 flex items-center justify-between gap-4 cursor-grab active:cursor-grabbing ${
-                        dragState?.id === item.id ? 'opacity-60 scale-[0.98]' : ''
+                      className={`flex-1 flex items-center justify-between gap-4 transition-transform duration-200 ${
+                        canInteract ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
                       }`}
                       draggable={canInteract}
                       onDragStart={e => handleDragStart(e, item.id, 'sequence', index)}
                       onDragEnd={handleDragEnd}
+                      onMouseDown={stopPropagationInTesting}
+                      style={{ color: textColor, opacity: dragState?.id === item.id ? 0.85 : 1 }}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-slate-900/70 text-slate-400">
+                        <div
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border"
+                          style={{
+                            backgroundColor: mutedSurface,
+                            borderColor: subtleBorder,
+                            color: softTextColor
+                          }}
+                        >
                           <GripVertical className="h-4 w-4" />
                         </div>
-                        <span className="text-sm font-medium text-slate-100 text-left break-words">{item.text}</span>
+                        <span className="text-sm font-medium text-left break-words" style={{ color: textColor }}>
+                          {item.text}
+                        </span>
                       </div>
                     </div>
                   ) : (
-                    <span className="flex-1 text-sm text-slate-500 italic">Upuść element w tym miejscu</span>
+                    <span className="flex-1 text-sm italic" style={{ color: mutedTextColor }}>
+                      Upuść element w tym miejscu
+                    </span>
                   )}
 
                   {isChecked && isCorrect !== null && item && (() => {
@@ -540,9 +728,9 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                     const isInCorrectPosition = originalItem && originalItem.correctPosition === index;
 
                     return isInCorrectPosition ? (
-                      <CheckCircle className="w-5 h-5 text-emerald-400" />
+                      <CheckCircle className="w-5 h-5" style={{ color: positiveIconColor }} />
                     ) : (
-                      <XCircle className="w-5 h-5 text-rose-400" />
+                      <XCircle className="w-5 h-5" style={{ color: negativeIconColor }} />
                     );
                   })()}
                 </div>
@@ -553,32 +741,45 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
 
         {isChecked && isCorrect !== null && (
           <div
-            className={`rounded-2xl border px-6 py-4 flex items-center justify-between ${
-              isCorrect
-                ? 'border-emerald-400/40 bg-emerald-500/10 text-emerald-100'
-                : 'border-rose-400/40 bg-rose-500/10 text-rose-100'
-            }`}
+            className="rounded-2xl border px-6 py-4 flex items-center justify-between"
+            style={{
+              backgroundColor: isCorrect ? positiveAccent : negativeAccent,
+              borderColor: isCorrect ? strongBorder : strongBorder,
+              color: textColor
+            }}
           >
             <div className="flex items-center gap-3 text-sm font-medium">
               {isCorrect ? (
-                <CheckCircle className="w-5 h-5 text-emerald-300" />
+                <CheckCircle className="w-5 h-5" style={{ color: positiveIconColor }} />
               ) : (
-                <XCircle className="w-5 h-5 text-rose-300" />
+                <XCircle className="w-5 h-5" style={{ color: negativeIconColor }} />
               )}
               <span>{isCorrect ? tile.content.correctFeedback : tile.content.incorrectFeedback}</span>
             </div>
 
-            {!isCorrect && <div className="text-xs text-slate-200/70">Spróbuj ponownie, przenosząc elementy.</div>}
+            {!isCorrect && (
+              <div className="text-xs" style={{ color: softTextColor }}>
+                Spróbuj ponownie, przenosząc elementy.
+              </div>
+            )}
           </div>
         )}
 
-        {!isPreview && (
+        {!isPreview && isTestingMode && (
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <button
                 onClick={checkSequence}
                 disabled={!sequenceComplete || (isChecked && isCorrect)}
-                className="px-6 py-2 rounded-xl bg-emerald-500 text-slate-950 font-semibold shadow-lg shadow-emerald-500/30 transition-transform duration-200 disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
+                className="px-6 py-2 rounded-xl font-semibold transition-transform duration-200 disabled:cursor-not-allowed hover:-translate-y-0.5"
+                style={{
+                  backgroundColor: buttonPrimaryBackground,
+                  color: buttonPrimaryText,
+                  opacity: !sequenceComplete || (isChecked && isCorrect) ? 0.5 : 1,
+                  boxShadow: isDarkBackground
+                    ? '0 14px 32px rgba(8, 15, 26, 0.28)'
+                    : '0 14px 32px rgba(15, 23, 42, 0.18)'
+                }}
               >
                 {isChecked && isCorrect ? 'Sekwencja sprawdzona' : 'Sprawdź kolejność'}
               </button>
@@ -586,7 +787,12 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
               {isChecked && !isCorrect && (
                 <button
                   onClick={resetSequence}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-100 font-medium border border-slate-700/80 hover:bg-slate-700 transition-colors flex items-center gap-2"
+                  className="px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-colors"
+                  style={{
+                    backgroundColor: buttonSecondaryBackground,
+                    border: `1px solid ${buttonSecondaryBorder}`,
+                    color: textColor
+                  }}
                 >
                   <RotateCcw className="w-4 h-4" />
                   <span>Wymieszaj ponownie</span>
@@ -613,21 +819,31 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
             <div className="grid gap-3">
               <button
                 type="button"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-colors duration-200 flex items-center justify-between"
-                onClick={() => setIsModePromptVisible(false)}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors duration-200 flex items-center justify-between"
+                onClick={isTestingMode ? handleContinueTesting : handleStartTesting}
               >
-                <span className="font-medium">Przetestuj zadanie</span>
+                <span className="font-medium">{isTestingMode ? 'Kontynuuj testowanie' : 'Przetestuj zadanie'}</span>
                 <Sparkles className="w-4 h-4 text-slate-400" />
               </button>
 
               <button
                 type="button"
-                className="w-full px-4 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition-colors duration-200 flex items-center justify-between"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 hover:bg-slate-100 transition-colors duration-200 flex items-center justify-between"
                 onClick={handleEditSelection}
               >
                 <span className="font-medium">Edytuj polecenie</span>
-                <Shuffle className="w-4 h-4 text-white/90" />
+                <Shuffle className="w-4 h-4 text-slate-400" />
               </button>
+
+              {isTestingMode && (
+                <button
+                  type="button"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors duration-200"
+                  onClick={handleStopTesting}
+                >
+                  Zakończ testowanie
+                </button>
+              )}
             </div>
 
             <button
