@@ -5,7 +5,8 @@ import {
   RotateCcw,
   Sparkles,
   Shuffle,
-  ArrowLeftRight
+  ArrowLeftRight,
+  GripVertical
 } from 'lucide-react';
 import { SequencingTile } from '../../types/lessonEditor';
 
@@ -220,7 +221,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   };
 
   const getItemClasses = (itemId: string) => {
-    let baseClasses = 'flex items-center justify-between gap-4 px-4 py-3 rounded-xl border border-slate-800/70 bg-slate-800/60 text-slate-100 shadow-sm shadow-slate-900/30 transition-transform duration-200 select-none';
+    let baseClasses = 'flex items-center gap-4 px-4 py-3 rounded-xl border border-slate-800/70 bg-slate-800/60 text-slate-100 shadow-sm shadow-slate-900/30 transition-transform duration-200 select-none';
 
     if (dragState?.id === itemId) {
       baseClasses += ' opacity-60 scale-[0.98]';
@@ -256,7 +257,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   };
 
   return (
-    <div className="w-full h-full p-6">
+    <div className="w-full h-full">
       <div className="w-full h-full rounded-3xl border border-slate-800 bg-slate-950/80 text-slate-100 shadow-2xl shadow-slate-950/40 flex flex-col gap-6 p-6 overflow-hidden">
         {/* Question */}
         <div className="flex items-start justify-between gap-4">
@@ -310,7 +311,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                   <span>Przeciągnij elementy na prawą stronę</span>
                 </div>
               ) : (
-                availableItems.map((item, index) => (
+                availableItems.map((item) => (
                   <div
                     key={item.id}
                     draggable={canInteract}
@@ -319,12 +320,11 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                     className={getItemClasses(item.id)}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-slate-900/70 border border-white/5 flex items-center justify-center text-xs font-semibold text-slate-300">
-                        {tile.content.showPositionNumbers ? index + 1 : '•'}
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-slate-900/70 text-slate-400">
+                        <GripVertical className="h-4 w-4" />
                       </div>
                       <span className="text-sm font-medium text-slate-100">{item.text}</span>
                     </div>
-                    <span className="text-[10px] uppercase tracking-[0.32em] text-slate-500">Przeciągnij</span>
                   </div>
                 ))
               )}
@@ -361,9 +361,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                       onDragEnd={handleDragEnd}
                     >
                       <span className="text-sm font-medium text-slate-100">{item.text}</span>
-                      {!isPreview && (
-                        <span className="text-[10px] uppercase tracking-[0.32em] text-emerald-200/70">Przenieś</span>
-                      )}
                     </div>
                   ) : (
                     <span className="flex-1 text-sm text-slate-500 italic">
