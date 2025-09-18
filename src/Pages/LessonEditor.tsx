@@ -180,20 +180,19 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
 
     const updatedTiles = lessonContent.tiles.map(tile => {
       if (tile.id === tileId) {
-        const updatedTile = { 
-          ...tile, 
-          ...updates, 
+        const updatedTile: LessonTile = {
+          ...tile,
+          ...updates,
           updated_at: updates.updated_at || new Date().toISOString()
         };
-        
-        // Special handling for text tiles to ensure rich text is preserved
-        if (tile.type === 'text' && updates.content) {
+
+        if (updates.content) {
           updatedTile.content = {
             ...tile.content,
             ...updates.content
           };
         }
-        
+
         return updatedTile;
       }
       return tile;
