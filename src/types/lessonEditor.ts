@@ -109,6 +109,7 @@ export interface SequencingTile extends LessonTile {
     richQuestion?: string; // HTML content with formatting for question
     fontFamily: string;
     fontSize: number;
+    verticalAlign: 'top' | 'center' | 'bottom';
     backgroundColor: string;
     showBorder: boolean;
     items: Array<{

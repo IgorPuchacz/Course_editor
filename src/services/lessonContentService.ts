@@ -364,6 +364,7 @@ export class LessonContentService {
         richQuestion: '<p style="margin: 0;">Ułóż elementy w prawidłowej kolejności</p>',
         fontFamily: 'Inter, system-ui, sans-serif',
         fontSize: 16,
+        verticalAlign: 'top',
         backgroundColor: '#ffffff',
         showBorder: true,
         items: [
