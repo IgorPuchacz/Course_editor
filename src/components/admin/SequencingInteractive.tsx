@@ -9,6 +9,8 @@ interface SequencingInteractiveProps {
   isTestingMode?: boolean;
   onRequestTextEditing?: () => void;
   instructionContent?: React.ReactNode;
+  containerClassName?: string;
+  containerStyle?: React.CSSProperties;
 }
 
 interface DraggedItem {
@@ -92,7 +94,9 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   isPreview = false,
   isTestingMode = false,
   onRequestTextEditing,
-  instructionContent
+  instructionContent,
+  containerClassName,
+  containerStyle
 }) => {
   const [availableItems, setAvailableItems] = useState<DraggedItem[]>([]);
   const [placedItems, setPlacedItems] = useState<(DraggedItem | null)[]>([]);
@@ -377,16 +381,26 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
     onRequestTextEditing?.();
   };
 
+  const defaultContainerClassName = `w-full h-full rounded-3xl ${showBorder ? 'border' : ''} shadow-2xl shadow-slate-950/40 flex flex-col gap-6 p-6 overflow-hidden`;
+  const mergedContainerClassName = containerClassName ?? defaultContainerClassName;
+
+  const defaultContainerStyle: React.CSSProperties = {
+    backgroundColor: accentColor,
+    backgroundImage: `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`,
+    color: textColor,
+    borderColor: showBorder ? borderColor : undefined
+  };
+
+  const mergedContainerStyle = {
+    ...defaultContainerStyle,
+    ...(containerStyle ?? {})
+  };
+
   return (
     <div className="relative w-full h-full" onDoubleClick={handleTileDoubleClick}>
       <div
-        className={`w-full h-full rounded-3xl ${showBorder ? 'border' : ''} shadow-2xl shadow-slate-950/40 flex flex-col gap-6 p-6 overflow-hidden`}
-        style={{
-          backgroundColor: accentColor,
-          backgroundImage: `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`,
-          color: textColor,
-          borderColor: showBorder ? borderColor : undefined
-        }}
+        className={mergedContainerClassName}
+        style={mergedContainerStyle}
       >
         <TaskInstructionPanel
           icon={<Sparkles className="w-4 h-4" />}
