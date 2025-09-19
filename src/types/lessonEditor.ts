@@ -146,6 +146,7 @@ export type ResizeHandle = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w';
 export type EditorMode =
   | 'idle'
   | 'editing'
+  | 'testing'
   | 'textEditing'
   | 'imageEditing'
   | 'dragging'
@@ -171,6 +172,7 @@ export interface EditorState {
   canvasSize: Size;
   hasUnsavedChanges: boolean;
   showGrid: boolean;
+  testingTileId: string | null;
 }
 
 export interface TilePaletteItem {

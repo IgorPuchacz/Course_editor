@@ -5,11 +5,13 @@ import { SequencingTile } from '../../../types/lessonEditor.ts';
 interface SequencingEditorProps {
   tile: SequencingTile;
   onUpdateTile: (tileId: string, updates: Partial<SequencingTile>) => void;
+  isTesting?: boolean;
 }
 
 export const SequencingEditor: React.FC<SequencingEditorProps> = ({
   tile,
-  onUpdateTile
+  onUpdateTile,
+  isTesting = false
 }) => {
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
 
@@ -97,8 +99,12 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="p-4 rounded-lg border border-blue-100 bg-blue-50 text-sm text-blue-700">
-        Dwukrotnie kliknij kafelek, aby wybrać między testowaniem zadania a edycją polecenia w trybie RichText.
+      <div className="p-4 rounded-lg border border-blue-100 bg-blue-50 text-sm text-blue-700 space-y-2">
+        <p>Dwukrotnie kliknij kafelek, aby przejść do edycji polecenia w trybie RichText.</p>
+        <p>Użyj przycisku „Przetestuj zadanie”, aby chwilowo zablokować kafelek i sprawdzić przeciąganie jak uczeń.</p>
+        {isTesting && (
+          <p className="text-emerald-700 font-medium">Tryb testowania jest aktywny – kliknięcia nie przesuną kafelka.</p>
+        )}
       </div>
 
       {/* Items Management */}

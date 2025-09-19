@@ -119,25 +119,33 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
         {renderDragPreview()}
 
         {/* Render Tiles */}
-        {content.tiles.map((tile) => (
-          <TileRenderer
-            key={tile.id}
-            tile={tile}
-            isSelected={editorState.selectedTileId === tile.id}
-            isEditing={editorState.mode === 'editing' && editorState.selectedTileId === tile.id}
-            isEditingText={editorState.mode === 'textEditing' && editorState.selectedTileId === tile.id}
-            isImageEditing={editorState.mode === 'imageEditing' && editorState.selectedTileId === tile.id}
-            onMouseDown={(e) => handleTileMouseDown(e, tile)}
-            onImageMouseDown={(e) => handleImageMouseDown(e, tile)}
-            isDraggingImage={editorState.interaction.type === 'imageDrag'}
-            onDoubleClick={() => handleTileDoubleClick(tile)}
-            onUpdateTile={onUpdateTile}
-            onDelete={onDeleteTile}
-            onFinishTextEditing={onFinishTextEditing}
-            showGrid={showGrid}
-            onEditorReady={onEditorReady}
-          />
-        ))}
+        {content.tiles.map((tile) => {
+          const isTileBeingTested = editorState.testingTileId === tile.id;
+
+          return (
+            <TileRenderer
+              key={tile.id}
+              tile={tile}
+              isSelected={editorState.selectedTileId === tile.id}
+              isEditing={
+                (editorState.mode === 'editing' || editorState.mode === 'testing') &&
+                editorState.selectedTileId === tile.id
+              }
+              isEditingText={editorState.mode === 'textEditing' && editorState.selectedTileId === tile.id}
+              isImageEditing={editorState.mode === 'imageEditing' && editorState.selectedTileId === tile.id}
+              isTestingTile={isTileBeingTested}
+              onMouseDown={isTileBeingTested ? undefined : (e) => handleTileMouseDown(e, tile)}
+              onImageMouseDown={(e) => handleImageMouseDown(e, tile)}
+              isDraggingImage={editorState.interaction.type === 'imageDrag'}
+              onDoubleClick={() => handleTileDoubleClick(tile)}
+              onUpdateTile={onUpdateTile}
+              onDelete={onDeleteTile}
+              onFinishTextEditing={onFinishTextEditing}
+              showGrid={showGrid}
+              onEditorReady={onEditorReady}
+            />
+          );
+        })}
 
         {/* Empty State */}
         {content.tiles.length === 0 && (

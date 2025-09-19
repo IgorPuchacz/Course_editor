@@ -14,6 +14,7 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import TextAlign from '../../extensions/TextAlign';
 import { SequencingInteractive } from './SequencingInteractive';
+import { TileInstructionPanel } from './TileInstructionPanel';
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
   if (!hex) return null;
@@ -79,6 +80,7 @@ interface TileRendererProps {
   tile: LessonTile;
   isSelected: boolean;
   isEditing: boolean;
+  isTestingTile: boolean;
   isEditingText: boolean;
   isImageEditing: boolean;
   onMouseDown: (e: React.MouseEvent) => void;
@@ -208,6 +210,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   tile,
   isSelected,
   isEditing,
+  isTestingTile,
   isImageEditing,
   onMouseDown,
   onImageMouseDown,
@@ -450,22 +453,17 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
             className="flex-shrink-0 max-h-[45%] overflow-hidden rounded-2xl border transition-colors duration-300"
             style={descriptionContainerStyle}
           >
-            <div className="px-5 pt-5 pb-3 flex items-center gap-3">
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm"
-                style={{ backgroundColor: chipBackground, color: textColor }}
-              >
-                <Code2 className="w-4 h-4" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-lg uppercase tracking-[0.10em] font-semibold" style={{ color: mutedTextColor }}>
-                  Zadanie
-                </span>
-              </div>
-            </div>
-            <div className="px-5 pb-5 h-full">
+            <TileInstructionPanel
+              icon={Code2}
+              label="Zadanie"
+              className="px-5 pt-5 pb-5 h-full"
+              contentClassName="h-full text-sm leading-relaxed text-slate-100"
+              iconBackground={chipBackground}
+              iconColor={textColor}
+              labelColor={mutedTextColor}
+            >
               {content}
-            </div>
+            </TileInstructionPanel>
           </div>
         );
 
@@ -709,6 +707,12 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         const accentColor = sequencingTile.content.backgroundColor || '#0f172a';
         const textColor = getReadableTextColor(accentColor);
 
+        const instructionBorderColor = withAlpha(textColor, textColor === '#0f172a' ? 0.18 : 0.24);
+        const instructionBackground = withAlpha(textColor, textColor === '#0f172a' ? 0.12 : 0.18);
+        const instructionIconBackground = withAlpha(textColor, textColor === '#0f172a' ? 0.14 : 0.26);
+        const instructionLabelColor = withAlpha(textColor, textColor === '#0f172a' ? 0.7 : 0.85);
+        const instructionMetaColor = withAlpha(textColor, textColor === '#0f172a' ? 0.65 : 0.75);
+
         if (isEditingText && isSelected) {
           const questionEditorTile = {
             ...tile,
@@ -729,8 +733,28 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
               tile={sequencingTile}
               isPreview
               headerSlot={
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
+                <div
+                  className="rounded-2xl border backdrop-blur-sm"
+                  style={{
+                    borderColor: instructionBorderColor,
+                    backgroundColor: instructionBackground
+                  }}
+                >
+                  <TileInstructionPanel
+                    icon={Code2}
+                    label="Zadanie"
+                    className="px-5 pt-5 pb-4"
+                    contentClassName="text-sm lg:text-base"
+                    iconBackground={instructionIconBackground}
+                    iconColor={textColor}
+                    labelColor={instructionLabelColor}
+                    meta={(
+                      <div className="flex items-center gap-2 text-xs font-medium" style={{ color: instructionMetaColor }}>
+                        <Sparkles className="w-4 h-4" />
+                        <span>Ćwiczenie sekwencyjne</span>
+                      </div>
+                    )}
+                  >
                     <RichTextEditor
                       textTile={questionEditorTile}
                       tileId={tile.id}
@@ -752,14 +776,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                       onFinishTextEditing={onFinishTextEditing}
                       onEditorReady={onEditorReady}
                     />
-                  </div>
-                  <div
-                    className="flex items-center gap-2 text-xs font-medium"
-                    style={{ color: withAlpha(textColor, textColor === '#0f172a' ? 0.65 : 0.75) }}
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    <span>Ćwiczenie sekwencyjne</span>
-                  </div>
+                  </TileInstructionPanel>
                 </div>
               }
             />
@@ -784,7 +801,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
     return contentToRender;
   };
   const renderResizeHandles = () => {
-    if (!isSelected || isEditingText || isImageEditing) return null;
+    if (!isSelected || isEditingText || isImageEditing || isTestingTile) return null;
 
     const handles = GridUtils.getResizeHandles(tile.gridPosition);
     
@@ -815,7 +832,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   return (
     <div
       className={`absolute select-none transition-all duration-200 ${
-        isEditing || isImageEditing || isEditingText ? 'z-20' : 'z-10'
+        isEditing || isImageEditing || isEditingText || isTestingTile ? 'z-20' : 'z-10'
       } ${
         isSelected ? 'ring-2 ring-blue-500 ring-opacity-75' : ''
       } ${
@@ -853,7 +870,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       </div>
 
       {/* Tile Controls */}
-      {(isSelected || isHovered) && !isEditingText && !isImageEditing && (
+      {(isSelected || isHovered) && !isEditingText && !isImageEditing && !isTestingTile && (
         <div className="absolute -top-8 left-0 flex items-center space-x-1 bg-white rounded-md shadow-md border border-gray-200 px-2 py-1">
           <Move className="w-3 h-3 text-gray-500" />
           <span className="text-xs text-gray-600 capitalize">{tile.type}</span>

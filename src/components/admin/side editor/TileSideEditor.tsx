@@ -9,12 +9,18 @@ interface TileSideEditorProps {
   tile: LessonTile | undefined;
   onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
   onSelectTile?: (tileId: string | null) => void;
+  onStartTestingTile?: (tileId: string) => void;
+  onStopTestingTile?: () => void;
+  testingTileId?: string | null;
 }
 
 export const TileSideEditor: React.FC<TileSideEditorProps> = ({
   tile,
   onUpdateTile,
-  onSelectTile
+  onSelectTile,
+  onStartTestingTile,
+  onStopTestingTile,
+  testingTileId
 }) => {
 
   if (!tile) {
@@ -256,7 +262,37 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
 
       case 'sequencing': {
         const sequencingTile = tile as SequencingTile;
-        return <SequencingEditor tile={sequencingTile} onUpdateTile={onUpdateTile} />;
+        const isTesting = testingTileId === tile.id;
+
+        const handleToggleTesting = () => {
+          if (isTesting) {
+            onStopTestingTile?.();
+          } else {
+            onStartTestingTile?.(tile.id);
+          }
+        };
+
+        return (
+          <div className="space-y-4">
+            <button
+              type="button"
+              onClick={handleToggleTesting}
+              className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                isTesting
+                  ? 'bg-emerald-600 text-white hover:bg-emerald-500'
+                  : 'bg-slate-900 text-white hover:bg-slate-700'
+              }`}
+            >
+              {isTesting ? 'Zakończ testowanie zadania' : 'Przetestuj zadanie'}
+            </button>
+
+            <SequencingEditor
+              tile={sequencingTile}
+              onUpdateTile={onUpdateTile}
+              isTesting={isTesting}
+            />
+          </div>
+        );
       }
 
       default:

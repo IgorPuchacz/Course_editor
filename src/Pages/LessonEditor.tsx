@@ -247,6 +247,14 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
     dispatch({ type: 'selectTile', tileId });
   };
 
+  const handleStartTileTesting = (tileId: string) => {
+    dispatch({ type: 'startTestingTile', tileId });
+  };
+
+  const handleStopTileTesting = () => {
+    dispatch({ type: 'stopTestingTile' });
+  };
+
   const handleFinishTextEditing = () => {
     dispatch({ type: 'stopEditing' });
     setActiveEditor(null);
@@ -427,6 +435,9 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
                 tile={selectedTile}
                 onUpdateTile={handleUpdateTile}
                 onSelectTile={handleSelectTile}
+                onStartTestingTile={handleStartTileTesting}
+                onStopTestingTile={handleStopTileTesting}
+                testingTileId={editorState.testingTileId}
               />
             </div>
           ) : (
