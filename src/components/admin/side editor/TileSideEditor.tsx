@@ -1,20 +1,32 @@
 import React from 'react';
 import { Type, X } from 'lucide-react';
-import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile } from '../../../types/lessonEditor.ts';
+import {
+  TextTile,
+  ImageTile,
+  LessonTile,
+  ProgrammingTile,
+  SequencingTile,
+  EditorState
+} from '../../../types/lessonEditor.ts';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
 import { SequencingEditor } from './SequencingEditor.tsx';
+import { EditorAction } from '../../../state/editorReducer.ts';
 
 interface TileSideEditorProps {
   tile: LessonTile | undefined;
   onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
   onSelectTile?: (tileId: string | null) => void;
+  editorState: EditorState;
+  dispatch: React.Dispatch<EditorAction>;
 }
 
 export const TileSideEditor: React.FC<TileSideEditorProps> = ({
   tile,
   onUpdateTile,
-  onSelectTile
+  onSelectTile,
+  editorState,
+  dispatch
 }) => {
 
   if (!tile) {
@@ -268,6 +280,21 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
     }
   };
 
+  const isSequencingTile = tile.type === 'sequencing';
+  const isTestingTile =
+    isSequencingTile && editorState.mode === 'testing' && editorState.selectedTileId === tile.id;
+
+  const handleToggleTesting = () => {
+    if (!isSequencingTile) return;
+
+    if (isTestingTile) {
+      dispatch({ type: 'stopTesting' });
+    } else {
+      dispatch({ type: 'startTesting', tileId: tile.id });
+      onSelectTile?.(tile.id);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -294,6 +321,27 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
 
       {/* Properties Panel */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {isSequencingTile && (
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+            <div className="space-y-1">
+              <h4 className="text-sm font-semibold text-slate-900">Tryb testowania</h4>
+              <p className="text-xs text-slate-600">
+                Zablokuj pozycję kafelka i sprawdź działanie przeciągania tak jak uczeń.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleToggleTesting}
+              className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                isTestingTile
+                  ? 'bg-slate-900 text-slate-100 hover:bg-slate-800'
+                  : 'bg-blue-600 text-white hover:bg-blue-500'
+              }`}
+            >
+              {isTestingTile ? 'Zakończ testowanie' : 'Przetestuj zadanie'}
+            </button>
+          </div>
+        )}
         {renderContentEditor()}
       </div>
 

@@ -5,6 +5,8 @@ export type EditorAction =
   | { type: 'startEditing'; tileId: string }
   | { type: 'startTextEditing'; tileId: string }
   | { type: 'startImageEditing'; tileId: string }
+  | { type: 'startTesting'; tileId: string }
+  | { type: 'stopTesting' }
   | { type: 'stopEditing' }
   | { type: 'startDrag'; tile: LessonTile; offset: Position }
   | { type: 'startImageDrag'; start: { x: number; y: number; imageX: number; imageY: number } }
@@ -34,6 +36,10 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return { ...state, selectedTileId: action.tileId, mode: 'textEditing' };
     case 'startImageEditing':
       return { ...state, selectedTileId: action.tileId, mode: 'imageEditing' };
+    case 'startTesting':
+      return { ...state, selectedTileId: action.tileId, mode: 'testing', interaction: { type: 'idle' } };
+    case 'stopTesting':
+      return { ...state, mode: state.selectedTileId ? 'editing' : 'idle', interaction: { type: 'idle' } };
     case 'stopEditing':
       return { ...state, mode: state.selectedTileId ? 'editing' : 'idle' };
     case 'startDrag':

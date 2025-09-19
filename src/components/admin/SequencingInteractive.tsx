@@ -1,19 +1,11 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import {
-  CheckCircle,
-  XCircle,
-  RotateCcw,
-  Sparkles,
-  Shuffle,
-  ArrowLeftRight,
-  GripVertical
-} from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { CheckCircle, XCircle, RotateCcw, Sparkles, Shuffle, ArrowLeftRight, GripVertical } from 'lucide-react';
 import { SequencingTile } from '../../types/lessonEditor';
+import { TaskInstructionPanel } from './TaskInstructionPanel';
 
 interface SequencingInteractiveProps {
   tile: SequencingTile;
   isPreview?: boolean;
-  onRequestTextEditing?: () => void;
   headerSlot?: React.ReactNode;
 }
 
@@ -96,7 +88,6 @@ const withAlpha = (hex: string, alpha: number): string => {
 export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   tile,
   isPreview = false,
-  onRequestTextEditing,
   headerSlot
 }) => {
   const [availableItems, setAvailableItems] = useState<DraggedItem[]>([]);
@@ -107,8 +98,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [isPoolHighlighted, setIsPoolHighlighted] = useState(false);
-  const [isModePromptVisible, setIsModePromptVisible] = useState(false);
-  const modePromptRef = useRef<HTMLDivElement>(null);
 
   const canInteract = !isPreview;
   const sequenceComplete = placedItems.length > 0 && placedItems.every(item => item !== null);
@@ -122,6 +111,28 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
     [textColor]
   );
   const showBorder = tile.content.showBorder !== false;
+  const mutedTextColor = useMemo(
+    () => (textColor === '#0f172a' ? 'rgba(15, 23, 42, 0.65)' : 'rgba(248, 250, 252, 0.82)'),
+    [textColor]
+  );
+  const chipBackground = useMemo(
+    () => withAlpha(textColor, textColor === '#0f172a' ? 0.16 : 0.32),
+    [textColor]
+  );
+  const instructionBorderColor = useMemo(
+    () => withAlpha(textColor, textColor === '#0f172a' ? 0.14 : 0.32),
+    [textColor]
+  );
+  const instructionShadowColor = useMemo(
+    () => withAlpha(textColor, textColor === '#0f172a' ? 0.28 : 0.55),
+    [textColor]
+  );
+  const instructionPanelStyle: React.CSSProperties = {
+    backgroundColor: accentColor,
+    color: textColor,
+    border: `1px solid ${instructionBorderColor}`,
+    boxShadow: `0 24px 55px -32px ${instructionShadowColor}`
+  };
 
   const correctOrderIds = useMemo(
     () =>
@@ -173,30 +184,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
     setIsCorrect(null);
     setAttempts(0);
   }, [buildInitialPool]);
-
-  useEffect(() => {
-    if (!isModePromptVisible) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (modePromptRef.current && !modePromptRef.current.contains(event.target as Node)) {
-        setIsModePromptVisible(false);
-      }
-    };
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsModePromptVisible(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isModePromptVisible]);
 
   const resetCheckState = () => {
     if (isChecked) {
@@ -391,25 +378,8 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
     return baseClasses;
   };
 
-  const handleTileDoubleClick = (event: React.MouseEvent) => {
-    if (isPreview) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-    if (!onRequestTextEditing) {
-      return;
-    }
-
-    setIsModePromptVisible(true);
-  };
-
-  const handleEditSelection = () => {
-    setIsModePromptVisible(false);
-    onRequestTextEditing?.();
-  };
-
   return (
-    <div className="relative w-full h-full" onDoubleClick={handleTileDoubleClick}>
+    <div className="relative w-full h-full">
       <div
         className={`w-full h-full rounded-3xl ${showBorder ? 'border' : ''} shadow-2xl shadow-slate-950/40 flex flex-col gap-6 p-6 overflow-hidden`}
         style={{
@@ -419,12 +389,23 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
           borderColor: showBorder ? borderColor : undefined
         }}
       >
-        {headerSlot ? (
-          headerSlot
-        ) : (
-          <div className="flex items-start justify-between gap-4">
+        <TaskInstructionPanel
+          textColor={textColor}
+          mutedTextColor={mutedTextColor}
+          chipBackground={chipBackground}
+          containerStyle={instructionPanelStyle}
+          metaSlot={
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              <span>Ćwiczenie sekwencyjne</span>
+            </div>
+          }
+        >
+          {headerSlot ? (
+            headerSlot
+          ) : (
             <div
-              className="text-lg font-semibold leading-snug flex-1"
+              className="text-lg font-semibold leading-snug"
               style={{
                 fontFamily: tile.content.fontFamily,
                 fontSize: `${tile.content.fontSize}px`
@@ -433,13 +414,8 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                 __html: tile.content.richQuestion || tile.content.question
               }}
             />
-
-            <div className="flex items-center gap-2 text-xs font-medium" style={{ color: withAlpha(textColor, 0.7) }}>
-              <Sparkles className="w-4 h-4" />
-              <span>Ćwiczenie sekwencyjne</span>
-            </div>
-          </div>
-        )}
+          )}
+        </TaskInstructionPanel>
 
         {attempts > 0 && (
           <div className="text-xs uppercase tracking-[0.32em]" style={{ color: withAlpha(textColor, 0.55) }}>
@@ -596,50 +572,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
           </div>
         )}
       </div>
-
-      {isModePromptVisible && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-          <div
-            ref={modePromptRef}
-            className="w-full max-w-md mx-4 rounded-2xl bg-white shadow-2xl border border-slate-200 p-6 space-y-4"
-          >
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold text-slate-900">Co chcesz zrobić?</h3>
-              <p className="text-sm text-slate-500">
-                Możesz przetestować zadanie jak uczeń lub przejść do edycji polecenia w trybie RichText.
-              </p>
-            </div>
-
-            <div className="grid gap-3">
-              <button
-                type="button"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-colors duration-200 flex items-center justify-between"
-                onClick={() => setIsModePromptVisible(false)}
-              >
-                <span className="font-medium">Przetestuj zadanie</span>
-                <Sparkles className="w-4 h-4 text-slate-400" />
-              </button>
-
-              <button
-                type="button"
-                className="w-full px-4 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition-colors duration-200 flex items-center justify-between"
-                onClick={handleEditSelection}
-              >
-                <span className="font-medium">Edytuj polecenie</span>
-                <Shuffle className="w-4 h-4 text-white/90" />
-              </button>
-            </div>
-
-            <button
-              type="button"
-              className="w-full text-sm text-slate-400 hover:text-slate-600 transition-colors duration-200"
-              onClick={() => setIsModePromptVisible(false)}
-            >
-              Anuluj
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -90,7 +90,11 @@ export const useTileInteractions = ({
   };
 
   const handleTileMouseDown = (e: React.MouseEvent, tile: LessonTile) => {
-    if (editorState.mode === 'textEditing' || editorState.mode === 'imageEditing') {
+    if (
+      editorState.mode === 'textEditing' ||
+      editorState.mode === 'imageEditing' ||
+      editorState.mode === 'testing'
+    ) {
       return;
     }
     e.preventDefault();

@@ -148,6 +148,7 @@ export type EditorMode =
   | 'editing'
   | 'textEditing'
   | 'imageEditing'
+  | 'testing'
   | 'dragging'
   | 'resizing';
 

@@ -427,6 +427,8 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
                 tile={selectedTile}
                 onUpdateTile={handleUpdateTile}
                 onSelectTile={handleSelectTile}
+                editorState={editorState}
+                dispatch={dispatch}
               />
             </div>
           ) : (
