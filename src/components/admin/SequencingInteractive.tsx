@@ -94,7 +94,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   isTestingMode = false,
   onRequestTextEditing,
   instructionContent,
-  variant = 'standalone'
+  variant = 'embedded'
 }) => {
   const [availableItems, setAvailableItems] = useState<DraggedItem[]>([]);
   const [placedItems, setPlacedItems] = useState<(DraggedItem | null)[]>([]);
