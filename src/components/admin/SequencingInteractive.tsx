@@ -3,12 +3,15 @@ import { CheckCircle, XCircle, RotateCcw, Sparkles, GripVertical, Shuffle, Arrow
 import { SequencingTile } from '../../types/lessonEditor';
 import { TaskInstructionPanel } from './common/TaskInstructionPanel';
 
+type SequencingInteractiveVariant = 'standalone' | 'embedded';
+
 interface SequencingInteractiveProps {
   tile: SequencingTile;
   isPreview?: boolean;
   isTestingMode?: boolean;
   onRequestTextEditing?: () => void;
   instructionContent?: React.ReactNode;
+  variant?: SequencingInteractiveVariant;
 }
 
 interface DraggedItem {
@@ -92,7 +95,8 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   isPreview = false,
   isTestingMode = false,
   onRequestTextEditing,
-  instructionContent
+  instructionContent,
+  variant = 'standalone'
 }) => {
   const [availableItems, setAvailableItems] = useState<DraggedItem[]>([]);
   const [placedItems, setPlacedItems] = useState<(DraggedItem | null)[]>([]);
@@ -377,16 +381,34 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
     onRequestTextEditing?.();
   };
 
-  return (
-    <div className="relative w-full h-full" onDoubleClick={handleTileDoubleClick}>
-      <div
-        className={`w-full h-full rounded-3xl ${showBorder ? 'border' : ''} shadow-2xl shadow-slate-950/40 flex flex-col gap-6 p-6 overflow-hidden`}
-        style={{
+  const containerClassName =
+    variant === 'embedded'
+      ? 'w-full h-full flex flex-col gap-6 p-6 overflow-hidden'
+      : `w-full h-full rounded-3xl ${showBorder ? 'border' : ''} shadow-2xl shadow-slate-950/40 flex flex-col gap-6 p-6 overflow-hidden`;
+
+  const containerStyle: React.CSSProperties =
+    variant === 'embedded'
+      ? {
+          color: textColor,
+        }
+      : {
           backgroundColor: accentColor,
           backgroundImage: `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`,
           color: textColor,
-          borderColor: showBorder ? borderColor : undefined
-        }}
+          borderColor: showBorder ? borderColor : undefined,
+        };
+
+  if (variant === 'embedded') {
+    // Avoid inheriting borders/shadows when embedded inside a styled wrapper
+    containerStyle.backgroundColor = 'transparent';
+    containerStyle.backgroundImage = 'none';
+  }
+
+  return (
+    <div className="relative w-full h-full" onDoubleClick={handleTileDoubleClick}>
+      <div
+        className={containerClassName}
+        style={containerStyle}
       >
         <TaskInstructionPanel
           icon={<Sparkles className="w-4 h-4" />}
