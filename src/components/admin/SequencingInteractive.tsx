@@ -9,6 +9,7 @@ interface SequencingInteractiveProps {
   isTestingMode?: boolean;
   onRequestTextEditing?: () => void;
   instructionContent?: React.ReactNode;
+  variant?: 'standalone' | 'embedded';
 }
 
 interface DraggedItem {
@@ -92,7 +93,8 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   isPreview = false,
   isTestingMode = false,
   onRequestTextEditing,
-  instructionContent
+  instructionContent,
+  variant = 'standalone'
 }) => {
   const [availableItems, setAvailableItems] = useState<DraggedItem[]>([]);
   const [placedItems, setPlacedItems] = useState<(DraggedItem | null)[]>([]);
@@ -114,6 +116,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
     [textColor]
   );
   const showBorder = tile.content.showBorder !== false;
+  const isEmbedded = variant === 'embedded';
 
   const correctOrderIds = useMemo(
     () =>
@@ -380,12 +383,16 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   return (
     <div className="relative w-full h-full" onDoubleClick={handleTileDoubleClick}>
       <div
-        className={`w-full h-full rounded-3xl ${showBorder ? 'border' : ''} shadow-2xl shadow-slate-950/40 flex flex-col gap-6 p-6 overflow-hidden`}
+        className={`w-full h-full flex flex-col gap-6 transition-all duration-300 ${
+          isEmbedded
+            ? 'p-6'
+            : `rounded-3xl ${showBorder ? 'border' : ''} shadow-2xl shadow-slate-950/40 p-6 overflow-hidden`
+        }`}
         style={{
-          backgroundColor: accentColor,
-          backgroundImage: `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`,
+          backgroundColor: isEmbedded ? 'transparent' : accentColor,
+          backgroundImage: isEmbedded ? undefined : `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`,
           color: textColor,
-          borderColor: showBorder ? borderColor : undefined
+          borderColor: !isEmbedded && showBorder ? borderColor : undefined
         }}
       >
         <TaskInstructionPanel
