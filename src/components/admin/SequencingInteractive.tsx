@@ -1,20 +1,14 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import {
-  CheckCircle,
-  XCircle,
-  RotateCcw,
-  Sparkles,
-  Shuffle,
-  ArrowLeftRight,
-  GripVertical
-} from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { CheckCircle, XCircle, RotateCcw, Sparkles, GripVertical, Shuffle, ArrowLeftRight } from 'lucide-react';
 import { SequencingTile } from '../../types/lessonEditor';
+import { TaskInstructionPanel } from './common/TaskInstructionPanel';
 
 interface SequencingInteractiveProps {
   tile: SequencingTile;
   isPreview?: boolean;
+  isTestingMode?: boolean;
   onRequestTextEditing?: () => void;
-  headerSlot?: React.ReactNode;
+  instructionContent?: React.ReactNode;
 }
 
 interface DraggedItem {
@@ -96,8 +90,9 @@ const withAlpha = (hex: string, alpha: number): string => {
 export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   tile,
   isPreview = false,
+  isTestingMode = false,
   onRequestTextEditing,
-  headerSlot
+  instructionContent
 }) => {
   const [availableItems, setAvailableItems] = useState<DraggedItem[]>([]);
   const [placedItems, setPlacedItems] = useState<(DraggedItem | null)[]>([]);
@@ -107,9 +102,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [isPoolHighlighted, setIsPoolHighlighted] = useState(false);
-  const [isModePromptVisible, setIsModePromptVisible] = useState(false);
-  const modePromptRef = useRef<HTMLDivElement>(null);
-
   const canInteract = !isPreview;
   const sequenceComplete = placedItems.length > 0 && placedItems.every(item => item !== null);
 
@@ -164,7 +156,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
     return shuffled;
   }, [correctOrderIds, tile.content.items]);
 
-  useEffect(() => {
+  const initializeExercise = useCallback(() => {
     const shuffledItems = buildInitialPool();
 
     setAvailableItems(shuffledItems);
@@ -175,28 +167,14 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   }, [buildInitialPool]);
 
   useEffect(() => {
-    if (!isModePromptVisible) return;
+    initializeExercise();
+  }, [initializeExercise]);
 
-    const handleClickOutside = (event: MouseEvent) => {
-      if (modePromptRef.current && !modePromptRef.current.contains(event.target as Node)) {
-        setIsModePromptVisible(false);
-      }
-    };
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsModePromptVisible(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isModePromptVisible]);
+  useEffect(() => {
+    if (isTestingMode) {
+      initializeExercise();
+    }
+  }, [isTestingMode, initializeExercise]);
 
   const resetCheckState = () => {
     if (isChecked) {
@@ -392,19 +370,10 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   };
 
   const handleTileDoubleClick = (event: React.MouseEvent) => {
-    if (isPreview) return;
+    if (isPreview || isTestingMode) return;
 
     event.preventDefault();
     event.stopPropagation();
-    if (!onRequestTextEditing) {
-      return;
-    }
-
-    setIsModePromptVisible(true);
-  };
-
-  const handleEditSelection = () => {
-    setIsModePromptVisible(false);
     onRequestTextEditing?.();
   };
 
@@ -419,12 +388,26 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
           borderColor: showBorder ? borderColor : undefined
         }}
       >
-        {headerSlot ? (
-          headerSlot
-        ) : (
-          <div className="flex items-start justify-between gap-4">
+        <TaskInstructionPanel
+          icon={<Sparkles className="w-4 h-4" />}
+          label="Zadanie"
+          className="border backdrop-blur-sm"
+          style={{
+            backgroundColor: withAlpha(textColor, textColor === '#0f172a' ? 0.06 : 0.12),
+            borderColor: withAlpha(textColor, textColor === '#0f172a' ? 0.12 : 0.28),
+            color: textColor
+          }}
+          iconWrapperClassName="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm"
+          iconWrapperStyle={{
+            backgroundColor: withAlpha(textColor, textColor === '#0f172a' ? 0.14 : 0.2),
+            color: textColor
+          }}
+          labelStyle={{ color: withAlpha(textColor, textColor === '#0f172a' ? 0.55 : 0.75) }}
+          bodyClassName="px-5 pb-5"
+        >
+          {instructionContent ?? (
             <div
-              className="text-lg font-semibold leading-snug flex-1"
+              className="text-base leading-relaxed"
               style={{
                 fontFamily: tile.content.fontFamily,
                 fontSize: `${tile.content.fontSize}px`
@@ -433,11 +416,12 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                 __html: tile.content.richQuestion || tile.content.question
               }}
             />
+          )}
+        </TaskInstructionPanel>
 
-            <div className="flex items-center gap-2 text-xs font-medium" style={{ color: withAlpha(textColor, 0.7) }}>
-              <Sparkles className="w-4 h-4" />
-              <span>Ćwiczenie sekwencyjne</span>
-            </div>
+        {isTestingMode && (
+          <div className="text-[11px] uppercase tracking-[0.32em]" style={{ color: withAlpha(textColor, 0.6) }}>
+            Tryb testowania
           </div>
         )}
 
@@ -596,50 +580,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
           </div>
         )}
       </div>
-
-      {isModePromptVisible && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-          <div
-            ref={modePromptRef}
-            className="w-full max-w-md mx-4 rounded-2xl bg-white shadow-2xl border border-slate-200 p-6 space-y-4"
-          >
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold text-slate-900">Co chcesz zrobić?</h3>
-              <p className="text-sm text-slate-500">
-                Możesz przetestować zadanie jak uczeń lub przejść do edycji polecenia w trybie RichText.
-              </p>
-            </div>
-
-            <div className="grid gap-3">
-              <button
-                type="button"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-colors duration-200 flex items-center justify-between"
-                onClick={() => setIsModePromptVisible(false)}
-              >
-                <span className="font-medium">Przetestuj zadanie</span>
-                <Sparkles className="w-4 h-4 text-slate-400" />
-              </button>
-
-              <button
-                type="button"
-                className="w-full px-4 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition-colors duration-200 flex items-center justify-between"
-                onClick={handleEditSelection}
-              >
-                <span className="font-medium">Edytuj polecenie</span>
-                <Shuffle className="w-4 h-4 text-white/90" />
-              </button>
-            </div>
-
-            <button
-              type="button"
-              className="w-full text-sm text-slate-400 hover:text-slate-600 transition-colors duration-200"
-              onClick={() => setIsModePromptVisible(false)}
-            >
-              Anuluj
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

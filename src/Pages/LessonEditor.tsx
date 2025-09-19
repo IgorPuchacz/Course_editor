@@ -35,9 +35,10 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
   const [lessonContent, setLessonContent] = useState<LessonContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   const { editorState, dispatch } = useLessonEditor();
   const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
+  const [testingTileIds, setTestingTileIds] = useState<string[]>([]);
 
   // Confirmation dialog state
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -212,6 +213,12 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
     dispatch({ type: 'markUnsaved' });
   };
 
+  const handleToggleTestingTile = (tileId: string) => {
+    setTestingTileIds(prev =>
+      prev.includes(tileId) ? prev.filter(id => id !== tileId) : [...prev, tileId]
+    );
+  };
+
   const handleDeleteTile = (tileId: string) => {
     if (!lessonContent) return;
 
@@ -230,6 +237,8 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
           tiles: updatedTiles,
           updated_at: new Date().toISOString()
         });
+
+        setTestingTileIds(prev => prev.filter(id => id !== tileId));
 
         dispatch({ type: 'markUnsaved' });
         if (editorState.selectedTileId === tileId) {
@@ -286,6 +295,8 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
           tiles: [],
           updated_at: new Date().toISOString()
         });
+
+        setTestingTileIds([]);
 
         dispatch({ type: 'markUnsaved' });
         dispatch({ type: 'selectTile', tileId: null });
@@ -427,6 +438,8 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
                 tile={selectedTile}
                 onUpdateTile={handleUpdateTile}
                 onSelectTile={handleSelectTile}
+                isTesting={selectedTile ? testingTileIds.includes(selectedTile.id) : false}
+                onToggleTesting={handleToggleTestingTile}
               />
             </div>
           ) : (
@@ -470,6 +483,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
               dispatch={dispatch}
               showGrid={editorState.showGrid}
               onEditorReady={setActiveEditor}
+              testingTileIds={testingTileIds}
             />
           </div>
         </div>
