@@ -228,6 +228,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   // Check if this is a frameless text tile
   const isFramelessTextTile = tile.type === 'text' && !(tile as TextTile).content.showBorder;
   const isProgrammingTile = tile.type === 'programming';
+  const isSequencingTile = tile.type === 'sequencing';
 
   const handleResizeStart = (e: React.MouseEvent, handle: string) => {
     e.preventDefault();
@@ -700,61 +701,77 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         const sequencingTile = tile as SequencingTile;
         const accentColor = sequencingTile.content.backgroundColor || '#0f172a';
         const textColor = getReadableTextColor(accentColor);
+        const gradientStart = lightenColor(accentColor, 0.08);
+        const gradientEnd = darkenColor(accentColor, 0.08);
+        const containerBorderColor = withAlpha(textColor, textColor === '#0f172a' ? 0.18 : 0.38);
 
-        if (isEditingText && isSelected) {
-          const questionEditorTile = {
-            ...tile,
-            type: 'text',
-            content: {
-              text: sequencingTile.content.question,
-              richText: sequencingTile.content.richQuestion,
-              fontFamily: sequencingTile.content.fontFamily,
-              fontSize: sequencingTile.content.fontSize,
-              verticalAlign: sequencingTile.content.verticalAlign,
-              backgroundColor: sequencingTile.content.backgroundColor,
-              showBorder: sequencingTile.content.showBorder
-            }
-          } as TextTile;
+        const containerStyle: React.CSSProperties = {
+          backgroundColor: accentColor,
+          backgroundImage: `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`,
+          color: textColor,
+          border: sequencingTile.content.showBorder ? `1px solid ${containerBorderColor}` : 'none',
+          boxShadow: '0 22px 48px -28px rgba(15, 23, 42, 0.45)'
+        };
 
-          contentToRender = (
-            <SequencingInteractive
-              tile={sequencingTile}
-              isPreview
-              isTestingMode={isTestingMode}
-              instructionContent={
-                <RichTextEditor
-                  textTile={questionEditorTile}
-                  tileId={tile.id}
-                  textColor={textColor}
-                  onUpdateTile={(tileId, updates) => {
-                    if (!updates.content) return;
-
-                    onUpdateTile(tileId, {
+        const wrappedContent = (
+          <div
+            className="w-full h-full rounded-2xl overflow-hidden transition-all duration-300"
+            style={containerStyle}
+          >
+            {isEditingText && isSelected ? (
+              <SequencingInteractive
+                tile={sequencingTile}
+                isPreview
+                isTestingMode={isTestingMode}
+                variant="embedded"
+                instructionContent={
+                  <RichTextEditor
+                    textTile={{
+                      ...tile,
+                      type: 'text',
                       content: {
-                        ...sequencingTile.content,
-                        question: updates.content.text ?? sequencingTile.content.question,
-                        richQuestion: updates.content.richText ?? sequencingTile.content.richQuestion,
-                        fontFamily: updates.content.fontFamily ?? sequencingTile.content.fontFamily,
-                        fontSize: updates.content.fontSize ?? sequencingTile.content.fontSize,
-                        verticalAlign: updates.content.verticalAlign ?? sequencingTile.content.verticalAlign
+                        text: sequencingTile.content.question,
+                        richText: sequencingTile.content.richQuestion,
+                        fontFamily: sequencingTile.content.fontFamily,
+                        fontSize: sequencingTile.content.fontSize,
+                        verticalAlign: sequencingTile.content.verticalAlign,
+                        backgroundColor: sequencingTile.content.backgroundColor,
+                        showBorder: sequencingTile.content.showBorder,
                       }
-                    });
-                  }}
-                  onFinishTextEditing={onFinishTextEditing}
-                  onEditorReady={onEditorReady}
-                />
-              }
-            />
-          );
-        } else {
-          contentToRender = (
-            <SequencingInteractive
-              tile={sequencingTile}
-              onRequestTextEditing={onDoubleClick}
-              isTestingMode={isTestingMode}
-            />
-          );
-        }
+                    } as TextTile}
+                    tileId={tile.id}
+                    textColor={textColor}
+                    onUpdateTile={(tileId, updates) => {
+                      if (!updates.content) return;
+
+                      onUpdateTile(tileId, {
+                        content: {
+                          ...sequencingTile.content,
+                          question: updates.content.text ?? sequencingTile.content.question,
+                          richQuestion: updates.content.richText ?? sequencingTile.content.richQuestion,
+                          fontFamily: updates.content.fontFamily ?? sequencingTile.content.fontFamily,
+                          fontSize: updates.content.fontSize ?? sequencingTile.content.fontSize,
+                          verticalAlign: updates.content.verticalAlign ?? sequencingTile.content.verticalAlign,
+                        }
+                      });
+                    }}
+                    onFinishTextEditing={onFinishTextEditing}
+                    onEditorReady={onEditorReady}
+                  />
+                }
+              />
+            ) : (
+              <SequencingInteractive
+                tile={sequencingTile}
+                onRequestTextEditing={onDoubleClick}
+                isTestingMode={isTestingMode}
+                variant="embedded"
+              />
+            )}
+          </div>
+        );
+
+        contentToRender = wrappedContent;
         break;
       }
 
@@ -822,8 +839,8 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
     >
       {/* Tile Content */}
       <div
-        className={`w-full h-full ${isProgrammingTile ? 'overflow-visible' : 'overflow-hidden'} ${
-          isFramelessTextTile || isProgrammingTile
+        className={`w-full h-full ${(isProgrammingTile || isSequencingTile) ? 'overflow-visible' : 'overflow-hidden'} ${
+          isFramelessTextTile || isProgrammingTile || isSequencingTile
             ? ''
             : 'bg-white border border-gray-200 shadow-sm rounded-lg'
         }`}
