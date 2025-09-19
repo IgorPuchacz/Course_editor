@@ -227,7 +227,9 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 
   // Check if this is a frameless text tile
   const isFramelessTextTile = tile.type === 'text' && !(tile as TextTile).content.showBorder;
-  const isProgrammingTile = tile.type === 'programming';
+  let customContainerClassName = '';
+  let customContainerStyle: React.CSSProperties | undefined;
+  let customOverflowClass = '';
 
   const handleResizeStart = (e: React.MouseEvent, handle: string) => {
     e.preventDefault();
@@ -409,13 +411,14 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         const headerShadowColor = withAlpha(textColor, textColor === '#0f172a' ? 0.28 : 0.55);
         const chipBackground = withAlpha(textColor, textColor === '#0f172a' ? 0.16 : 0.32);
 
-        const containerStyle: React.CSSProperties = {
+        customContainerClassName = 'rounded-2xl shadow-sm transition-all duration-300';
+        customContainerStyle = {
           backgroundColor: accentColor,
           backgroundImage: `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`,
           color: textColor,
-          border: programmingTile.content.showBorder ? `1px solid ${containerBorderColor}` : 'none',
-          boxShadow: '0 22px 48px -28px rgba(15, 23, 42, 0.45)'
+          border: programmingTile.content.showBorder ? `1px solid ${containerBorderColor}` : 'none'
         };
+        customOverflowClass = 'overflow-visible';
 
         const descriptionContainerStyle: React.CSSProperties = {
           backgroundColor: accentColor,
@@ -464,7 +467,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         // If this programming tile is being edited, use Tiptap editor for description
         if (isEditingText && isSelected) {
           contentToRender = (
-            <div className="w-full h-full flex flex-col rounded-2xl transition-all duration-300" style={containerStyle}>
+            <div className="w-full h-full flex flex-col transition-all duration-300">
               <div className="flex flex-col flex-1 gap-5 p-5">
                 {renderDescriptionBlock(
                   <RichTextEditor
@@ -582,7 +585,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         else {
 
           contentToRender = (
-            <div className="w-full h-full flex flex-col rounded-2xl transition-all duration-300" style={containerStyle}>
+            <div className="w-full h-full flex flex-col transition-all duration-300">
               <div className="flex flex-col flex-1 gap-5 p-5">
                 {renderDescriptionBlock(
                   <div
@@ -700,6 +703,17 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         const sequencingTile = tile as SequencingTile;
         const accentColor = sequencingTile.content.backgroundColor || '#0f172a';
         const textColor = getReadableTextColor(accentColor);
+        const gradientStart = lightenColor(accentColor, 0.08);
+        const gradientEnd = darkenColor(accentColor, 0.08);
+        const borderColor = withAlpha(textColor, textColor === '#0f172a' ? 0.16 : 0.32);
+
+        customContainerClassName = 'rounded-3xl shadow-sm';
+        customContainerStyle = {
+          backgroundColor: accentColor,
+          backgroundImage: `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`,
+          color: textColor,
+          border: sequencingTile.content.showBorder !== false ? `1px solid ${borderColor}` : 'none'
+        };
 
         if (isEditingText && isSelected) {
           const questionEditorTile = {
@@ -798,6 +812,10 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
     );
   };
 
+  const tileContent = renderTileContent();
+
+  const shouldUseDefaultContainerStyling = !isFramelessTextTile && !customContainerStyle && !customContainerClassName;
+
   return (
     <div
       className={`absolute select-none transition-all duration-200 ${
@@ -822,20 +840,23 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
     >
       {/* Tile Content */}
       <div
-        className={`w-full h-full ${isProgrammingTile ? 'overflow-visible' : 'overflow-hidden'} ${
-          isFramelessTextTile || isProgrammingTile
-            ? ''
-            : 'bg-white border border-gray-200 shadow-sm rounded-lg'
-        }`}
-        style={isFramelessTextTile ? {
-          cursor: isSelected && (isEditing || isEditingText) ? (isDraggingImage ? 'grabbing' : 'grab') : 'default',
-          userSelect: 'none',
-          border: 'none',
-          boxShadow: 'none',
-          borderRadius: '0'
-        } : undefined}
+        className={`w-full h-full ${customOverflowClass || 'overflow-hidden'} ${
+          shouldUseDefaultContainerStyling ? 'bg-white border border-gray-200 shadow-sm rounded-lg' : ''
+        } ${customContainerClassName}`.trim()}
+        style={{
+          ...(isFramelessTextTile
+            ? {
+                cursor: isSelected && (isEditing || isEditingText) ? (isDraggingImage ? 'grabbing' : 'grab') : 'default',
+                userSelect: 'none',
+                border: 'none',
+                boxShadow: 'none',
+                borderRadius: '0'
+              }
+            : {}),
+          ...(customContainerStyle ?? {})
+        }}
       >
-        {renderTileContent()}
+        {tileContent}
       </div>
 
       {/* Tile Controls */}
