@@ -1,5 +1,5 @@
 import { useState, useEffect, RefObject } from 'react';
-import { LessonContent, LessonTile, GridPosition, EditorState, TextTile, ImageTile, SequencingTile } from '../types/lessonEditor';
+import { LessonContent, LessonTile, GridPosition, EditorState, TextTile, ImageTile } from '../types/lessonEditor';
 import { EditorAction } from '../state/editorReducer';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
@@ -42,6 +42,9 @@ export const useTileInteractions = ({
     if (e.target === e.currentTarget) {
       onSelectTile(null);
       dispatch({ type: 'stopEditing' });
+      if (editorState.testingTileId) {
+        dispatch({ type: 'stopTileTesting' });
+      }
     }
   };
 
@@ -90,7 +93,11 @@ export const useTileInteractions = ({
   };
 
   const handleTileMouseDown = (e: React.MouseEvent, tile: LessonTile) => {
-    if (editorState.mode === 'textEditing' || editorState.mode === 'imageEditing') {
+    if (
+      editorState.mode === 'textEditing' ||
+      editorState.mode === 'imageEditing' ||
+      editorState.mode === 'testing'
+    ) {
       return;
     }
     e.preventDefault();

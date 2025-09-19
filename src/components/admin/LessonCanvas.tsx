@@ -136,6 +136,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
             onFinishTextEditing={onFinishTextEditing}
             showGrid={showGrid}
             onEditorReady={onEditorReady}
+            isTesting={editorState.testingTileId === tile.id}
           />
         ))}
 

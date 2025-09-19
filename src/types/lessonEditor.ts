@@ -149,7 +149,8 @@ export type EditorMode =
   | 'textEditing'
   | 'imageEditing'
   | 'dragging'
-  | 'resizing';
+  | 'resizing'
+  | 'testing';
 
 export type InteractionState =
   | { type: 'idle' }
@@ -171,6 +172,7 @@ export interface EditorState {
   canvasSize: Size;
   hasUnsavedChanges: boolean;
   showGrid: boolean;
+  testingTileId: string | null;
 }
 
 export interface TilePaletteItem {

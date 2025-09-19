@@ -5,13 +5,20 @@ import { SequencingTile } from '../../../types/lessonEditor.ts';
 interface SequencingEditorProps {
   tile: SequencingTile;
   onUpdateTile: (tileId: string, updates: Partial<SequencingTile>) => void;
+  isTesting?: boolean;
+  onToggleTesting?: (tileId: string, shouldTest: boolean) => void;
 }
 
 export const SequencingEditor: React.FC<SequencingEditorProps> = ({
   tile,
-  onUpdateTile
+  onUpdateTile,
+  isTesting = false,
+  onToggleTesting
 }) => {
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
+  const testingButtonClasses = isTesting
+    ? 'bg-emerald-600 text-white hover:bg-emerald-500'
+    : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100';
 
   const handleContentUpdate = (field: string, value: any) => {
     onUpdateTile(tile.id, {
@@ -98,8 +105,26 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
   return (
     <div className="space-y-6">
       <div className="p-4 rounded-lg border border-blue-100 bg-blue-50 text-sm text-blue-700">
-        Dwukrotnie kliknij kafelek, aby wybrać między testowaniem zadania a edycją polecenia w trybie RichText.
+        Dwukrotnie kliknij kafelek na płótnie, aby edytować polecenie. Użyj przycisku testowania, aby sprawdzić interakcję tak
+        jak uczeń.
       </div>
+
+      {onToggleTesting && (
+        <div className="p-4 rounded-lg border border-emerald-200 bg-emerald-50 space-y-3">
+          <div className="text-sm text-emerald-700">
+            {isTesting
+              ? 'Tryb testowania jest aktywny. Możesz przeciągać elementy w kafelku tak jak uczeń.'
+              : 'Możesz zatrzymać edycję i przetestować kafelek bez opuszczania edytora.'}
+          </div>
+          <button
+            type="button"
+            onClick={() => onToggleTesting(tile.id, !isTesting)}
+            className={`w-full px-4 py-2 rounded-lg font-semibold transition-colors ${testingButtonClasses}`}
+          >
+            {isTesting ? 'Zakończ testowanie' : 'Przetestuj zadanie'}
+          </button>
+        </div>
+      )}
 
       {/* Items Management */}
       <div>
@@ -126,8 +151,8 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
           </div>
         </div>
 
-        <div className="space-y-2 max-h-64 overflow-y-auto">
-          {tile.content.items.map((item, index) => (
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+          {tile.content.items.map((item) => (
             <div
               key={item.id}
               draggable

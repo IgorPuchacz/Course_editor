@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   CheckCircle,
   XCircle,
@@ -9,6 +9,7 @@ import {
   GripVertical
 } from 'lucide-react';
 import { SequencingTile } from '../../types/lessonEditor';
+import { InstructionPanel } from './InstructionPanel';
 
 interface SequencingInteractiveProps {
   tile: SequencingTile;
@@ -107,9 +108,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [isPoolHighlighted, setIsPoolHighlighted] = useState(false);
-  const [isModePromptVisible, setIsModePromptVisible] = useState(false);
-  const modePromptRef = useRef<HTMLDivElement>(null);
-
   const canInteract = !isPreview;
   const sequenceComplete = placedItems.length > 0 && placedItems.every(item => item !== null);
 
@@ -173,30 +171,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
     setIsCorrect(null);
     setAttempts(0);
   }, [buildInitialPool]);
-
-  useEffect(() => {
-    if (!isModePromptVisible) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (modePromptRef.current && !modePromptRef.current.contains(event.target as Node)) {
-        setIsModePromptVisible(false);
-      }
-    };
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsModePromptVisible(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isModePromptVisible]);
 
   const resetCheckState = () => {
     if (isChecked) {
@@ -396,15 +370,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
 
     event.preventDefault();
     event.stopPropagation();
-    if (!onRequestTextEditing) {
-      return;
-    }
-
-    setIsModePromptVisible(true);
-  };
-
-  const handleEditSelection = () => {
-    setIsModePromptVisible(false);
     onRequestTextEditing?.();
   };
 
@@ -422,9 +387,22 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
         {headerSlot ? (
           headerSlot
         ) : (
-          <div className="flex items-start justify-between gap-4">
+          <InstructionPanel
+            icon={<Sparkles className="w-4 h-4" />}
+            title="Zadanie"
+            containerStyle={{
+              backgroundColor: lightenColor(accentColor, 0.05),
+              color: textColor,
+              border: `1px solid ${withAlpha(textColor, textColor === '#0f172a' ? 0.14 : 0.32)}`,
+              boxShadow: `0 20px 45px -28px ${withAlpha(textColor, textColor === '#0f172a' ? 0.28 : 0.55)}`
+            }}
+            chipStyle={{ backgroundColor: withAlpha(textColor, textColor === '#0f172a' ? 0.16 : 0.36), color: textColor }}
+            titleStyle={{
+              color: textColor === '#0f172a' ? 'rgba(15, 23, 42, 0.68)' : 'rgba(248, 250, 252, 0.82)'
+            }}
+          >
             <div
-              className="text-lg font-semibold leading-snug flex-1"
+              className="text-base leading-relaxed"
               style={{
                 fontFamily: tile.content.fontFamily,
                 fontSize: `${tile.content.fontSize}px`
@@ -433,12 +411,13 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                 __html: tile.content.richQuestion || tile.content.question
               }}
             />
-
-            <div className="flex items-center gap-2 text-xs font-medium" style={{ color: withAlpha(textColor, 0.7) }}>
-              <Sparkles className="w-4 h-4" />
-              <span>Ćwiczenie sekwencyjne</span>
+            <div
+              className="mt-3 text-xs font-semibold uppercase tracking-[0.28em]"
+              style={{ color: withAlpha(textColor, textColor === '#0f172a' ? 0.52 : 0.7) }}
+            >
+              Ćwiczenie sekwencyjne
             </div>
-          </div>
+          </InstructionPanel>
         )}
 
         {attempts > 0 && (
@@ -596,50 +575,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
           </div>
         )}
       </div>
-
-      {isModePromptVisible && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-          <div
-            ref={modePromptRef}
-            className="w-full max-w-md mx-4 rounded-2xl bg-white shadow-2xl border border-slate-200 p-6 space-y-4"
-          >
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold text-slate-900">Co chcesz zrobić?</h3>
-              <p className="text-sm text-slate-500">
-                Możesz przetestować zadanie jak uczeń lub przejść do edycji polecenia w trybie RichText.
-              </p>
-            </div>
-
-            <div className="grid gap-3">
-              <button
-                type="button"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-colors duration-200 flex items-center justify-between"
-                onClick={() => setIsModePromptVisible(false)}
-              >
-                <span className="font-medium">Przetestuj zadanie</span>
-                <Sparkles className="w-4 h-4 text-slate-400" />
-              </button>
-
-              <button
-                type="button"
-                className="w-full px-4 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition-colors duration-200 flex items-center justify-between"
-                onClick={handleEditSelection}
-              >
-                <span className="font-medium">Edytuj polecenie</span>
-                <Shuffle className="w-4 h-4 text-white/90" />
-              </button>
-            </div>
-
-            <button
-              type="button"
-              className="w-full text-sm text-slate-400 hover:text-slate-600 transition-colors duration-200"
-              onClick={() => setIsModePromptVisible(false)}
-            >
-              Anuluj
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

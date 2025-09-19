@@ -244,12 +244,23 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
   };
 
   const handleSelectTile = (tileId: string | null) => {
+    if (editorState.testingTileId && editorState.testingTileId !== tileId) {
+      dispatch({ type: 'stopTileTesting' });
+    }
     dispatch({ type: 'selectTile', tileId });
   };
 
   const handleFinishTextEditing = () => {
     dispatch({ type: 'stopEditing' });
     setActiveEditor(null);
+  };
+
+  const handleToggleTileTesting = (tileId: string, shouldTest: boolean) => {
+    if (shouldTest) {
+      dispatch({ type: 'startTileTesting', tileId });
+    } else {
+      dispatch({ type: 'stopTileTesting' });
+    }
   };
 
   const handleToggleGrid = () => {
@@ -427,6 +438,8 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
                 tile={selectedTile}
                 onUpdateTile={handleUpdateTile}
                 onSelectTile={handleSelectTile}
+                isTesting={editorState.testingTileId === selectedTile?.id}
+                onToggleTesting={handleToggleTileTesting}
               />
             </div>
           ) : (

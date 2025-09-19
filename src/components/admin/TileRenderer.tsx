@@ -14,6 +14,7 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import TextAlign from '../../extensions/TextAlign';
 import { SequencingInteractive } from './SequencingInteractive';
+import { InstructionPanel } from './InstructionPanel';
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
   if (!hex) return null;
@@ -90,6 +91,7 @@ interface TileRendererProps {
   onFinishTextEditing: () => void;
   showGrid: boolean;
   onEditorReady: (editor: Editor | null) => void;
+  isTesting: boolean;
 }
 
 interface RichTextEditorProps {
@@ -218,7 +220,8 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   onDelete,
   onFinishTextEditing,
   showGrid,
-  onEditorReady
+  onEditorReady,
+  isTesting
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -446,27 +449,16 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         const codeLines = codeDisplayContent.split('\n');
 
         const renderDescriptionBlock = (content: React.ReactNode) => (
-          <div
-            className="flex-shrink-0 max-h-[45%] overflow-hidden rounded-2xl border transition-colors duration-300"
-            style={descriptionContainerStyle}
+          <InstructionPanel
+            icon={<Code2 className="w-4 h-4" />}
+            title="Zadanie"
+            className="flex-shrink-0 max-h-[45%]"
+            containerStyle={descriptionContainerStyle}
+            chipStyle={{ backgroundColor: chipBackground, color: textColor }}
+            titleStyle={{ color: mutedTextColor }}
           >
-            <div className="px-5 pt-5 pb-3 flex items-center gap-3">
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm"
-                style={{ backgroundColor: chipBackground, color: textColor }}
-              >
-                <Code2 className="w-4 h-4" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-lg uppercase tracking-[0.10em] font-semibold" style={{ color: mutedTextColor }}>
-                  Zadanie
-                </span>
-              </div>
-            </div>
-            <div className="px-5 pb-5 h-full">
-              {content}
-            </div>
-          </div>
+            {content}
+          </InstructionPanel>
         );
 
         // If this programming tile is being edited, use Tiptap editor for description
@@ -708,6 +700,16 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         const sequencingTile = tile as SequencingTile;
         const accentColor = sequencingTile.content.backgroundColor || '#0f172a';
         const textColor = getReadableTextColor(accentColor);
+        const instructionMutedColor = textColor === '#0f172a'
+          ? 'rgba(15, 23, 42, 0.68)'
+          : 'rgba(248, 250, 252, 0.82)';
+        const instructionChipBackground = withAlpha(textColor, textColor === '#0f172a' ? 0.16 : 0.36);
+        const instructionPanelStyle: React.CSSProperties = {
+          backgroundColor: lightenColor(accentColor, 0.05),
+          color: textColor,
+          border: `1px solid ${withAlpha(textColor, textColor === '#0f172a' ? 0.14 : 0.32)}`,
+          boxShadow: `0 22px 48px -32px ${withAlpha(textColor, textColor === '#0f172a' ? 0.28 : 0.55)}`
+        };
 
         if (isEditingText && isSelected) {
           const questionEditorTile = {
@@ -729,38 +731,35 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
               tile={sequencingTile}
               isPreview
               headerSlot={
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <RichTextEditor
-                      textTile={questionEditorTile}
-                      tileId={tile.id}
-                      textColor={textColor}
-                      onUpdateTile={(tileId, updates) => {
-                        if (!updates.content) return;
+                <InstructionPanel
+                  icon={<Sparkles className="w-4 h-4" />}
+                  title="Zadanie"
+                  containerStyle={instructionPanelStyle}
+                  chipStyle={{ backgroundColor: instructionChipBackground, color: textColor }}
+                  titleStyle={{ color: instructionMutedColor }}
+                >
+                  <RichTextEditor
+                    textTile={questionEditorTile}
+                    tileId={tile.id}
+                    textColor={textColor}
+                    onUpdateTile={(tileId, updates) => {
+                      if (!updates.content) return;
 
-                        onUpdateTile(tileId, {
-                          content: {
-                            ...sequencingTile.content,
-                            question: updates.content.text ?? sequencingTile.content.question,
-                            richQuestion: updates.content.richText ?? sequencingTile.content.richQuestion,
-                            fontFamily: updates.content.fontFamily ?? sequencingTile.content.fontFamily,
-                            fontSize: updates.content.fontSize ?? sequencingTile.content.fontSize,
-                            verticalAlign: updates.content.verticalAlign ?? sequencingTile.content.verticalAlign
-                          }
-                        });
-                      }}
-                      onFinishTextEditing={onFinishTextEditing}
-                      onEditorReady={onEditorReady}
-                    />
-                  </div>
-                  <div
-                    className="flex items-center gap-2 text-xs font-medium"
-                    style={{ color: withAlpha(textColor, textColor === '#0f172a' ? 0.65 : 0.75) }}
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    <span>Ćwiczenie sekwencyjne</span>
-                  </div>
-                </div>
+                      onUpdateTile(tileId, {
+                        content: {
+                          ...sequencingTile.content,
+                          question: updates.content.text ?? sequencingTile.content.question,
+                          richQuestion: updates.content.richText ?? sequencingTile.content.richQuestion,
+                          fontFamily: updates.content.fontFamily ?? sequencingTile.content.fontFamily,
+                          fontSize: updates.content.fontSize ?? sequencingTile.content.fontSize,
+                          verticalAlign: updates.content.verticalAlign ?? sequencingTile.content.verticalAlign
+                        }
+                      });
+                    }}
+                    onFinishTextEditing={onFinishTextEditing}
+                    onEditorReady={onEditorReady}
+                  />
+                </InstructionPanel>
               }
             />
           );
@@ -833,6 +832,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       onDoubleClick={tile.type === 'sequencing' ? undefined : onDoubleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      data-testing={isTesting ? 'true' : undefined}
     >
       {/* Tile Content */}
       <div
@@ -853,7 +853,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       </div>
 
       {/* Tile Controls */}
-      {(isSelected || isHovered) && !isEditingText && !isImageEditing && (
+      {(isSelected || isHovered) && !isEditingText && !isImageEditing && !isTesting && (
         <div className="absolute -top-8 left-0 flex items-center space-x-1 bg-white rounded-md shadow-md border border-gray-200 px-2 py-1">
           <Move className="w-3 h-3 text-gray-500" />
           <span className="text-xs text-gray-600 capitalize">{tile.type}</span>
@@ -890,7 +890,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       )}
 
       {/* Resize Handles - Always Available When Selected */}
-      {!isEditingText && !isImageEditing && renderResizeHandles()}
+      {!isEditingText && !isImageEditing && !isTesting && renderResizeHandles()}
     </div>
   );
 };

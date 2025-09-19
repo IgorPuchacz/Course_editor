@@ -13,7 +13,9 @@ export type EditorAction =
   | { type: 'toggleGrid' }
   | { type: 'markUnsaved' }
   | { type: 'clearUnsaved' }
-  | { type: 'setCanvasSize'; size: Size };
+  | { type: 'setCanvasSize'; size: Size }
+  | { type: 'startTileTesting'; tileId: string }
+  | { type: 'stopTileTesting' };
 
 export const initialEditorState: EditorState = {
   selectedTileId: null,
@@ -21,25 +23,31 @@ export const initialEditorState: EditorState = {
   interaction: { type: 'idle' },
   canvasSize: { width: 1000, height: 600 },
   hasUnsavedChanges: false,
-  showGrid: true
+  showGrid: true,
+  testingTileId: null
 };
 
 export function editorReducer(state: EditorState, action: EditorAction): EditorState {
   switch (action.type) {
     case 'selectTile':
-      return { ...state, selectedTileId: action.tileId, mode: action.tileId ? 'editing' : 'idle' };
+      return {
+        ...state,
+        selectedTileId: action.tileId,
+        mode: action.tileId ? 'editing' : 'idle',
+        testingTileId: action.tileId === state.testingTileId ? state.testingTileId : null
+      };
     case 'startEditing':
-      return { ...state, selectedTileId: action.tileId, mode: 'editing' };
+      return { ...state, selectedTileId: action.tileId, mode: 'editing', testingTileId: null };
     case 'startTextEditing':
-      return { ...state, selectedTileId: action.tileId, mode: 'textEditing' };
+      return { ...state, selectedTileId: action.tileId, mode: 'textEditing', testingTileId: null };
     case 'startImageEditing':
-      return { ...state, selectedTileId: action.tileId, mode: 'imageEditing' };
+      return { ...state, selectedTileId: action.tileId, mode: 'imageEditing', testingTileId: null };
     case 'stopEditing':
-      return { ...state, mode: state.selectedTileId ? 'editing' : 'idle' };
+      return { ...state, mode: state.selectedTileId ? 'editing' : 'idle', testingTileId: null };
     case 'startDrag':
-      return { ...state, mode: 'dragging', interaction: { type: 'drag', tile: action.tile, offset: action.offset } };
+      return { ...state, mode: 'dragging', interaction: { type: 'drag', tile: action.tile, offset: action.offset }, testingTileId: null };
     case 'startImageDrag':
-      return { ...state, mode: 'dragging', interaction: { type: 'imageDrag', start: action.start } };
+      return { ...state, mode: 'dragging', interaction: { type: 'imageDrag', start: action.start }, testingTileId: null };
     case 'startResize':
       return {
         ...state,
@@ -51,10 +59,11 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
           startPosition: action.startPosition,
           startSize: action.startSize,
           startGridPosition: action.startGridPosition
-        }
+        },
+        testingTileId: null
       };
     case 'endInteraction':
-      return { ...state, mode: state.selectedTileId ? 'editing' : 'idle', interaction: { type: 'idle' } };
+      return { ...state, mode: state.selectedTileId ? 'editing' : 'idle', interaction: { type: 'idle' }, testingTileId: null };
     case 'toggleGrid':
       return { ...state, showGrid: !state.showGrid };
     case 'markUnsaved':
@@ -63,6 +72,10 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return { ...state, hasUnsavedChanges: false };
     case 'setCanvasSize':
       return { ...state, canvasSize: action.size };
+    case 'startTileTesting':
+      return { ...state, selectedTileId: action.tileId, mode: 'testing', testingTileId: action.tileId };
+    case 'stopTileTesting':
+      return { ...state, mode: state.selectedTileId ? 'editing' : 'idle', testingTileId: null };
     default:
       return state;
   }
