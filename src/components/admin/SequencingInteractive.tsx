@@ -65,22 +65,6 @@ const getReadableTextColor = (hex: string): string => {
   return luminance > 0.6 ? '#0f172a' : '#f8fafc';
 };
 
-const lightenColor = (hex: string, amount: number): string => {
-  const rgb = hexToRgb(hex);
-  if (!rgb) return hex;
-
-  const lightenChannel = (channel: number) => Math.round(channel + (255 - channel) * amount);
-  return `rgb(${lightenChannel(rgb.r)}, ${lightenChannel(rgb.g)}, ${lightenChannel(rgb.b)})`;
-};
-
-const darkenColor = (hex: string, amount: number): string => {
-  const rgb = hexToRgb(hex);
-  if (!rgb) return hex;
-
-  const darkenChannel = (channel: number) => Math.round(channel * (1 - amount));
-  return `rgb(${darkenChannel(rgb.r)}, ${darkenChannel(rgb.g)}, ${darkenChannel(rgb.b)})`;
-};
-
 const withAlpha = (hex: string, alpha: number): string => {
   const rgb = hexToRgb(hex);
   if (!rgb) return `rgba(15, 23, 42, ${alpha})`;
@@ -107,13 +91,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
 
   const accentColor = tile.content.backgroundColor || '#0f172a';
   const textColor = useMemo(() => getReadableTextColor(accentColor), [accentColor]);
-  const gradientStart = useMemo(() => lightenColor(accentColor, 0.08), [accentColor]);
-  const gradientEnd = useMemo(() => darkenColor(accentColor, 0.08), [accentColor]);
-  const borderColor = useMemo(
-    () => withAlpha(textColor, textColor === '#0f172a' ? 0.16 : 0.32),
-    [textColor]
-  );
-  const showBorder = tile.content.showBorder !== false;
 
   const correctOrderIds = useMemo(
     () =>
@@ -378,16 +355,11 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full" onDoubleClick={handleTileDoubleClick}>
-      <div
-        className={`w-full h-full rounded-3xl ${showBorder ? 'border' : ''} shadow-2xl shadow-slate-950/40 flex flex-col gap-6 p-6 overflow-hidden`}
-        style={{
-          backgroundColor: accentColor,
-          backgroundImage: `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`,
-          color: textColor,
-          borderColor: showBorder ? borderColor : undefined
-        }}
-      >
+    <div
+      className="relative flex h-full w-full flex-col gap-6 overflow-hidden p-6"
+      style={{ color: textColor }}
+      onDoubleClick={handleTileDoubleClick}
+    >
         <TaskInstructionPanel
           icon={<Sparkles className="w-4 h-4" />}
           label="Zadanie"
@@ -579,7 +551,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 };
