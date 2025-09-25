@@ -151,11 +151,17 @@ const ToastComponent: React.FC<ToastProps> = ({ toast, onClose }) => {
 interface ToastContainerProps {
   toasts: Toast[];
   onClose: (id: string) => void;
+  topOffset?: number;
 }
 
-export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onClose }) => {
+export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onClose, topOffset }) => {
+  const computedTop = Math.max(topOffset ?? 16, 16);
+
   return (
-    <div className="fixed top-4 right-4 z-50">
+    <div
+      className="fixed right-4 z-50 flex flex-col items-end"
+      style={{ top: computedTop }}
+    >
       {toasts.map(toast => (
         <ToastComponent key={toast.id} toast={toast} onClose={onClose} />
       ))}
