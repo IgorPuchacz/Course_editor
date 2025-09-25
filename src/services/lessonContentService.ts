@@ -307,7 +307,7 @@ export class LessonContentService {
         description: 'Opis zadania programistycznego',
         richDescription: '<p style="margin: 0;">Opis zadania programistycznego</p>',
         fontFamily: 'Inter, system-ui, sans-serif',
-        fontSize: 14,
+        fontSize: 16,
         backgroundColor: '#ffffff',
         showBorder: true,
         code: 'Wpisz swój kod tutaj',
