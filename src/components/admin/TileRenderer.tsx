@@ -52,10 +52,30 @@ const getReadableTextColor = (hex: string): string => {
   return luminance > 0.6 ? '#0f172a' : '#f8fafc';
 };
 
-const withAlpha = (hex: string, alpha: number): string => {
-  const rgb = hexToRgb(hex);
-  if (!rgb) return `rgba(15, 23, 42, ${alpha})`;
-  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+const buildNeutralPalette = (textColor: string) => {
+  if (textColor === '#0f172a') {
+    return {
+      surface: '#f1f5f9',
+      surfaceStrong: '#e2e8f0',
+      border: '#cbd5e1',
+      borderStrong: '#94a3b8',
+      iconBackground: '#e2e8f0',
+      labelMuted: '#475569',
+      textMuted: '#64748b',
+      accent: '#1f2937'
+    } as const;
+  }
+
+  return {
+    surface: '#1e293b',
+    surfaceStrong: '#243247',
+    border: '#334155',
+    borderStrong: '#475569',
+    iconBackground: '#243247',
+    labelMuted: '#cbd5f5',
+    textMuted: '#94a3b8',
+    accent: '#cbd5f5'
+  } as const;
 };
 
 const TILE_CORNER = 'rounded-xl';
@@ -396,23 +416,18 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 
         const accentColor = programmingTile.content.backgroundColor || computedBackground;
         const textColor = getReadableTextColor(accentColor);
-        const mutedTextColor =
-          textColor === '#0f172a'
-            ? 'rgba(15, 23, 42, 0.65)'
-            : 'rgba(248, 250, 252, 0.82)';
-        const panelBackground = withAlpha(textColor, textColor === '#0f172a' ? 0.06 : 0.18);
-        const panelBorderColor = withAlpha(textColor, textColor === '#0f172a' ? 0.12 : 0.28);
-        const chipBackground = withAlpha(textColor, textColor === '#0f172a' ? 0.16 : 0.32);
+        const palette = buildNeutralPalette(textColor);
+        const mutedTextColor = palette.textMuted;
 
         const descriptionContainerStyle: React.CSSProperties = {
-          backgroundColor: panelBackground,
+          backgroundColor: palette.surface,
           color: textColor,
-          border: `1px solid ${panelBorderColor}`
+          border: `1px solid ${palette.border}`
         };
 
         const codeContainerStyle: React.CSSProperties = {
-          borderColor: 'rgba(15, 23, 42, 0.35)',
-          backgroundColor: 'rgba(2, 6, 23, 0.86)'
+          borderColor: palette.borderStrong,
+          backgroundColor: '#0b1120'
         };
 
         let codeDisplayContent = '';
@@ -435,7 +450,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
             label="Zadanie"
             className="flex-shrink-0 max-h-[45%] overflow-hidden border transition-colors duration-300"
             style={descriptionContainerStyle}
-            iconWrapperStyle={{ backgroundColor: chipBackground, color: textColor }}
+            iconWrapperStyle={{ backgroundColor: palette.iconBackground, color: textColor }}
             labelStyle={{ color: mutedTextColor }}
           >
             {content}
@@ -443,26 +458,34 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         );
 
         const renderCodePreview = () => (
-          <div className="flex-1 flex flex-col rounded-xl overflow-hidden border backdrop-blur-sm" style={codeContainerStyle}>
+          <div className="flex-1 flex flex-col rounded-xl overflow-hidden border" style={codeContainerStyle}>
             <div
               className="flex items-center justify-between px-5 py-4 border-b"
               style={{
-                borderColor: 'rgba(255, 255, 255, 0.08)',
-                backgroundColor: 'rgba(15, 23, 42, 0.92)'
+                borderColor: palette.borderStrong,
+                backgroundColor: '#10192b'
               }}
             >
               <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-500/90">
-                  <Play className="w-4 h-4 text-white fill-white" />
+                <div
+                  className="flex items-center justify-center w-10 h-10 rounded-xl"
+                  style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}
+                >
+                  <Play className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold">Python</span>
-                  <span className="text-xs text-slate-300/80">Tryb nauki</span>
+                  <span className="text-sm font-semibold text-white">Python</span>
+                  <span className="text-xs" style={{ color: mutedTextColor }}>
+                    Tryb nauki
+                  </span>
                 </div>
               </div>
-              <div className="flex items-center gap-3 text-xs text-slate-200/60">
+              <div className="flex items-center gap-3 text-xs" style={{ color: mutedTextColor }}>
                 <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span
+                    className="w-2 h-2 rounded-full animate-pulse"
+                    style={{ backgroundColor: palette.accent }}
+                  />
                   Gotowy do uruchomienia
                 </span>
               </div>
@@ -523,7 +546,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
             <div className="w-full h-full flex flex-col gap-5 p-5" style={{ color: textColor }}>
               {renderDescriptionBlock(
                 <div
-                  className="text-sm leading-relaxed"
+                  className="leading-relaxed"
                   style={{
                     fontFamily: programmingTile.content.fontFamily,
                     fontSize: `${programmingTile.content.fontSize}px`
