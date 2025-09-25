@@ -31,12 +31,14 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
   const { toasts, removeToast, success, error, warning } = useToast();
   const canvasRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
 
   // Core state
   const [lessonContent, setLessonContent] = useState<LessonContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(64);
+  const [toolbarHeight, setToolbarHeight] = useState(0);
 
   const { editorState, dispatch } = useLessonEditor();
   const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
@@ -91,6 +93,40 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
         resizeObserver.disconnect();
       }
       window.removeEventListener('resize', updateHeaderHeight);
+    };
+  }, []);
+
+  useEffect(() => {
+    const updateToolbarHeight = () => {
+      if (toolbarRef.current) {
+        setToolbarHeight(toolbarRef.current.offsetHeight);
+      }
+    };
+
+    updateToolbarHeight();
+
+    const toolbarElement = toolbarRef.current;
+    if (!toolbarElement) {
+      return;
+    }
+
+    let resizeObserver: ResizeObserver | null = null;
+
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        updateToolbarHeight();
+      });
+
+      resizeObserver.observe(toolbarElement);
+    }
+
+    window.addEventListener('resize', updateToolbarHeight);
+
+    return () => {
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+      window.removeEventListener('resize', updateToolbarHeight);
     };
   }, []);
 
@@ -374,9 +410,11 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
   const selectedTile = lessonContent.tiles.find(t => t.id === editorState.selectedTileId) || null;
   const selectedRichTextTile = isRichTextTile(selectedTile) ? selectedTile : null;
 
+  const toastOffset = headerHeight + toolbarHeight + 16;
+
   return (
     <div className="h-screen bg-gray-50 flex flex-col max-w-full">
-      <ToastContainer toasts={toasts} onClose={removeToast} />
+      <ToastContainer toasts={toasts} onClose={removeToast} topOffset={toastOffset} />
       
       <ConfirmDialog
         isOpen={confirmDialog.isOpen}
@@ -492,6 +530,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
         {/* Expanded Canvas Area */}
         <div className="flex-1 flex flex-col min-w-0">
           <div
+            ref={toolbarRef}
             className="sticky z-40 bg-white border-b border-gray-200"
             style={{ top: headerHeight }}
           >
