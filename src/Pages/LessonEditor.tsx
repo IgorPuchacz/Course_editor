@@ -30,11 +30,13 @@ const isRichTextTile = (tile: LessonTile | null): tile is TextTile | Programming
 export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBack }) => {
   const { toasts, removeToast, success, error, warning } = useToast();
   const canvasRef = useRef<HTMLDivElement>(null);
-  
+  const headerRef = useRef<HTMLDivElement>(null);
+
   // Core state
   const [lessonContent, setLessonContent] = useState<LessonContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(64);
 
   const { editorState, dispatch } = useLessonEditor();
   const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
@@ -57,6 +59,40 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
   useEffect(() => {
     loadLessonContent();
   }, [lesson.id]);
+
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      if (headerRef.current) {
+        setHeaderHeight(headerRef.current.offsetHeight);
+      }
+    };
+
+    const headerElement = headerRef.current;
+    if (!headerElement) {
+      return;
+    }
+
+    updateHeaderHeight();
+
+    let resizeObserver: ResizeObserver | null = null;
+
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        updateHeaderHeight();
+      });
+
+      resizeObserver.observe(headerElement);
+    }
+
+    window.addEventListener('resize', updateHeaderHeight);
+
+    return () => {
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+      window.removeEventListener('resize', updateHeaderHeight);
+    };
+  }, []);
 
   // Auto-save functionality
   useEffect(() => {
@@ -354,7 +390,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       />
 
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+      <div ref={headerRef} className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="px-4 lg:px-6">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
@@ -467,7 +503,8 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
             editor={activeEditor}
             selectedTile={selectedRichTextTile}
             onUpdateTile={handleUpdateTile}
-            className="sticky top-16 z-40"
+            className="sticky z-40"
+            style={{ top: headerHeight }}
           />
 
           {/* Canvas */}

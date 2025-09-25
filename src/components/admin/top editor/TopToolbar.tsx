@@ -19,6 +19,7 @@ interface TopToolbarProps {
   selectedTile?: TextTile | ProgrammingTile | SequencingTile | null;
   onUpdateTile?: (tileId: string, updates: Partial<LessonTile>) => void;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export const TopToolbar: React.FC<TopToolbarProps> = ({
@@ -31,7 +32,8 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   editor,
   selectedTile,
   onUpdateTile,
-  className = ''
+  className = '',
+  style
 }) => {
   const [currentFont, setCurrentFont] = useState('Inter, system-ui, sans-serif');
   const [currentSize, setCurrentSize] = useState(16);
@@ -103,6 +105,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
     return (
       <div
         className={`top-toolbar relative z-30 flex items-center justify-between bg-white border-b border-gray-200 px-4 lg:px-6 py-3 ${className}`}
+        style={style}
         onMouseDown={(e) => e.preventDefault()}
       >
         <div className="flex items-center space-x-2 text-gray-600" onMouseDown={(e) => e.preventDefault()}>
@@ -258,7 +261,10 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   }
 
   return (
-    <div className={`flex items-center justify-between bg-white border-b border-gray-200 px-4 lg:px-6 py-3 ${className}`}>
+    <div
+      className={`top-toolbar relative z-30 flex items-center justify-between bg-white border-b border-gray-200 px-4 lg:px-6 py-3 ${className}`}
+      style={style}
+    >
       <div className="text-sm text-gray-500">
         Kafelki: {tilesCount} • Siatka: {gridColumns}×{gridRows}
       </div>
