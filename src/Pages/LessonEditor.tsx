@@ -463,26 +463,8 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
         </div>
       </div>
 
-      <div
-        className="sticky z-40 bg-white border-b border-gray-200"
-        style={{ top: headerHeight }}
-      >
-        <TopToolbar
-          key={`toolbar-${editorState.mode}-${editorState.selectedTileId}`}
-          tilesCount={lessonContent.tiles.length}
-          gridColumns={GridUtils.GRID_COLUMNS}
-          gridRows={lessonContent.canvas_settings.height}
-          currentMode={editorState.selectedTileId ? 'Tryb edycji' : 'Tryb dodawania'}
-          isTextEditing={editorState.mode === 'textEditing'}
-          onFinishTextEditing={handleFinishTextEditing}
-          editor={activeEditor}
-          selectedTile={selectedRichTextTile}
-          onUpdateTile={handleUpdateTile}
-        />
-      </div>
-
       {/* Editor Content */}
-      <div className="flex-1 flex min-h-0 overflow-hidden">
+      <div className="flex-1 flex min-h-0">
         {/* Context-Sensitive Left Panel */}
         <div className="w-64 lg:w-80 bg-white shadow-lg border-r border-gray-200 flex-shrink-0 transition-all duration-300 flex flex-col overflow-hidden">
           {editorState.selectedTileId ? (
@@ -509,6 +491,23 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
 
         {/* Expanded Canvas Area */}
         <div className="flex-1 flex flex-col min-w-0">
+          <div
+            className="sticky z-40 bg-white border-b border-gray-200"
+            style={{ top: headerHeight }}
+          >
+            <TopToolbar
+              key={`toolbar-${editorState.mode}-${editorState.selectedTileId}`}
+              tilesCount={lessonContent.tiles.length}
+              gridColumns={GridUtils.GRID_COLUMNS}
+              gridRows={lessonContent.canvas_settings.height}
+              currentMode={editorState.selectedTileId ? 'Tryb edycji' : 'Tryb dodawania'}
+              isTextEditing={editorState.mode === 'textEditing'}
+              onFinishTextEditing={handleFinishTextEditing}
+              editor={activeEditor}
+              selectedTile={selectedRichTextTile}
+              onUpdateTile={handleUpdateTile}
+            />
+          </div>
           {/* Canvas */}
           <div className="flex-1 p-4 lg:p-6 overflow-auto overscroll-contain bg-gray-100">
             <LessonCanvas
