@@ -1,4 +1,5 @@
 import { useState, useEffect, RefObject } from 'react';
+import type { DragEvent } from 'react';
 import { LessonContent, LessonTile, GridPosition, EditorState, TextTile, ImageTile, SequencingTile } from '../types/lessonEditor';
 import { EditorAction } from '../state/editorReducer';
 import { GridUtils } from '../utils/gridUtils';
@@ -14,6 +15,28 @@ interface UseTileInteractionsProps {
   onAddTile: (tileType: string, position: { x: number; y: number }) => void;
   canvasRef: RefObject<HTMLDivElement>;
 }
+
+type PaletteDragData = {
+  type: 'palette-tile';
+  tileType: string;
+};
+
+const getPaletteDragData = (event: DragEvent): PaletteDragData | null => {
+  if (!event.dataTransfer.types.includes('application/json')) {
+    return null;
+  }
+
+  try {
+    const data = JSON.parse(event.dataTransfer.getData('application/json')) as Partial<PaletteDragData>;
+    if (data && data.type === 'palette-tile' && typeof data.tileType === 'string') {
+      return { type: 'palette-tile', tileType: data.tileType };
+    }
+  } catch {
+    // Ignore invalid drag data – it just means the drag did not originate from the palette
+  }
+
+  return null;
+};
 
 export const useTileInteractions = ({
   content,
@@ -45,31 +68,35 @@ export const useTileInteractions = ({
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e: DragEvent) => {
+    const dragData = getPaletteDragData(e);
+    if (!dragData) {
+      return;
+    }
+
     e.preventDefault();
     setDragPreview(null);
 
-    try {
-      const data = JSON.parse(e.dataTransfer.getData('application/json'));
-      if (data.type === 'palette-tile') {
-        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-        const pixelPosition = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-        const desiredGridPos = GridUtils.pixelToGrid(pixelPosition, content.canvas_settings);
-        const availableGridPos = GridUtils.findNextAvailablePosition(
-          { ...desiredGridPos, colSpan: 2, rowSpan: 1 },
-          content.canvas_settings,
-          content.tiles
-        );
-        const finalPixelPos = GridUtils.gridToPixel(availableGridPos, content.canvas_settings);
-        onAddTile(data.tileType, finalPixelPos);
-        logger.info(`Dropped ${data.tileType} tile at grid position:`, availableGridPos);
-      }
-    } catch (err) {
-      logger.error('Error handling drop:', err);
-    }
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const pixelPosition = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    const desiredGridPos = GridUtils.pixelToGrid(pixelPosition, content.canvas_settings);
+    const availableGridPos = GridUtils.findNextAvailablePosition(
+      { ...desiredGridPos, colSpan: 2, rowSpan: 1 },
+      content.canvas_settings,
+      content.tiles
+    );
+    const finalPixelPos = GridUtils.gridToPixel(availableGridPos, content.canvas_settings);
+    onAddTile(dragData.tileType, finalPixelPos);
+    logger.info(`Dropped ${dragData.tileType} tile at grid position:`, availableGridPos);
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: DragEvent) => {
+    const dragData = getPaletteDragData(e);
+    if (!dragData) {
+      setDragPreview(null);
+      return;
+    }
+
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -83,7 +110,7 @@ export const useTileInteractions = ({
     setDragPreview(previewPos);
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
+  const handleDragLeave = (e: DragEvent) => {
     if (!e.currentTarget.contains(e.relatedTarget as Node)) {
       setDragPreview(null);
     }
