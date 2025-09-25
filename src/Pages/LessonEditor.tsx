@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Save, RotateCcw, Grid, Edit } from 'lucide-react';
 import { Lesson, Course } from '../types/course.ts';
-import { LessonContent, LessonTile, ProgrammingTile, TextTile } from '../types/lessonEditor.ts';
+import { LessonContent, LessonTile, ProgrammingTile, TextTile, QuizTile } from '../types/lessonEditor.ts';
 import { SequencingTile } from '../types/lessonEditor.ts';
 import { useLessonEditor } from '../hooks/useLessonEditor.ts';
 import { LessonContentService } from '../services/lessonContentService.ts';
@@ -23,8 +23,8 @@ interface LessonEditorProps {
   onBack: () => void;
 }
 
-const isRichTextTile = (tile: LessonTile | null): tile is TextTile | ProgrammingTile | SequencingTile => {
-  return !!tile && (tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing');
+const isRichTextTile = (tile: LessonTile | null): tile is TextTile | ProgrammingTile | SequencingTile | QuizTile => {
+  return !!tile && (tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing' || tile.type === 'quiz');
 };
 
 export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBack }) => {

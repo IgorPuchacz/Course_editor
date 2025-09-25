@@ -1,9 +1,10 @@
 import React from 'react';
 import { Type, X } from 'lucide-react';
-import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile } from '../../../types/lessonEditor.ts';
+import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizTile } from '../../../types/lessonEditor.ts';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
 import { SequencingEditor } from './SequencingEditor.tsx';
+import { QuizEditor } from './QuizEditor.tsx';
 
 interface TileSideEditorProps {
   tile: LessonTile | undefined;
@@ -256,6 +257,11 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
             </div>
           </div>
         );
+      }
+
+      case 'quiz': {
+        const quizTile = tile as QuizTile;
+        return <QuizEditor tile={quizTile} onUpdateTile={onUpdateTile} />;
       }
 
       case 'sequencing': {

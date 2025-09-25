@@ -5,7 +5,7 @@ import { FontSizeSelector } from './FontSizeSelector.tsx';
 import { TextColorPicker } from './TextColorPicker.tsx';
 import { FontSelector } from './FontSelector.tsx';
 import { AlignmentControls } from './AlignmentControls.tsx';
-import { LessonTile, ProgrammingTile, TextTile, SequencingTile } from '../../../types/lessonEditor.ts';
+import { LessonTile, ProgrammingTile, TextTile, SequencingTile, QuizTile } from '../../../types/lessonEditor.ts';
 
 
 interface TopToolbarProps {
@@ -16,7 +16,7 @@ interface TopToolbarProps {
   isTextEditing: boolean;
   onFinishTextEditing?: () => void;
   editor?: Editor | null;
-  selectedTile?: TextTile | ProgrammingTile | SequencingTile | null;
+  selectedTile?: TextTile | ProgrammingTile | SequencingTile | QuizTile | null;
   onUpdateTile?: (tileId: string, updates: Partial<LessonTile>) => void;
   className?: string;
 }
@@ -64,11 +64,13 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
     };
   }, [editor]);
 
+  const allowVerticalAlign = selectedTile?.type === 'text' || selectedTile?.type === 'sequencing';
+
   useEffect(() => {
-    if (selectedTile?.type === 'text' || selectedTile?.type === 'sequencing') {
-      setVerticalAlign(selectedTile.content.verticalAlign || 'top');
+    if (allowVerticalAlign) {
+      setVerticalAlign(selectedTile?.content.verticalAlign || 'top');
     }
-  }, [selectedTile]);
+  }, [allowVerticalAlign, selectedTile]);
 
   const handleHorizontalChange = (alignment: 'left' | 'center' | 'right' | 'justify') => {
     setHorizontalAlign(alignment);
@@ -165,7 +167,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             selectedHorizontal={horizontalAlign}
             selectedVertical={verticalAlign}
             onHorizontalChange={handleHorizontalChange}
-            onVerticalChange={selectedTile?.type === 'programming' ? undefined : handleVerticalChange}
+            onVerticalChange={allowVerticalAlign ? handleVerticalChange : undefined}
           />
           
           <div className="w-px h-6 bg-gray-300"></div>

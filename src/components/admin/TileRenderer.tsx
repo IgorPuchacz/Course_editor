@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HelpCircle, Move, Trash2, Play, Code2 } from 'lucide-react';
+import { HelpCircle, Move, Trash2, Play, Code2, CheckCircle2, Circle, AlertTriangle } from 'lucide-react';
 import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
@@ -70,6 +70,14 @@ const darkenColor = (hex: string, amount: number): string => {
 
 const surfaceColor = (accent: string, textColor: string, lightenAmount: number, darkenAmount: number): string =>
   textColor === '#0f172a' ? lightenColor(accent, lightenAmount) : darkenColor(accent, darkenAmount);
+
+interface QuizInteractiveProps {
+  tile: QuizTile;
+  instructionContent?: React.ReactNode;
+  isPreview?: boolean;
+  isTestingMode?: boolean;
+  onRequestTextEditing?: () => void;
+}
 
 const TILE_CORNER = 'rounded-xl';
 
@@ -198,6 +206,220 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ textTile, tileId, onUpd
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
       />
+    </div>
+  );
+};
+
+const QuizInteractive: React.FC<QuizInteractiveProps> = ({
+  tile,
+  instructionContent,
+  isPreview = false,
+  isTestingMode = false,
+  onRequestTextEditing
+}) => {
+  const accentColor = tile.content.backgroundColor || '#f8fafc';
+  const textColor = getReadableTextColor(accentColor);
+  const isDarkText = textColor === '#0f172a';
+  const gradientStart = lightenColor(accentColor, isDarkText ? 0.08 : 0.16);
+  const gradientEnd = darkenColor(accentColor, isDarkText ? 0.18 : 0.28);
+  const frameBorderColor = darkenColor(accentColor, isDarkText ? 0.22 : 0.45);
+  const panelBackground = surfaceColor(accentColor, textColor, 0.6, 0.45);
+  const panelBorder = surfaceColor(accentColor, textColor, 0.38, 0.62);
+  const iconBackground = surfaceColor(accentColor, textColor, 0.72, 0.33);
+  const subtleCaptionColor = surfaceColor(accentColor, textColor, 0.3, 0.55);
+  const answerBackground = surfaceColor(accentColor, textColor, 0.78, 0.6);
+  const answerSelectedBackground = darkenColor(accentColor, isDarkText ? 0.27 : 0.45);
+  const answerSelectedTextColor = '#f8fafc';
+  const answerBorderColor = surfaceColor(accentColor, textColor, 0.42, 0.68);
+  const warningBackground = surfaceColor(accentColor, textColor, 0.92, 0.72);
+  const missingCorrectBackground = surfaceColor(accentColor, textColor, 0.9, 0.68);
+
+  const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSelectedAnswers([]);
+  }, [tile.id, tile.content.answers.length, tile.content.multipleCorrect, isTestingMode]);
+
+  const handleAnswerSelect = (answerId: string) => {
+    if (isPreview) return;
+
+    setSelectedAnswers(prev => {
+      if (!tile.content.multipleCorrect) {
+        return prev.includes(answerId) ? [] : [answerId];
+      }
+
+      if (prev.includes(answerId)) {
+        return prev.filter(id => id !== answerId);
+      }
+
+      return [...prev, answerId];
+    });
+  };
+
+  const hasNoAnswers = tile.content.answers.length === 0;
+  const hasNoCorrectAnswer = tile.content.answers.every(answer => !answer.isCorrect);
+  const modeLabel = tile.content.multipleCorrect
+    ? 'Wybierz wszystkie poprawne odpowiedzi'
+    : 'Wybierz jedną poprawną odpowiedź';
+
+  const handleTileDoubleClick = (event: React.MouseEvent) => {
+    if (isPreview || isTestingMode) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    onRequestTextEditing?.();
+  };
+
+  return (
+    <div className="relative w-full h-full" onDoubleClick={handleTileDoubleClick}>
+      <div
+        className={`w-full h-full flex flex-col gap-5 transition-all duration-300 ${
+          tile.content.showBorder ? 'border' : ''
+        } rounded-3xl shadow-2xl shadow-slate-950/30 p-6`}
+        style={{
+          backgroundColor: accentColor,
+          backgroundImage: `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`,
+          color: textColor,
+          borderColor: tile.content.showBorder ? frameBorderColor : undefined
+        }}
+      >
+        <TaskInstructionPanel
+          icon={<HelpCircle className="w-4 h-4" />}
+          label="Pytanie"
+          className="border"
+          style={{
+            backgroundColor: panelBackground,
+            borderColor: panelBorder,
+            color: textColor
+          }}
+          iconWrapperClassName="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm"
+          iconWrapperStyle={{
+            backgroundColor: iconBackground,
+            color: textColor
+          }}
+          labelStyle={{ color: subtleCaptionColor }}
+        >
+          {instructionContent ?? (
+            <div
+              className="text-base leading-relaxed"
+              style={{
+                fontFamily: tile.content.fontFamily,
+                fontSize: `${tile.content.fontSize}px`
+              }}
+              dangerouslySetInnerHTML={{
+                __html: tile.content.richQuestion || tile.content.question
+              }}
+            />
+          )}
+        </TaskInstructionPanel>
+
+        <div className="text-[11px] uppercase tracking-[0.32em]" style={{ color: subtleCaptionColor }}>
+          {modeLabel}
+        </div>
+
+        <div className="flex-1 overflow-auto space-y-3 pr-1">
+          {tile.content.answers.map((answer, index) => {
+            const isSelected = selectedAnswers.includes(answer.id);
+            const showAsCorrect = !isTestingMode && answer.isCorrect;
+
+            return (
+              <button
+                key={answer.id}
+                type="button"
+                onMouseDown={(event) => event.stopPropagation()}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleAnswerSelect(answer.id);
+                }}
+                className="group w-full text-left rounded-2xl border px-4 py-3 transition-all duration-200 hover:-translate-y-[1px]"
+                style={{
+                  backgroundColor: isSelected ? answerSelectedBackground : answerBackground,
+                  borderColor: isSelected
+                    ? darkenColor(answerSelectedBackground, 0.25)
+                    : answerBorderColor,
+                  color: isSelected ? answerSelectedTextColor : textColor,
+                  boxShadow: isSelected ? '0 18px 32px rgba(15, 23, 42, 0.25)' : undefined
+                }}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="flex h-9 w-9 items-center justify-center rounded-xl border text-sm font-semibold"
+                      style={{
+                        borderColor: isSelected
+                          ? 'rgba(255, 255, 255, 0.45)'
+                          : answerBorderColor,
+                        backgroundColor: isSelected ? 'rgba(15, 23, 42, 0.18)' : iconBackground,
+                        color: isSelected ? answerSelectedTextColor : textColor
+                      }}
+                    >
+                      {String.fromCharCode(65 + index)}
+                    </div>
+                    <span
+                      className="text-sm font-medium leading-snug"
+                      style={{ color: isSelected ? answerSelectedTextColor : textColor }}
+                    >
+                      {answer.text || `Odpowiedź ${index + 1}`}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {showAsCorrect && (
+                      <span
+                        className="text-[11px] uppercase tracking-[0.32em] font-semibold"
+                        style={{ color: isSelected ? answerSelectedTextColor : subtleCaptionColor }}
+                      >
+                        Poprawna
+                      </span>
+                    )}
+
+                    <span
+                      className="flex h-8 w-8 items-center justify-center rounded-full border"
+                      style={{
+                        borderColor: isSelected
+                          ? 'rgba(255, 255, 255, 0.6)'
+                          : answerBorderColor,
+                        backgroundColor: isSelected ? 'rgba(15, 23, 42, 0.22)' : 'transparent',
+                        color: isSelected ? answerSelectedTextColor : subtleCaptionColor
+                      }}
+                    >
+                      {isSelected ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
+                    </span>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+
+          {hasNoAnswers && (
+            <div
+              className="flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm"
+              style={{
+                backgroundColor: warningBackground,
+                borderColor: answerBorderColor,
+                color: textColor
+              }}
+            >
+              <AlertTriangle className="w-4 h-4" />
+              <span>Dodaj odpowiedzi w panelu bocznym, aby quiz był interaktywny.</span>
+            </div>
+          )}
+
+          {!hasNoAnswers && hasNoCorrectAnswer && (
+            <div
+              className="flex items-center gap-3 rounded-2xl border px-4 py-3 text-xs"
+              style={{
+                backgroundColor: missingCorrectBackground,
+                borderColor: answerBorderColor,
+                color: textColor
+              }}
+            >
+              <AlertTriangle className="w-4 h-4" />
+              <span>Zaznacz przynajmniej jedną poprawną odpowiedź.</span>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
@@ -566,20 +788,60 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       }
       case 'quiz': {
         const quizTile = tile as QuizTile;
-        contentToRender = (
-          <div className="w-full h-full p-4 flex flex-col gap-3 text-emerald-700">
-            <div className="flex items-center gap-2">
-              <HelpCircle className="w-5 h-5 text-emerald-600" />
-              <h4 className="font-semibold text-sm">Quiz</h4>
-            </div>
-            <div className="flex-1 rounded-lg border border-emerald-200 bg-emerald-50/80 p-3 text-xs overflow-hidden">
-              {quizTile.content.question}
-            </div>
-            <div className="text-xs text-emerald-600">
-              {quizTile.content.answers.length} odpowiedzi
-            </div>
-          </div>
+        const accentColor = quizTile.content.backgroundColor || computedBackground;
+        const textColor = getReadableTextColor(accentColor);
+
+        const renderQuizContent = (instructionContent?: React.ReactNode, isPreviewMode = false) => (
+          <QuizInteractive
+            tile={quizTile}
+            instructionContent={instructionContent}
+            isPreview={isPreviewMode}
+            isTestingMode={isTestingMode}
+            onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
+          />
         );
+
+        if (isEditingText && isSelected) {
+          const questionEditorTile = {
+            ...tile,
+            type: 'text',
+            content: {
+              text: quizTile.content.question,
+              richText: quizTile.content.richQuestion,
+              fontFamily: quizTile.content.fontFamily,
+              fontSize: quizTile.content.fontSize,
+              verticalAlign: 'top',
+              backgroundColor: quizTile.content.backgroundColor,
+              showBorder: quizTile.content.showBorder
+            }
+          } as TextTile;
+
+          contentToRender = renderQuizContent(
+            <RichTextEditor
+              textTile={questionEditorTile}
+              tileId={tile.id}
+              textColor={textColor}
+              onUpdateTile={(tileId, updates) => {
+                if (!updates.content) return;
+
+                onUpdateTile(tileId, {
+                  content: {
+                    ...quizTile.content,
+                    question: updates.content.text ?? quizTile.content.question,
+                    richQuestion: updates.content.richText ?? quizTile.content.richQuestion,
+                    fontFamily: updates.content.fontFamily ?? quizTile.content.fontFamily,
+                    fontSize: updates.content.fontSize ?? quizTile.content.fontSize
+                  }
+                });
+              }}
+              onFinishTextEditing={onFinishTextEditing}
+              onEditorReady={onEditorReady}
+            />,
+            true
+          );
+        } else {
+          contentToRender = renderQuizContent();
+        }
         break;
       }
 
