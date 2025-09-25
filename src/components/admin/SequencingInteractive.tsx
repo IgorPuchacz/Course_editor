@@ -82,10 +82,30 @@ const darkenColor = (hex: string, amount: number): string => {
   return `rgb(${darkenChannel(rgb.r)}, ${darkenChannel(rgb.g)}, ${darkenChannel(rgb.b)})`;
 };
 
-const withAlpha = (hex: string, alpha: number): string => {
-  const rgb = hexToRgb(hex);
-  if (!rgb) return `rgba(15, 23, 42, ${alpha})`;
-  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+const getNeutralSurfacePalette = (textColor: string) => {
+  const isDarkText = textColor === '#0f172a';
+
+  if (isDarkText) {
+    return {
+      surface: '#f1f5f9',
+      surfaceStrong: '#e2e8f0',
+      surfaceMuted: '#f8fafc',
+      border: '#cbd5e1',
+      borderStrong: '#94a3b8',
+      textMuted: '#475569',
+      textSubtle: '#64748b'
+    } as const;
+  }
+
+  return {
+    surface: '#1e293b',
+    surfaceStrong: '#334155',
+    surfaceMuted: '#0f172a',
+    border: '#334155',
+    borderStrong: '#475569',
+    textMuted: '#cbd5e1',
+    textSubtle: '#94a3b8'
+  } as const;
 };
 
 export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
@@ -109,12 +129,11 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
 
   const accentColor = tile.content.backgroundColor || '#0f172a';
   const textColor = useMemo(() => getReadableTextColor(accentColor), [accentColor]);
+  const neutralPalette = useMemo(() => getNeutralSurfacePalette(textColor), [textColor]);
+  const isLightTheme = textColor === '#0f172a';
   const gradientStart = useMemo(() => lightenColor(accentColor, 0.08), [accentColor]);
   const gradientEnd = useMemo(() => darkenColor(accentColor, 0.08), [accentColor]);
-  const borderColor = useMemo(
-    () => withAlpha(textColor, textColor === '#0f172a' ? 0.16 : 0.32),
-    [textColor]
-  );
+  const borderColor = neutralPalette.borderStrong;
   const showBorder = tile.content.showBorder !== false;
   const isEmbedded = variant === 'embedded';
 
@@ -339,10 +358,14 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
 
   const getItemClasses = (itemId: string) => {
     let baseClasses =
-      'flex items-center gap-4 px-4 py-3 rounded-xl border border-slate-800/70 bg-slate-800/60 text-slate-100 shadow-sm shadow-slate-900/30 transition-transform duration-200 select-none cursor-grab active:cursor-grabbing';
+      'group flex items-center gap-4 px-4 py-3 rounded-xl transition-transform duration-200 select-none cursor-grab active:cursor-grabbing shadow-sm';
+
+    baseClasses += isLightTheme
+      ? ' border border-slate-300 bg-slate-100 text-slate-900 hover:bg-slate-200 hover:border-slate-400'
+      : ' border border-slate-700 bg-slate-800 text-slate-100 hover:bg-slate-700 hover:border-slate-500';
 
     if (dragState?.id === itemId) {
-      baseClasses += ' opacity-60 scale-[0.98]';
+      baseClasses += isLightTheme ? ' ring-2 ring-slate-400' : ' ring-2 ring-slate-500';
     }
 
     return baseClasses;
@@ -352,21 +375,31 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
     let baseClasses = 'relative flex items-center gap-4 px-4 py-3 rounded-xl border-2 transition-all duration-200 min-h-[72px]';
 
     if (dragOverSlot === index) {
-      baseClasses += ' border-emerald-400/70 bg-emerald-400/10 shadow-lg shadow-emerald-500/10';
+      baseClasses += isLightTheme
+        ? ' border-slate-400 bg-slate-200'
+        : ' border-slate-500 bg-slate-700';
     } else if (isChecked && isCorrect !== null) {
       const placedItem = placedItems[index];
       const originalItem = placedItem ? tile.content.items.find(item => item.id === placedItem.id) : null;
       const isInCorrectPosition = originalItem && originalItem.correctPosition === index;
 
       if (isInCorrectPosition) {
-        baseClasses += ' border-emerald-400/60 bg-emerald-400/5';
+        baseClasses += isLightTheme
+          ? ' border-slate-400 bg-slate-200'
+          : ' border-slate-500 bg-slate-700';
       } else {
-        baseClasses += ' border-rose-400/60 bg-rose-400/5';
+        baseClasses += isLightTheme
+          ? ' border-rose-400 bg-rose-100 text-rose-900'
+          : ' border-rose-400 bg-rose-900 text-rose-100';
       }
     } else if (hasItem) {
-      baseClasses += ' border-slate-700/80 bg-slate-800/40';
+      baseClasses += isLightTheme
+        ? ' border-slate-300 bg-slate-100'
+        : ' border-slate-700 bg-slate-800';
     } else {
-      baseClasses += ' border-dashed border-slate-700/80 bg-slate-900/30 hover:border-emerald-400/60 hover:bg-emerald-400/5';
+      baseClasses += isLightTheme
+        ? ' border-dashed border-slate-300 bg-slate-100 hover:border-slate-400 hover:bg-slate-200'
+        : ' border-dashed border-slate-700 bg-slate-900 hover:border-slate-500 hover:bg-slate-800';
     }
 
     return baseClasses;
@@ -386,7 +419,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
         className={`w-full h-full flex flex-col gap-6 transition-all duration-300 ${
           isEmbedded
             ? 'p-6'
-            : `rounded-3xl ${showBorder ? 'border' : ''} shadow-2xl shadow-slate-950/40 p-6 overflow-hidden`
+            : `rounded-3xl ${showBorder ? 'border' : ''} shadow-2xl p-6 overflow-hidden`
         }`}
         style={{
           backgroundColor: isEmbedded ? 'transparent' : accentColor,
@@ -398,19 +431,18 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
         <TaskInstructionPanel
           icon={<Sparkles className="w-4 h-4" />}
           label="Zadanie"
-          className="border backdrop-blur-sm"
+          className="border"
           style={{
-            backgroundColor: withAlpha(textColor, textColor === '#0f172a' ? 0.06 : 0.12),
-            borderColor: withAlpha(textColor, textColor === '#0f172a' ? 0.12 : 0.28),
+            backgroundColor: neutralPalette.surface,
+            borderColor: neutralPalette.border,
             color: textColor
           }}
-          iconWrapperClassName="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm"
           iconWrapperStyle={{
-            backgroundColor: withAlpha(textColor, textColor === '#0f172a' ? 0.14 : 0.2),
-            color: textColor
+            backgroundColor: neutralPalette.surfaceStrong,
+            color: textColor,
+            border: `1px solid ${neutralPalette.borderStrong}`
           }}
-          labelStyle={{ color: withAlpha(textColor, textColor === '#0f172a' ? 0.55 : 0.75) }}
-          bodyClassName="px-5 pb-5"
+          labelStyle={{ color: neutralPalette.textMuted }}
         >
           {instructionContent ?? (
             <div
@@ -427,30 +459,39 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
         </TaskInstructionPanel>
 
         {isTestingMode && (
-          <div className="text-[11px] uppercase tracking-[0.32em]" style={{ color: withAlpha(textColor, 0.6) }}>
+          <div
+            className="text-[11px] uppercase tracking-[0.32em]"
+            style={{ color: neutralPalette.textSubtle }}
+          >
             Tryb testowania
           </div>
         )}
 
         {attempts > 0 && (
-          <div className="text-xs uppercase tracking-[0.32em]" style={{ color: withAlpha(textColor, 0.55) }}>
+          <div
+            className="text-xs uppercase tracking-[0.32em]"
+            style={{ color: neutralPalette.textSubtle }}
+          >
             Próba #{attempts}
           </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0">
           <div
-            className={`flex flex-col rounded-2xl border transition-all duration-200 ${
-              isPoolHighlighted
-                ? 'border-emerald-400/70 bg-emerald-400/10 shadow-lg shadow-emerald-500/10'
-                : 'border-slate-800/70 bg-slate-900/40'
-            }`}
+            className="flex flex-col rounded-2xl border transition-all duration-200 shadow-sm"
+            style={{
+              backgroundColor: isPoolHighlighted ? neutralPalette.surfaceStrong : neutralPalette.surface,
+              borderColor: isPoolHighlighted ? neutralPalette.borderStrong : neutralPalette.border
+            }}
             onDragOver={handlePoolDragOver}
             onDragLeave={handlePoolDragLeave}
             onDrop={handleDropToPool}
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
-              <div className="flex items-center gap-2 text-sm font-semibold text-slate-200">
+            <div
+              className="flex items-center justify-between px-5 py-4 border-b"
+              style={{ borderColor: neutralPalette.border }}
+            >
+              <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: textColor }}>
                 <Shuffle className="w-4 h-4" />
                 <span>Pula elementów</span>
               </div>
@@ -458,7 +499,9 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
 
             <div className="flex-1 overflow-auto px-5 py-4 space-y-3">
               {availableItems.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-2 text-center text-sm text-slate-500 py-10">
+                <div className="flex flex-col items-center justify-center gap-2 text-center text-sm py-10"
+                  style={{ color: neutralPalette.textMuted }}
+                >
                   <ArrowLeftRight className="w-5 h-5" />
                   <span>Przeciągnij elementy na prawą stronę</span>
                 </div>
@@ -472,10 +515,22 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                     className={getItemClasses(item.id)}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-slate-900/70 text-slate-400">
+                      <div
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg border ${
+                          isLightTheme
+                            ? 'border-slate-300 bg-slate-200 text-slate-500'
+                            : 'border-slate-700 bg-slate-900 text-slate-300'
+                        }`}
+                      >
                         <GripVertical className="h-4 w-4" />
                       </div>
-                      <span className="text-sm font-medium text-slate-100">{item.text}</span>
+                      <span
+                        className={`text-sm font-medium ${
+                          isLightTheme ? 'text-slate-900' : 'text-slate-100'
+                        }`}
+                      >
+                        {item.text}
+                      </span>
                     </div>
                   </div>
                 ))
@@ -483,13 +538,22 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-col rounded-2xl border border-emerald-500/20 bg-emerald-500/5">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-emerald-500/20">
-              <div className="flex items-center gap-2 text-sm font-semibold text-emerald-200">
+          <div
+            className="flex flex-col rounded-2xl border transition-all duration-200 shadow-sm"
+            style={{
+              backgroundColor: neutralPalette.surfaceStrong,
+              borderColor: neutralPalette.borderStrong
+            }}
+          >
+            <div
+              className="flex items-center justify-between px-5 py-4 border-b"
+              style={{ borderColor: neutralPalette.border }}
+            >
+              <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: textColor }}>
                 <CheckCircle className="w-4 h-4" />
                 <span>Twoja sekwencja</span>
               </div>
-              <span className="text-xs text-emerald-200/70">
+              <span className="text-xs" style={{ color: neutralPalette.textSubtle }}>
                 {placedItems.filter(Boolean).length} / {tile.content.items.length}
               </span>
             </div>
@@ -503,7 +567,13 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                   onDragLeave={handleSlotDragLeave}
                   onDrop={e => handleDropToSlot(e, index)}
                 >
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-200 text-sm font-semibold border border-emerald-500/30">
+                  <div
+                    className={`flex items-center justify-center w-8 h-8 rounded-lg border text-sm font-semibold ${
+                      isLightTheme
+                        ? 'border-slate-300 bg-slate-200 text-slate-600'
+                        : 'border-slate-600 bg-slate-800 text-slate-200'
+                    }`}
+                  >
                     {index + 1}
                   </div>
                   {item ? (
@@ -516,14 +586,32 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                       onDragEnd={handleDragEnd}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-slate-900/70 text-slate-400">
+                        <div
+                          className={`flex h-8 w-8 items-center justify-center rounded-lg border ${
+                            isLightTheme
+                              ? 'border-slate-300 bg-slate-200 text-slate-500'
+                              : 'border-slate-700 bg-slate-900 text-slate-300'
+                          }`}
+                        >
                           <GripVertical className="h-4 w-4" />
                         </div>
-                        <span className="text-sm font-medium text-slate-100 text-left break-words">{item.text}</span>
+                        <span
+                          className={`text-sm font-medium text-left break-words ${
+                            isLightTheme ? 'text-slate-900' : 'text-slate-100'
+                          }`}
+                        >
+                          {item.text}
+                        </span>
                       </div>
                     </div>
                   ) : (
-                    <span className="flex-1 text-sm text-slate-500 italic">Upuść element w tym miejscu</span>
+                    <span
+                      className={`flex-1 text-sm italic ${
+                        isLightTheme ? 'text-slate-500' : 'text-slate-400'
+                      }`}
+                    >
+                      Upuść element w tym miejscu
+                    </span>
                   )}
 
                   {isChecked && isCorrect !== null && item && (() => {
@@ -531,7 +619,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                     const isInCorrectPosition = originalItem && originalItem.correctPosition === index;
 
                     return isInCorrectPosition ? (
-                      <CheckCircle className="w-5 h-5 text-emerald-400" />
+                      <CheckCircle className={`w-5 h-5 ${isLightTheme ? 'text-slate-500' : 'text-slate-200'}`} />
                     ) : (
                       <XCircle className="w-5 h-5 text-rose-400" />
                     );
@@ -546,20 +634,31 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
           <div
             className={`rounded-2xl border px-6 py-4 flex items-center justify-between ${
               isCorrect
-                ? 'border-emerald-400/40 bg-emerald-500/10 text-emerald-100'
-                : 'border-rose-400/40 bg-rose-500/10 text-rose-100'
+                ? isLightTheme
+                  ? 'border-slate-300 bg-slate-100 text-slate-900'
+                  : 'border-slate-600 bg-slate-800 text-slate-200'
+                : isLightTheme
+                  ? 'border-rose-400 bg-rose-100 text-rose-900'
+                  : 'border-rose-400 bg-rose-900 text-rose-100'
             }`}
           >
             <div className="flex items-center gap-3 text-sm font-medium">
               {isCorrect ? (
-                <CheckCircle className="w-5 h-5 text-emerald-300" />
+                <CheckCircle className={`w-5 h-5 ${isLightTheme ? 'text-slate-500' : 'text-slate-200'}`} />
               ) : (
                 <XCircle className="w-5 h-5 text-rose-300" />
               )}
               <span>{isCorrect ? tile.content.correctFeedback : tile.content.incorrectFeedback}</span>
             </div>
 
-            {!isCorrect && <div className="text-xs text-slate-200/70">Spróbuj ponownie, przenosząc elementy.</div>}
+            {!isCorrect && (
+              <div
+                className="text-xs"
+                style={{ color: isLightTheme ? '#475569' : '#cbd5e1' }}
+              >
+                Spróbuj ponownie, przenosząc elementy.
+              </div>
+            )}
           </div>
         )}
 
@@ -569,7 +668,11 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
               <button
                 onClick={checkSequence}
                 disabled={!sequenceComplete || (isChecked && isCorrect)}
-                className="px-6 py-2 rounded-xl bg-emerald-500 text-slate-950 font-semibold shadow-lg shadow-emerald-500/30 transition-transform duration-200 disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
+                className={`px-6 py-2 rounded-xl font-semibold shadow-md transition-transform duration-200 disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5 ${
+                  isLightTheme
+                    ? 'bg-slate-900 text-slate-100'
+                    : 'bg-slate-200 text-slate-900'
+                }`}
               >
                 {isChecked && isCorrect ? 'Sekwencja sprawdzona' : 'Sprawdź kolejność'}
               </button>
@@ -577,7 +680,11 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
               {isChecked && !isCorrect && (
                 <button
                   onClick={resetSequence}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-100 font-medium border border-slate-700/80 hover:bg-slate-700 transition-colors flex items-center gap-2"
+                  className={`px-4 py-2 rounded-xl font-medium border transition-colors flex items-center gap-2 ${
+                    isLightTheme
+                      ? 'bg-slate-100 text-slate-900 border-slate-300 hover:bg-slate-200'
+                      : 'bg-slate-800 text-slate-100 border-slate-600 hover:bg-slate-700'
+                  }`}
                 >
                   <RotateCcw className="w-4 h-4" />
                   <span>Wymieszaj ponownie</span>

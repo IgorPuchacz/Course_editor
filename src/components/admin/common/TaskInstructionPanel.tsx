@@ -28,24 +28,28 @@ export const TaskInstructionPanel: React.FC<TaskInstructionPanelProps> = ({
   bodyClassName
 }) => {
   return (
-    <div className={`rounded-2xl ${className}`} style={style}>
-      <div className={headerClassName ?? 'px-5 pt-5 pb-3 flex items-center gap-3'}>
+    <div className={`rounded-2xl font-sans ${className}`} style={style}>
+      <div className={headerClassName ?? 'px-5 pt-5 pb-4 flex items-center gap-4'}>
         <div
-          className={iconWrapperClassName ?? 'w-9 h-9 rounded-xl flex items-center justify-center shadow-sm'}
+          className={
+            iconWrapperClassName ?? 'w-10 h-10 rounded-xl flex items-center justify-center shadow-sm font-medium'
+          }
           style={iconWrapperStyle}
         >
           {icon}
         </div>
         <div className="flex flex-col">
           <span
-            className={labelClassName ?? 'text-lg uppercase tracking-[0.10em] font-semibold'}
+            className={
+              labelClassName ?? 'text-sm font-semibold uppercase tracking-[0.24em] leading-tight'
+            }
             style={labelStyle}
           >
             {label}
           </span>
         </div>
       </div>
-      <div className={bodyClassName ?? 'px-5 pb-5 h-full'}>{children}</div>
+      <div className={bodyClassName ?? 'px-5 pb-5 h-full text-sm leading-relaxed'}>{children}</div>
     </div>
   );
 };
