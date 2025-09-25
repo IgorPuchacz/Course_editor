@@ -15,6 +15,22 @@ interface UseTileInteractionsProps {
   canvasRef: RefObject<HTMLDivElement>;
 }
 
+const getPaletteTileData = (dataTransfer: DataTransfer) => {
+  try {
+    const rawData = dataTransfer.getData('application/json');
+    if (!rawData) {
+      return null;
+    }
+    const parsedData = JSON.parse(rawData);
+    if (parsedData?.type === 'palette-tile' && typeof parsedData.tileType === 'string') {
+      return parsedData as { type: 'palette-tile'; tileType: string };
+    }
+  } catch (error) {
+    logger.warn('Unable to parse drag data as palette tile:', error);
+  }
+  return null;
+};
+
 export const useTileInteractions = ({
   content,
   editorState,
@@ -46,30 +62,33 @@ export const useTileInteractions = ({
   };
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
+    const paletteData = getPaletteTileData(e.dataTransfer);
     setDragPreview(null);
-
-    try {
-      const data = JSON.parse(e.dataTransfer.getData('application/json'));
-      if (data.type === 'palette-tile') {
-        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-        const pixelPosition = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-        const desiredGridPos = GridUtils.pixelToGrid(pixelPosition, content.canvas_settings);
-        const availableGridPos = GridUtils.findNextAvailablePosition(
-          { ...desiredGridPos, colSpan: 2, rowSpan: 1 },
-          content.canvas_settings,
-          content.tiles
-        );
-        const finalPixelPos = GridUtils.gridToPixel(availableGridPos, content.canvas_settings);
-        onAddTile(data.tileType, finalPixelPos);
-        logger.info(`Dropped ${data.tileType} tile at grid position:`, availableGridPos);
-      }
-    } catch (err) {
-      logger.error('Error handling drop:', err);
+    if (!paletteData) {
+      return;
     }
+
+    e.preventDefault();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const pixelPosition = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    const desiredGridPos = GridUtils.pixelToGrid(pixelPosition, content.canvas_settings);
+    const availableGridPos = GridUtils.findNextAvailablePosition(
+      { ...desiredGridPos, colSpan: 2, rowSpan: 1 },
+      content.canvas_settings,
+      content.tiles
+    );
+    const finalPixelPos = GridUtils.gridToPixel(availableGridPos, content.canvas_settings);
+    onAddTile(paletteData.tileType, finalPixelPos);
+    logger.info(`Dropped ${paletteData.tileType} tile at grid position:`, availableGridPos);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
+    const paletteData = getPaletteTileData(e.dataTransfer);
+    if (!paletteData) {
+      setDragPreview(null);
+      return;
+    }
+
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
