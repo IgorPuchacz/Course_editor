@@ -244,6 +244,12 @@ export class LessonContentService {
       snapToGrid: true
     });
 
+    const createAnswer = (text: string, isCorrect: boolean) => ({
+      id: `answer-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      text,
+      isCorrect
+    });
+
     return {
       id,
       type: 'quiz',
@@ -252,10 +258,15 @@ export class LessonContentService {
       gridPosition: gridPos,
       content: {
         question: 'Przykładowe pytanie?',
+        richQuestion: '<p style="margin: 0;">Przykładowe pytanie?</p>',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        backgroundColor: '#f0fdf4',
+        showBorder: true,
         answers: [
-          { text: 'Odpowiedź A', isCorrect: false },
-          { text: 'Odpowiedź B', isCorrect: true },
-          { text: 'Odpowiedź C', isCorrect: false }
+          createAnswer('Odpowiedź A', false),
+          createAnswer('Odpowiedź B', true),
+          createAnswer('Odpowiedź C', false)
         ],
         multipleCorrect: false
       },

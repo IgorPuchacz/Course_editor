@@ -78,7 +78,13 @@ export interface QuizTile extends LessonTile {
   type: 'quiz';
   content: {
     question: string;
+    richQuestion?: string;
+    fontFamily: string;
+    fontSize: number;
+    backgroundColor: string;
+    showBorder: boolean;
     answers: Array<{
+      id: string;
       text: string;
       isCorrect: boolean;
     }>;

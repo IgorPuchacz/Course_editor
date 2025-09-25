@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HelpCircle, Move, Trash2, Play, Code2 } from 'lucide-react';
+import { HelpCircle, Move, Trash2, Play, Code2, CheckCircle2, Circle } from 'lucide-react';
 import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
@@ -220,6 +220,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   onEditorReady
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]);
 
   const tileContent = tile.content ?? {};
   const hasBackgroundColor =
@@ -291,6 +292,32 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       setIsHovered(false);
     }
   };
+
+  useEffect(() => {
+    if (tile.type !== 'quiz') {
+      setSelectedAnswers([]);
+      return;
+    }
+
+    const quizTile = tile as QuizTile;
+    setSelectedAnswers(prev =>
+      prev.filter(answerId => quizTile.content.answers.some(answer => answer.id === answerId))
+    );
+  }, [tile]);
+
+  useEffect(() => {
+    if (tile.type !== 'quiz') return;
+
+    if (!(tile as QuizTile).content.multipleCorrect && selectedAnswers.length > 1) {
+      setSelectedAnswers(prev => (prev.length > 0 ? [prev[0]] : []));
+    }
+  }, [tile, selectedAnswers]);
+
+  useEffect(() => {
+    if (isEditingText) {
+      setSelectedAnswers([]);
+    }
+  }, [isEditingText]);
 
   const renderTileContent = () => {
     let contentToRender: JSX.Element;
@@ -566,20 +593,189 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       }
       case 'quiz': {
         const quizTile = tile as QuizTile;
-        contentToRender = (
-          <div className="w-full h-full p-4 flex flex-col gap-3 text-emerald-700">
-            <div className="flex items-center gap-2">
-              <HelpCircle className="w-5 h-5 text-emerald-600" />
-              <h4 className="font-semibold text-sm">Quiz</h4>
-            </div>
-            <div className="flex-1 rounded-lg border border-emerald-200 bg-emerald-50/80 p-3 text-xs overflow-hidden">
-              {quizTile.content.question}
-            </div>
-            <div className="text-xs text-emerald-600">
-              {quizTile.content.answers.length} odpowiedzi
-            </div>
+        const accentColor = quizTile.content.backgroundColor || computedBackground;
+        const textColor = getReadableTextColor(accentColor);
+        const isDarkText = textColor === '#0f172a';
+        const mutedLabelColor = isDarkText ? '#475569' : 'rgba(226, 232, 240, 0.85)';
+        const panelBackground = surfaceColor(accentColor, textColor, 0.72, 0.5);
+        const panelBorder = surfaceColor(accentColor, textColor, 0.58, 0.6);
+        const iconBackground = surfaceColor(accentColor, textColor, 0.6, 0.45);
+        const optionBackground = surfaceColor(accentColor, textColor, 0.82, 0.68);
+        const optionBorder = surfaceColor(accentColor, textColor, 0.52, 0.6);
+        const optionSelectedBackground = surfaceColor(accentColor, textColor, 0.45, 0.45);
+        const optionSelectedBorder = darkenColor(accentColor, isDarkText ? 0.35 : 0.55);
+        const indicatorBackground = surfaceColor(accentColor, textColor, 0.65, 0.55);
+        const indicatorSelectedBackground = darkenColor(accentColor, isDarkText ? 0.4 : 0.62);
+        const indicatorBorder = surfaceColor(accentColor, textColor, 0.48, 0.62);
+        const answerModeLabel = quizTile.content.multipleCorrect
+          ? 'Wiele poprawnych odpowiedzi'
+          : 'Jedna poprawna odpowiedź';
+
+        const handleAnswerToggle = (answerId: string) => {
+          if (isEditingText) return;
+
+          setSelectedAnswers(prev => {
+            if (quizTile.content.multipleCorrect) {
+              return prev.includes(answerId)
+                ? prev.filter(id => id !== answerId)
+                : [...prev, answerId];
+            }
+
+            return prev.includes(answerId) ? [] : [answerId];
+          });
+        };
+
+        const renderQuestionPanel = (content: React.ReactNode) => (
+          <TaskInstructionPanel
+            icon={<HelpCircle className="w-4 h-4" />}
+            label="Pytanie"
+            className="border transition-colors duration-300"
+            style={{
+              backgroundColor: panelBackground,
+              borderColor: panelBorder,
+              color: textColor
+            }}
+            iconWrapperStyle={{
+              backgroundColor: iconBackground,
+              color: textColor
+            }}
+            labelStyle={{ color: mutedLabelColor }}
+            bodyClassName="px-5 pb-5"
+          >
+            {content}
+          </TaskInstructionPanel>
+        );
+
+        const renderAnswers = (disableInteraction = false) => (
+          <div className="flex flex-col gap-3">
+            {quizTile.content.answers.length === 0 ? (
+              <div className="text-sm italic" style={{ color: mutedLabelColor }}>
+                Dodaj odpowiedzi w panelu bocznym, aby ukończyć quiz.
+              </div>
+            ) : (
+              quizTile.content.answers.map((answer, index) => {
+                const isSelectedOption = selectedAnswers.includes(answer.id);
+
+                return (
+                  <button
+                    key={answer.id}
+                    type="button"
+                    onClick={() => handleAnswerToggle(answer.id)}
+                    disabled={disableInteraction}
+                    className={`w-full flex items-center justify-between gap-4 rounded-xl border px-4 py-3 text-left transition-all duration-200 ${
+                      disableInteraction ? 'cursor-not-allowed opacity-90' : 'hover:-translate-y-0.5 hover:shadow-lg'
+                    }`}
+                    style={{
+                      backgroundColor: isSelectedOption ? optionSelectedBackground : optionBackground,
+                      borderColor: isSelectedOption ? optionSelectedBorder : optionBorder,
+                      color: textColor,
+                      boxShadow: isSelectedOption ? '0 18px 30px rgba(15, 23, 42, 0.18)' : undefined
+                    }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div
+                        className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl border"
+                        style={{
+                          backgroundColor: isSelectedOption ? indicatorSelectedBackground : indicatorBackground,
+                          borderColor: indicatorBorder,
+                          color: textColor
+                        }}
+                      >
+                        {isSelectedOption ? (
+                          <CheckCircle2 className="h-5 w-5" />
+                        ) : (
+                          <Circle className="h-5 w-5" />
+                        )}
+                      </div>
+                      <div className="flex flex-col">
+                        <span
+                          className="text-[11px] uppercase tracking-[0.28em]"
+                          style={{ color: mutedLabelColor }}
+                        >
+                          Odpowiedź {index + 1}
+                        </span>
+                        <span className="text-sm font-semibold" style={{ color: textColor }}>
+                          {answer.text}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })
+            )}
           </div>
         );
+
+        if (isEditingText && isSelected) {
+          const questionEditorTile = {
+            ...tile,
+            type: 'text',
+            content: {
+              text: quizTile.content.question,
+              richText: quizTile.content.richQuestion,
+              fontFamily: quizTile.content.fontFamily,
+              fontSize: quizTile.content.fontSize,
+              verticalAlign: 'top',
+              backgroundColor: quizTile.content.backgroundColor,
+              showBorder: quizTile.content.showBorder
+            }
+          } as TextTile;
+
+          contentToRender = (
+            <div className="w-full h-full flex flex-col gap-5 p-5" style={{ color: textColor }}>
+              {renderQuestionPanel(
+                <RichTextEditor
+                  textTile={questionEditorTile}
+                  tileId={tile.id}
+                  textColor={textColor}
+                  onUpdateTile={(tileId, updates) => {
+                    if (!updates.content) return;
+
+                    onUpdateTile(tileId, {
+                      content: {
+                        ...quizTile.content,
+                        question: updates.content.text ?? quizTile.content.question,
+                        richQuestion: updates.content.richText ?? quizTile.content.richQuestion,
+                        fontFamily: updates.content.fontFamily ?? quizTile.content.fontFamily,
+                        fontSize: updates.content.fontSize ?? quizTile.content.fontSize
+                      }
+                    });
+                  }}
+                  onFinishTextEditing={onFinishTextEditing}
+                  onEditorReady={onEditorReady}
+                />
+              )}
+
+              <div className="rounded-2xl border border-dashed px-5 py-4 text-sm" style={{ borderColor: panelBorder, color: mutedLabelColor }}>
+                Edytuj odpowiedzi w panelu bocznym.
+              </div>
+            </div>
+          );
+        } else {
+          contentToRender = (
+            <div className="w-full h-full flex flex-col gap-5 p-5" style={{ color: textColor }}>
+              {renderQuestionPanel(
+                <div
+                  className="text-base leading-relaxed"
+                  style={{
+                    fontFamily: quizTile.content.fontFamily,
+                    fontSize: `${quizTile.content.fontSize}px`
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html: quizTile.content.richQuestion || quizTile.content.question
+                  }}
+                />
+              )}
+
+              <div className="flex items-center justify-between text-xs uppercase tracking-[0.32em]" style={{ color: mutedLabelColor }}>
+                <span>{answerModeLabel}</span>
+                {isTestingMode && <span>Tryb testowania</span>}
+              </div>
+
+              {renderAnswers(false)}
+            </div>
+          );
+        }
         break;
       }
 

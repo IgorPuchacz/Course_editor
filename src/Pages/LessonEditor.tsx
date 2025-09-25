@@ -224,7 +224,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
         };
         
         // Special handling for text-based tiles to ensure content properties are merged
-        if ((tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing') && updates.content) {
+        if ((tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing' || tile.type === 'quiz') && updates.content) {
           updatedTile.content = {
             ...tile.content,
             ...updates.content
