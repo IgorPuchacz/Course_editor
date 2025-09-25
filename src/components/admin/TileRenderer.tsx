@@ -52,10 +52,26 @@ const getReadableTextColor = (hex: string): string => {
   return luminance > 0.6 ? '#0f172a' : '#f8fafc';
 };
 
-const withAlpha = (hex: string, alpha: number): string => {
-  const rgb = hexToRgb(hex);
-  if (!rgb) return `rgba(15, 23, 42, ${alpha})`;
-  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+const rgbToHex = (r: number, g: number, b: number): string => {
+  const toHex = (channel: number) => channel.toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
+
+const mixColors = (colorA: string, colorB: string, weight: number): string => {
+  const rgbA = hexToRgb(colorA);
+  const rgbB = hexToRgb(colorB);
+
+  if (!rgbA || !rgbB) {
+    return colorA;
+  }
+
+  const clampedWeight = Math.min(Math.max(weight, 0), 1);
+
+  const r = Math.round(rgbA.r * (1 - clampedWeight) + rgbB.r * clampedWeight);
+  const g = Math.round(rgbA.g * (1 - clampedWeight) + rgbB.g * clampedWeight);
+  const b = Math.round(rgbA.b * (1 - clampedWeight) + rgbB.b * clampedWeight);
+
+  return rgbToHex(r, g, b);
 };
 
 const TILE_CORNER = 'rounded-xl';
@@ -396,13 +412,11 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 
         const accentColor = programmingTile.content.backgroundColor || computedBackground;
         const textColor = getReadableTextColor(accentColor);
-        const mutedTextColor =
-          textColor === '#0f172a'
-            ? 'rgba(15, 23, 42, 0.65)'
-            : 'rgba(248, 250, 252, 0.82)';
-        const panelBackground = withAlpha(textColor, textColor === '#0f172a' ? 0.06 : 0.18);
-        const panelBorderColor = withAlpha(textColor, textColor === '#0f172a' ? 0.12 : 0.28);
-        const chipBackground = withAlpha(textColor, textColor === '#0f172a' ? 0.16 : 0.32);
+        const mutedTextColor = textColor === '#0f172a' ? '#475569' : '#e2e8f0';
+        const neutralBlendTarget = textColor === '#0f172a' ? '#ffffff' : '#0f172a';
+        const panelBackground = mixColors(accentColor, neutralBlendTarget, textColor === '#0f172a' ? 0.18 : 0.4);
+        const panelBorderColor = mixColors(accentColor, neutralBlendTarget, textColor === '#0f172a' ? 0.35 : 0.55);
+        const chipBackground = mixColors(accentColor, neutralBlendTarget, textColor === '#0f172a' ? 0.28 : 0.6);
 
         const descriptionContainerStyle: React.CSSProperties = {
           backgroundColor: panelBackground,
@@ -411,8 +425,8 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         };
 
         const codeContainerStyle: React.CSSProperties = {
-          borderColor: 'rgba(15, 23, 42, 0.35)',
-          backgroundColor: 'rgba(2, 6, 23, 0.86)'
+          borderColor: '#1f2937',
+          backgroundColor: '#020617'
         };
 
         let codeDisplayContent = '';
@@ -443,26 +457,26 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         );
 
         const renderCodePreview = () => (
-          <div className="flex-1 flex flex-col rounded-xl overflow-hidden border backdrop-blur-sm" style={codeContainerStyle}>
+          <div className="flex-1 flex flex-col rounded-xl overflow-hidden border" style={codeContainerStyle}>
             <div
               className="flex items-center justify-between px-5 py-4 border-b"
               style={{
-                borderColor: 'rgba(255, 255, 255, 0.08)',
-                backgroundColor: 'rgba(15, 23, 42, 0.92)'
+                borderColor: '#1e293b',
+                backgroundColor: '#0f172a'
               }}
             >
               <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-500/90">
+                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-700">
                   <Play className="w-4 h-4 text-white fill-white" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold">Python</span>
-                  <span className="text-xs text-slate-300/80">Tryb nauki</span>
+                  <span className="text-sm font-semibold text-white">Python</span>
+                  <span className="text-xs text-slate-300">Tryb nauki</span>
                 </div>
               </div>
-              <div className="flex items-center gap-3 text-xs text-slate-200/60">
+              <div className="flex items-center gap-3 text-xs text-slate-300">
                 <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
                   Gotowy do uruchomienia
                 </span>
               </div>
