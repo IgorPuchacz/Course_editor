@@ -15,6 +15,39 @@ interface UseTileInteractionsProps {
   canvasRef: RefObject<HTMLDivElement>;
 }
 
+interface PaletteDragData {
+  type: 'palette-tile';
+  tileType: string;
+}
+
+const getPaletteDragData = (event: React.DragEvent): PaletteDragData | null => {
+  const { dataTransfer } = event;
+  if (!dataTransfer) {
+    return null;
+  }
+
+  const types = Array.from(dataTransfer.types ?? []);
+  if (!types.includes('application/json')) {
+    return null;
+  }
+
+  const rawData = dataTransfer.getData('application/json');
+  if (!rawData) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(rawData);
+    if (parsed?.type === 'palette-tile' && typeof parsed.tileType === 'string') {
+      return parsed as PaletteDragData;
+    }
+  } catch (error) {
+    logger.warn('Failed to parse drag data', error);
+  }
+
+  return null;
+};
+
 export const useTileInteractions = ({
   content,
   editorState,
@@ -46,30 +79,38 @@ export const useTileInteractions = ({
   };
 
   const handleDrop = (e: React.DragEvent) => {
+    const dragData = getPaletteDragData(e);
+    if (!dragData) {
+      return;
+    }
+
     e.preventDefault();
     setDragPreview(null);
 
     try {
-      const data = JSON.parse(e.dataTransfer.getData('application/json'));
-      if (data.type === 'palette-tile') {
-        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-        const pixelPosition = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-        const desiredGridPos = GridUtils.pixelToGrid(pixelPosition, content.canvas_settings);
-        const availableGridPos = GridUtils.findNextAvailablePosition(
-          { ...desiredGridPos, colSpan: 2, rowSpan: 1 },
-          content.canvas_settings,
-          content.tiles
-        );
-        const finalPixelPos = GridUtils.gridToPixel(availableGridPos, content.canvas_settings);
-        onAddTile(data.tileType, finalPixelPos);
-        logger.info(`Dropped ${data.tileType} tile at grid position:`, availableGridPos);
-      }
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      const pixelPosition = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      const desiredGridPos = GridUtils.pixelToGrid(pixelPosition, content.canvas_settings);
+      const availableGridPos = GridUtils.findNextAvailablePosition(
+        { ...desiredGridPos, colSpan: 2, rowSpan: 1 },
+        content.canvas_settings,
+        content.tiles
+      );
+      const finalPixelPos = GridUtils.gridToPixel(availableGridPos, content.canvas_settings);
+      onAddTile(dragData.tileType, finalPixelPos);
+      logger.info(`Dropped ${dragData.tileType} tile at grid position:`, availableGridPos);
     } catch (err) {
       logger.error('Error handling drop:', err);
     }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
+    const dragData = getPaletteDragData(e);
+    if (!dragData) {
+      setDragPreview(null);
+      return;
+    }
+
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
