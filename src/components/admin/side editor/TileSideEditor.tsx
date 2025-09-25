@@ -1,6 +1,6 @@
 import React from 'react';
-import { Type, X } from 'lucide-react';
-import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile } from '../../../types/lessonEditor.ts';
+import { Plus, Trash2, Type, X } from 'lucide-react';
+import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizTile } from '../../../types/lessonEditor.ts';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
 import { SequencingEditor } from './SequencingEditor.tsx';
@@ -267,6 +267,187 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
             isTesting={isTesting}
             onToggleTesting={onToggleTesting}
           />
+        );
+      }
+
+      case 'quiz': {
+        const quizTile = tile as QuizTile;
+
+        const updateAnswers = (answers: QuizTile['content']['answers']) => {
+          onUpdateTile(tile.id, {
+            content: {
+              ...quizTile.content,
+              answers
+            },
+            updated_at: new Date().toISOString()
+          });
+        };
+
+        const handleAnswerTextChange = (index: number, value: string) => {
+          const answers = quizTile.content.answers.map((answer, idx) =>
+            idx === index ? { ...answer, text: value } : answer
+          );
+          updateAnswers(answers);
+        };
+
+        const handleAnswerCorrectToggle = (index: number, checked: boolean) => {
+          let answers: QuizTile['content']['answers'];
+
+          if (quizTile.content.multipleCorrect) {
+            answers = quizTile.content.answers.map((answer, idx) =>
+              idx === index ? { ...answer, isCorrect: checked } : answer
+            );
+          } else {
+            answers = quizTile.content.answers.map((answer, idx) => ({
+              ...answer,
+              isCorrect: idx === index ? checked : false
+            }));
+          }
+
+          updateAnswers(answers);
+        };
+
+        const handleAddAnswer = () => {
+          const newAnswers = [
+            ...quizTile.content.answers,
+            { text: `Nowa odpowiedź ${quizTile.content.answers.length + 1}`, isCorrect: false }
+          ];
+          updateAnswers(newAnswers);
+        };
+
+        const handleRemoveAnswer = (index: number) => {
+          if (quizTile.content.answers.length <= 2) return;
+
+          const newAnswers = quizTile.content.answers.filter((_, idx) => idx !== index);
+          updateAnswers(newAnswers);
+        };
+
+        const handleModeChange = (multiple: boolean) => {
+          if (!multiple) {
+            const firstCorrectIndex = quizTile.content.answers.findIndex((answer) => answer.isCorrect);
+            const answers = quizTile.content.answers.map((answer, idx) => ({
+              ...answer,
+              isCorrect: firstCorrectIndex === -1 ? false : idx === firstCorrectIndex
+            }));
+            updateAnswers(answers);
+          }
+
+          handleContentUpdate('multipleCorrect', multiple);
+        };
+
+        return (
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Kolor tła</label>
+              <input
+                type="color"
+                value={quizTile.content.backgroundColor}
+                onChange={(e) => handleContentUpdate('backgroundColor', e.target.value)}
+                className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Tryb pytania</label>
+              <div className="grid grid-cols-2 gap-3">
+                <label
+                  className={`flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-medium cursor-pointer transition-colors ${
+                    quizTile.content.multipleCorrect
+                      ? 'border-gray-200 text-gray-600 hover:border-gray-300'
+                      : 'border-blue-500 text-blue-600 shadow-sm'
+                  }`}
+                >
+                  <span>Jedna odpowiedź</span>
+                  <input
+                    type="radio"
+                    name={`quiz-mode-${tile.id}`}
+                    checked={!quizTile.content.multipleCorrect}
+                    onChange={() => handleModeChange(false)}
+                    className="text-blue-600 focus:ring-blue-500"
+                  />
+                </label>
+                <label
+                  className={`flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-medium cursor-pointer transition-colors ${
+                    quizTile.content.multipleCorrect
+                      ? 'border-blue-500 text-blue-600 shadow-sm'
+                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                  }`}
+                >
+                  <span>Wiele odpowiedzi</span>
+                  <input
+                    type="radio"
+                    name={`quiz-mode-${tile.id}`}
+                    checked={quizTile.content.multipleCorrect}
+                    onChange={() => handleModeChange(true)}
+                    className="text-blue-600 focus:ring-blue-500"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-900">Odpowiedzi</h4>
+                  <p className="text-xs text-gray-500">
+                    Dodaj, edytuj i oznacz prawidłowe odpowiedzi dla pytania
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddAnswer}
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  Dodaj odpowiedź
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {quizTile.content.answers.map((answer, index) => (
+                  <div key={index} className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-gray-700">
+                        Odpowiedź {index + 1}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveAnswer(index)}
+                        disabled={quizTile.content.answers.length <= 2}
+                        className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition ${
+                          quizTile.content.answers.length <= 2
+                            ? 'text-gray-300 cursor-not-allowed'
+                            : 'text-rose-600 hover:bg-rose-50'
+                        }`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Usuń
+                      </button>
+                    </div>
+
+                    <input
+                      type="text"
+                      value={answer.text}
+                      onChange={(e) => handleAnswerTextChange(index, e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      placeholder={`Treść odpowiedzi ${index + 1}`}
+                    />
+
+                    <label className="flex items-center gap-3 text-sm text-gray-700">
+                      <input
+                        type={quizTile.content.multipleCorrect ? 'checkbox' : 'radio'}
+                        name={quizTile.content.multipleCorrect ? `answer-${tile.id}` : `correct-answer-${tile.id}`}
+                        checked={answer.isCorrect}
+                        onChange={(e) => handleAnswerCorrectToggle(index, e.target.checked)}
+                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span>Oznacz jako poprawną</span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         );
       }
 

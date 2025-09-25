@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HelpCircle, Move, Trash2, Play, Code2 } from 'lucide-react';
+import { Move, Trash2, Play, Code2 } from 'lucide-react';
 import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
@@ -15,6 +15,7 @@ import ListItem from '@tiptap/extension-list-item';
 import TextAlign from '../../extensions/TextAlign';
 import { SequencingInteractive } from './SequencingInteractive';
 import { TaskInstructionPanel } from './common/TaskInstructionPanel';
+import { QuizInteractive } from './QuizInteractive';
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
   if (!hex) return null;
@@ -566,20 +567,67 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       }
       case 'quiz': {
         const quizTile = tile as QuizTile;
-        contentToRender = (
-          <div className="w-full h-full p-4 flex flex-col gap-3 text-emerald-700">
-            <div className="flex items-center gap-2">
-              <HelpCircle className="w-5 h-5 text-emerald-600" />
-              <h4 className="font-semibold text-sm">Quiz</h4>
-            </div>
-            <div className="flex-1 rounded-lg border border-emerald-200 bg-emerald-50/80 p-3 text-xs overflow-hidden">
-              {quizTile.content.question}
-            </div>
-            <div className="text-xs text-emerald-600">
-              {quizTile.content.answers.length} odpowiedzi
-            </div>
-          </div>
+        const questionTextColor = getReadableTextColor(
+          quizTile.content.backgroundColor || computedBackground
         );
+
+        if (isEditingText && isSelected) {
+          const questionEditorTile: TextTile = {
+            ...tile,
+            type: 'text',
+            content: {
+              text: quizTile.content.question,
+              richText: quizTile.content.richQuestion,
+              fontFamily: quizTile.content.questionFontFamily || 'Inter',
+              fontSize: quizTile.content.questionFontSize ?? 16,
+              verticalAlign: 'top',
+              backgroundColor: quizTile.content.backgroundColor || computedBackground,
+              showBorder:
+                typeof quizTile.content.showBorder === 'boolean'
+                  ? quizTile.content.showBorder
+                  : true
+            }
+          };
+
+          contentToRender = (
+            <QuizInteractive
+              tile={quizTile}
+              isPreview
+              instructionContent={
+                <RichTextEditor
+                  textTile={questionEditorTile}
+                  tileId={tile.id}
+                  onUpdateTile={(tileId, updates) => {
+                    if (!updates.content) return;
+
+                    onUpdateTile(tileId, {
+                      content: {
+                        ...quizTile.content,
+                        question: updates.content.text ?? quizTile.content.question,
+                        richQuestion: updates.content.richText ?? quizTile.content.richQuestion,
+                        questionFontFamily:
+                          updates.content.fontFamily ?? quizTile.content.questionFontFamily,
+                        questionFontSize:
+                          updates.content.fontSize ?? quizTile.content.questionFontSize
+                      }
+                    });
+                  }}
+                  onFinishTextEditing={onFinishTextEditing}
+                  onEditorReady={onEditorReady}
+                  textColor={questionTextColor}
+                />
+              }
+            />
+          );
+        } else {
+          contentToRender = (
+            <QuizInteractive
+              tile={quizTile}
+              isTestingMode={isTestingMode}
+              onRequestTextEditing={onDoubleClick}
+            />
+          );
+        }
         break;
       }
 
