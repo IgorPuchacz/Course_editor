@@ -339,7 +339,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
   const selectedRichTextTile = isRichTextTile(selectedTile) ? selectedTile : null;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col max-w-full overflow-hidden">
+    <div className="h-screen bg-gray-50 flex flex-col max-w-full overflow-hidden">
       <ToastContainer toasts={toasts} onClose={removeToast} />
       
       <ConfirmDialog
@@ -354,7 +354,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       />
 
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="px-4 lg:px-6">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
@@ -428,9 +428,9 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       </div>
 
       {/* Editor Content */}
-      <div className="flex-1 flex min-h-0">
+      <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* Context-Sensitive Left Panel */}
-        <div className="w-64 lg:w-80 bg-white shadow-lg border-r border-gray-200 flex-shrink-0 transition-all duration-300">
+        <div className="w-64 lg:w-80 bg-white shadow-lg border-r border-gray-200 flex-shrink-0 transition-all duration-300 flex flex-col overflow-hidden">
           {editorState.selectedTileId ? (
             // Editing Panel - when tile is selected
             <div className="h-full">
@@ -467,10 +467,11 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
             editor={activeEditor}
             selectedTile={selectedRichTextTile}
             onUpdateTile={handleUpdateTile}
+            className="sticky top-16 z-40"
           />
 
           {/* Canvas */}
-          <div className="flex-1 p-4 lg:p-6 overflow-auto bg-gray-100">
+          <div className="flex-1 p-4 lg:p-6 overflow-auto overscroll-contain bg-gray-100">
             <LessonCanvas
               ref={canvasRef}
               content={lessonContent}
