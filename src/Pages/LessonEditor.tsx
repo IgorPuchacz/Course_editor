@@ -30,11 +30,13 @@ const isRichTextTile = (tile: LessonTile | null): tile is TextTile | Programming
 export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBack }) => {
   const { toasts, removeToast, success, error, warning } = useToast();
   const canvasRef = useRef<HTMLDivElement>(null);
-  
+  const headerRef = useRef<HTMLDivElement>(null);
+
   // Core state
   const [lessonContent, setLessonContent] = useState<LessonContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(64);
 
   const { editorState, dispatch } = useLessonEditor();
   const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
@@ -57,6 +59,40 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
   useEffect(() => {
     loadLessonContent();
   }, [lesson.id]);
+
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      if (headerRef.current) {
+        setHeaderHeight(headerRef.current.offsetHeight);
+      }
+    };
+
+    const headerElement = headerRef.current;
+    if (!headerElement) {
+      return;
+    }
+
+    updateHeaderHeight();
+
+    let resizeObserver: ResizeObserver | null = null;
+
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        updateHeaderHeight();
+      });
+
+      resizeObserver.observe(headerElement);
+    }
+
+    window.addEventListener('resize', updateHeaderHeight);
+
+    return () => {
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+      window.removeEventListener('resize', updateHeaderHeight);
+    };
+  }, []);
 
   // Auto-save functionality
   useEffect(() => {
@@ -339,7 +375,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
   const selectedRichTextTile = isRichTextTile(selectedTile) ? selectedTile : null;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col max-w-full overflow-hidden">
+    <div className="h-screen bg-gray-50 flex flex-col max-w-full">
       <ToastContainer toasts={toasts} onClose={removeToast} />
       
       <ConfirmDialog
@@ -354,7 +390,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       />
 
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div ref={headerRef} className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="px-4 lg:px-6">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
@@ -430,7 +466,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       {/* Editor Content */}
       <div className="flex-1 flex min-h-0">
         {/* Context-Sensitive Left Panel */}
-        <div className="w-64 lg:w-80 bg-white shadow-lg border-r border-gray-200 flex-shrink-0 transition-all duration-300">
+        <div className="w-64 lg:w-80 bg-white shadow-lg border-r border-gray-200 flex-shrink-0 transition-all duration-300 flex flex-col overflow-hidden">
           {editorState.selectedTileId ? (
             // Editing Panel - when tile is selected
             <div className="h-full">
@@ -455,22 +491,25 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
 
         {/* Expanded Canvas Area */}
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Dynamic Top Toolbar */}
-          <TopToolbar
-            key={`toolbar-${editorState.mode}-${editorState.selectedTileId}`}
-            tilesCount={lessonContent.tiles.length}
-            gridColumns={GridUtils.GRID_COLUMNS}
-            gridRows={lessonContent.canvas_settings.height}
-            currentMode={editorState.selectedTileId ? 'Tryb edycji' : 'Tryb dodawania'}
-            isTextEditing={editorState.mode === 'textEditing'}
-            onFinishTextEditing={handleFinishTextEditing}
-            editor={activeEditor}
-            selectedTile={selectedRichTextTile}
-            onUpdateTile={handleUpdateTile}
-          />
-
+          <div
+            className="sticky z-40 bg-white border-b border-gray-200"
+            style={{ top: headerHeight }}
+          >
+            <TopToolbar
+              key={`toolbar-${editorState.mode}-${editorState.selectedTileId}`}
+              tilesCount={lessonContent.tiles.length}
+              gridColumns={GridUtils.GRID_COLUMNS}
+              gridRows={lessonContent.canvas_settings.height}
+              currentMode={editorState.selectedTileId ? 'Tryb edycji' : 'Tryb dodawania'}
+              isTextEditing={editorState.mode === 'textEditing'}
+              onFinishTextEditing={handleFinishTextEditing}
+              editor={activeEditor}
+              selectedTile={selectedRichTextTile}
+              onUpdateTile={handleUpdateTile}
+            />
+          </div>
           {/* Canvas */}
-          <div className="flex-1 p-4 lg:p-6 overflow-auto bg-gray-100">
+          <div className="flex-1 p-4 lg:p-6 overflow-auto overscroll-contain bg-gray-100">
             <LessonCanvas
               ref={canvasRef}
               content={lessonContent}

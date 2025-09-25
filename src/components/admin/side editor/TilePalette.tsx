@@ -84,7 +84,7 @@ export const TilePalette: React.FC<TilePaletteProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-white overflow-hidden">
       {/* Header */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center space-x-3 mb-2">
@@ -101,7 +101,7 @@ export const TilePalette: React.FC<TilePaletteProps> = ({
       </div>
 
       {/* Tile Types */}
-      <div className="flex-1 p-4 space-y-3">
+      <div className="flex-1 p-4 space-y-3 overflow-y-auto overscroll-contain">
         {TILE_TYPES.map((tileType) => {
           const IconComponent = getIcon(tileType.icon);
           
