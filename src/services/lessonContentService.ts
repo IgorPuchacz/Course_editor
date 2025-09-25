@@ -252,12 +252,17 @@ export class LessonContentService {
       gridPosition: gridPos,
       content: {
         question: 'Przykładowe pytanie?',
+        richQuestion: '<p style="margin: 0;">Przykładowe pytanie?</p>',
         answers: [
           { text: 'Odpowiedź A', isCorrect: false },
           { text: 'Odpowiedź B', isCorrect: true },
           { text: 'Odpowiedź C', isCorrect: false }
         ],
-        multipleCorrect: false
+        multipleCorrect: false,
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        backgroundColor: '#fef3c7',
+        showBorder: false
       },
       created_at: now,
       updated_at: now,

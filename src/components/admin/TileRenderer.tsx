@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HelpCircle, Move, Trash2, Play, Code2 } from 'lucide-react';
+import { HelpCircle, Move, Trash2, Play, Code2, Check } from 'lucide-react';
 import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
@@ -220,6 +220,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   onEditorReady
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [quizSelections, setQuizSelections] = useState<Record<string, number[]>>({});
 
   const tileContent = tile.content ?? {};
   const hasBackgroundColor =
@@ -566,20 +567,258 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       }
       case 'quiz': {
         const quizTile = tile as QuizTile;
-        contentToRender = (
-          <div className="w-full h-full p-4 flex flex-col gap-3 text-emerald-700">
-            <div className="flex items-center gap-2">
-              <HelpCircle className="w-5 h-5 text-emerald-600" />
-              <h4 className="font-semibold text-sm">Quiz</h4>
-            </div>
-            <div className="flex-1 rounded-lg border border-emerald-200 bg-emerald-50/80 p-3 text-xs overflow-hidden">
-              {quizTile.content.question}
-            </div>
-            <div className="text-xs text-emerald-600">
-              {quizTile.content.answers.length} odpowiedzi
-            </div>
-          </div>
+        const accentColor = quizTile.content.backgroundColor || computedBackground;
+        const textColor = getReadableTextColor(accentColor);
+        const isDarkText = textColor === '#0f172a';
+        const mutedLabelColor = isDarkText ? '#475569' : 'rgba(248, 250, 252, 0.75)';
+        const panelBackground = surfaceColor(accentColor, textColor, 0.7, 0.52);
+        const panelBorder = surfaceColor(accentColor, textColor, 0.5, 0.64);
+        const iconBackground = surfaceColor(accentColor, textColor, 0.6, 0.55);
+        const optionBackground = surfaceColor(accentColor, textColor, 0.78, 0.62);
+        const optionBorder = surfaceColor(accentColor, textColor, 0.48, 0.68);
+        const optionSelectedBackground = isDarkText
+          ? darkenColor(accentColor, 0.18)
+          : lightenColor(accentColor, 0.12);
+        const optionSelectedBorder = isDarkText
+          ? darkenColor(accentColor, 0.28)
+          : lightenColor(accentColor, 0.05);
+        const infoCaptionColor = isDarkText ? '#475569' : 'rgba(248, 250, 252, 0.85)';
+        const badgeBackground = isDarkText ? 'rgba(22, 163, 74, 0.14)' : 'rgba(15, 23, 42, 0.22)';
+        const badgeTextColor = isDarkText ? '#166534' : '#f8fafc';
+        const indicatorBorderColor = isDarkText ? 'rgba(15, 23, 42, 0.35)' : 'rgba(248, 250, 252, 0.75)';
+        const indicatorFillColor = isDarkText ? 'rgba(15, 23, 42, 0.9)' : '#f8fafc';
+
+        const selection = (quizSelections[quizTile.id] ?? []).filter(
+          (index) => index >= 0 && index < quizTile.content.answers.length
         );
+        const selectionSet = new Set(selection);
+        const canInteract = !isTestingMode && !isEditingText;
+
+        const handleSelect = (index: number) => {
+          if (!canInteract) return;
+
+          setQuizSelections((prev) => {
+            const current = (prev[quizTile.id] ?? []).filter(
+              (value) => value >= 0 && value < quizTile.content.answers.length
+            );
+
+            let next: number[];
+            if (quizTile.content.multipleCorrect) {
+              next = current.includes(index)
+                ? current.filter((value) => value !== index)
+                : [...current, index];
+            } else {
+              next = current.includes(index) ? [] : [index];
+            }
+
+            return {
+              ...prev,
+              [quizTile.id]: next
+            };
+          });
+        };
+
+        const renderAnswers = () => {
+          if (quizTile.content.answers.length === 0) {
+            return (
+              <div
+                className="flex flex-col items-center justify-center text-center text-xs font-medium rounded-2xl border border-dashed"
+                style={{
+                  backgroundColor: optionBackground,
+                  borderColor: optionBorder,
+                  color: infoCaptionColor,
+                  minHeight: '96px'
+                }}
+              >
+                Dodaj odpowiedzi w panelu bocznym, aby ukończyć quiz.
+              </div>
+            );
+          }
+
+          return (
+            <div className="flex-1 flex flex-col gap-2 overflow-auto pr-1">
+              {quizTile.content.answers.map((answer, index) => {
+                const isSelected = selectionSet.has(index);
+                const isCorrect = answer.isCorrect;
+
+                return (
+                  <button
+                    key={`${quizTile.id}-answer-${index}`}
+                    type="button"
+                    onClick={() => handleSelect(index)}
+                    disabled={!canInteract}
+                    className={`group w-full rounded-2xl border text-left transition-all duration-200 ${
+                      isSelected ? 'shadow-lg' : 'shadow-sm hover:-translate-y-0.5'
+                    }`}
+                    style={{
+                      backgroundColor: isSelected ? optionSelectedBackground : optionBackground,
+                      borderColor: isSelected ? optionSelectedBorder : optionBorder,
+                      color: textColor,
+                      cursor: canInteract ? 'pointer' : 'default',
+                      opacity: canInteract ? 1 : 0.9
+                    }}
+                  >
+                    <div className="flex items-start gap-3 px-4 py-3">
+                      <div
+                        className={`flex items-center justify-center ${
+                          quizTile.content.multipleCorrect ? 'w-5 h-5 rounded-md border-2' : 'w-5 h-5 rounded-full border-2'
+                        }`}
+                        style={{
+                          borderColor: indicatorBorderColor,
+                          backgroundColor: isSelected ? indicatorFillColor : 'transparent'
+                        }}
+                      >
+                        {isSelected && (
+                          <span
+                            className="block"
+                            style={{
+                              width: quizTile.content.multipleCorrect ? '12px' : '10px',
+                              height: quizTile.content.multipleCorrect ? '12px' : '10px',
+                              borderRadius: quizTile.content.multipleCorrect ? '3px' : '9999px',
+                              backgroundColor: isDarkText ? accentColor : '#1f2937'
+                            }}
+                          />
+                        )}
+                      </div>
+
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold leading-snug break-words">
+                            {answer.text || `Odpowiedź ${index + 1}`}
+                          </span>
+                          {isCorrect && (
+                            <span
+                              className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.2em] px-2 py-1 rounded-full"
+                              style={{ backgroundColor: badgeBackground, color: badgeTextColor }}
+                            >
+                              <Check className="w-3 h-3" />
+                              OK
+                            </span>
+                          )}
+                        </div>
+                        {isCorrect && quizTile.content.multipleCorrect && (
+                          <p className="text-xs" style={{ color: infoCaptionColor }}>
+                            Jedna z poprawnych odpowiedzi.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          );
+        };
+
+        const questionContent = (
+          <TaskInstructionPanel
+            icon={<HelpCircle className="w-4 h-4" />}
+            label="Pytanie"
+            className="border"
+            style={{
+              backgroundColor: panelBackground,
+              borderColor: panelBorder,
+              color: textColor
+            }}
+            iconWrapperStyle={{ backgroundColor: iconBackground, color: textColor }}
+            labelStyle={{ color: mutedLabelColor }}
+            bodyClassName="px-5 pb-5"
+          >
+            <div
+              className="text-base leading-relaxed"
+              style={{
+                fontFamily: quizTile.content.fontFamily,
+                fontSize: `${quizTile.content.fontSize}px`
+              }}
+              dangerouslySetInnerHTML={{
+                __html: quizTile.content.richQuestion || quizTile.content.question
+              }}
+            />
+          </TaskInstructionPanel>
+        );
+
+        if (isEditingText && isSelected) {
+          const editorTile = {
+            ...tile,
+            type: 'text',
+            content: {
+              text: quizTile.content.question,
+              richText: quizTile.content.richQuestion,
+              fontFamily: quizTile.content.fontFamily,
+              fontSize: quizTile.content.fontSize,
+              verticalAlign: 'top',
+              backgroundColor: quizTile.content.backgroundColor,
+              showBorder: quizTile.content.showBorder
+            }
+          } as TextTile;
+
+          contentToRender = (
+            <div className="w-full h-full flex flex-col gap-4 p-5" style={{ color: textColor }}>
+              <TaskInstructionPanel
+                icon={<HelpCircle className="w-4 h-4" />}
+                label="Pytanie"
+                className="border"
+                style={{
+                  backgroundColor: panelBackground,
+                  borderColor: panelBorder,
+                  color: textColor
+                }}
+                iconWrapperStyle={{ backgroundColor: iconBackground, color: textColor }}
+                labelStyle={{ color: mutedLabelColor }}
+                bodyClassName="px-5 pb-5"
+              >
+                <RichTextEditor
+                  textTile={editorTile}
+                  tileId={tile.id}
+                  textColor={textColor}
+                  onUpdateTile={(tileId, updates) => {
+                    if (!updates.content) return;
+
+                    onUpdateTile(tileId, {
+                      content: {
+                        ...quizTile.content,
+                        question: updates.content.text ?? quizTile.content.question,
+                        richQuestion: updates.content.richText ?? quizTile.content.richQuestion,
+                        fontFamily: updates.content.fontFamily ?? quizTile.content.fontFamily,
+                        fontSize: updates.content.fontSize ?? quizTile.content.fontSize
+                      }
+                    });
+                  }}
+                  onFinishTextEditing={onFinishTextEditing}
+                  onEditorReady={onEditorReady}
+                />
+              </TaskInstructionPanel>
+
+              <div className="flex flex-col gap-3 flex-1">
+                <div className="text-xs uppercase tracking-[0.28em]" style={{ color: mutedLabelColor }}>
+                  Podgląd odpowiedzi ({quizTile.content.answers.length})
+                </div>
+                {renderAnswers()}
+              </div>
+            </div>
+          );
+        } else {
+          contentToRender = (
+            <div className="w-full h-full flex flex-col gap-4 p-5" style={{ color: textColor }}>
+              {questionContent}
+
+              <div className="flex flex-col gap-3 flex-1">
+                <div className="flex items-center justify-between text-xs uppercase tracking-[0.28em]" style={{ color: mutedLabelColor }}>
+                  <span>Odpowiedzi</span>
+                  <span>
+                    {quizTile.content.multipleCorrect ? 'Wiele poprawnych' : 'Jedna poprawna'}
+                  </span>
+                </div>
+                {renderAnswers()}
+                <div className="text-[11px] uppercase tracking-[0.28em]" style={{ color: infoCaptionColor }}>
+                  {quizTile.content.multipleCorrect
+                    ? 'Możesz wybrać kilka odpowiedzi'
+                    : 'Wybierz jedną odpowiedź'}
+                </div>
+              </div>
+            </div>
+          );
+        }
         break;
       }
 
