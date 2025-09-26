@@ -90,6 +90,14 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
   const accentColor = tile.content.backgroundColor || '#1d4ed8';
   const textColor = useMemo(() => getReadableTextColor(accentColor), [accentColor]);
   const mutedTextColor = textColor === '#0f172a' ? '#475569' : '#e2e8f0';
+  const isInteractionEnabled = !isPreview && isTestingMode;
+
+  useEffect(() => {
+    if (!isInteractionEnabled) {
+      setSelectedAnswers([]);
+      setEvaluationState('idle');
+    }
+  }, [isInteractionEnabled]);
 
   const panelBackground = useMemo(
     () => surfaceColor(accentColor, textColor, 0.66, 0.42),
@@ -132,7 +140,7 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
   );
 
   const handleSelectAnswer = (index: number) => {
-    if (isPreview) return;
+    if (!isInteractionEnabled) return;
 
     setEvaluationState('idle');
 
@@ -148,11 +156,13 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
   };
 
   const handleReset = () => {
+    if (!isInteractionEnabled) return;
     setSelectedAnswers([]);
     setEvaluationState('idle');
   };
 
   const handleEvaluate = () => {
+    if (!isInteractionEnabled) return;
     if (selectedAnswers.length === 0) return;
 
     const correctIndices = tile.content.answers
@@ -228,7 +238,7 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
         type="button"
         onClick={() => handleSelectAnswer(index)}
         className={`flex items-center justify-between w-full rounded-xl px-4 py-3 text-left transition-colors duration-200 ${
-          isPreview ? 'cursor-default' : 'cursor-pointer hover:scale-[1.01]'
+          isInteractionEnabled ? 'cursor-pointer hover:scale-[1.01]' : 'cursor-default'
         }`}
         style={{
           backgroundColor,
@@ -250,7 +260,7 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
   };
 
   const renderEvaluationMessage = () => {
-    if (evaluationState === 'idle') return null;
+    if (!isInteractionEnabled || evaluationState === 'idle') return null;
 
     const isCorrect = evaluationState === 'correct';
 
@@ -266,9 +276,11 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
     );
   };
 
-  const selectionHint = tile.content.multipleCorrect
-    ? 'Wybierz wszystkie poprawne odpowiedzi'
-    : 'Wybierz jedną poprawną odpowiedź';
+  const selectionHint = isInteractionEnabled
+    ? tile.content.multipleCorrect
+      ? 'Wybierz wszystkie poprawne odpowiedzi'
+      : 'Wybierz jedną poprawną odpowiedź'
+    : 'Podgląd pytania — odpowiedzi niedostępne w trybie edycji';
 
   return (
     <div className="relative w-full h-full" onDoubleClick={handleTileDoubleClick}>
@@ -301,7 +313,7 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
           {tile.content.answers.map((answer, index) => renderAnswerButton(answer, index))}
         </div>
 
-        {!isPreview && (
+        {isInteractionEnabled && (
           <div className="flex items-center gap-3 pt-2">
             <button
               type="button"
