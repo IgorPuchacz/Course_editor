@@ -29,7 +29,12 @@ export const useTileInteractions = ({
   const [resizePreview, setResizePreview] = useState<{ tileId: string; gridPosition: GridPosition } | null>(null);
 
   const handleTileDoubleClick = (tile: LessonTile) => {
-    if (tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing') {
+    if (
+      tile.type === 'text' ||
+      tile.type === 'programming' ||
+      tile.type === 'sequencing' ||
+      tile.type === 'quiz'
+    ) {
       dispatch({ type: 'startTextEditing', tileId: tile.id });
     } else if (tile.type === 'image') {
       dispatch({ type: 'startImageEditing', tileId: tile.id });
