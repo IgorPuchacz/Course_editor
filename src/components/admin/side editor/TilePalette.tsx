@@ -11,44 +11,32 @@ const TILE_TYPES: TilePaletteItem[] = [
   {
     type: 'text',
     title: 'Tekst',
-    description: 'Dodaj blok tekstowy z formatowaniem',
-    icon: 'Type',
-    defaultSize: { col: 0, row: 0, colSpan: 2, rowSpan: 1 }
+    icon: 'Type'
   },
   {
     type: 'image',
     title: 'Obraz',
-    description: 'Wstaw obraz lub grafikę',
-    icon: 'Image',
-    defaultSize: { col: 0, row: 0, colSpan: 2, rowSpan: 2 }
+    icon: 'Image'
   },
   {
     type: 'visualization',
     title: 'Wizualizacja',
-    description: 'Dodaj zapętlone wideo',
-    icon: 'Eye',
-    defaultSize: { col: 0, row: 0, colSpan: 3, rowSpan: 3 }
+    icon: 'Eye'
   },
   {
     type: 'quiz',
     title: 'Quiz',
-    description: 'Utwórz quiz z pytaniami i odpowiedziami',
-    icon: 'HelpCircle',
-    defaultSize: { col: 0, row: 0, colSpan: 3, rowSpan: 2 }
+    icon: 'HelpCircle'
   },
   {
     type: 'programming',
     title: 'Zadanie programistyczne',
-    description: 'Dodaj zadanie z edytorem kodu',
-    icon: 'Code',
-    defaultSize: { col: 0, row: 0, colSpan: 4, rowSpan: 3 }
+    icon: 'Code'
   },
   {
     type: 'sequencing',
     title: 'Ćwiczenie sekwencyjne',
-    description: 'Interaktywne ćwiczenie układania w kolejności',
-    icon: 'ArrowUpDown',
-    defaultSize: { col: 0, row: 0, colSpan: 3, rowSpan: 3 }
+    icon: 'ArrowUpDown'
   }
 ];
 
@@ -113,25 +101,16 @@ export const TilePalette: React.FC<TilePaletteProps> = ({
               onClick={() => handleClick(tileType.type)}
               className="group p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-300 hover:shadow-md transition-all duration-200 active:scale-95"
             >
-              <div className="flex items-start space-x-3">
+              <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                  <IconComponent className="w-5 h-5 text-blue-600" />
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-gray-900 group-hover:text-blue-900 transition-colors">
-                    {tileType.title}
-                  </h4>
-                  <p className="text-sm text-gray-600 mt-1 leading-relaxed">
-                    {tileType.description}
-                  </p>
-                  <div className="flex items-center space-x-2 mt-2 text-xs text-gray-500">
-                    <span>Rozmiar:</span>
-                    <span className="bg-gray-100 px-2 py-1 rounded">
-                      {tileType.defaultSize.colSpan}×{tileType.defaultSize.rowSpan}
-                    </span>
+                    <IconComponent className="w-5 h-5 text-blue-600" />
                   </div>
-                </div>
+
+                  <div className="flex-1 ">
+                    <h4 className="font-medium text-gray-900 group-hover:text-blue-900 transition-colors">
+                      {tileType.title}
+                    </h4>
+                  </div>
               </div>
             </div>
           );

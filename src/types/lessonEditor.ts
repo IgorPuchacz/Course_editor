@@ -181,7 +181,5 @@ export interface EditorState {
 export interface TilePaletteItem {
   type: string;
   title: string;
-  description: string;
   icon: string;
-  defaultSize: GridPosition;
 }

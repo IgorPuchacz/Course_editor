@@ -226,9 +226,9 @@ export class LessonContentService {
       snapToGrid: true
     });
 
-    // Default to 3x2 grid size for quiz tiles
-    gridPos.colSpan = 3;
-    gridPos.rowSpan = 2;
+    // Default
+    gridPos.colSpan = 4;
+    gridPos.rowSpan = 3;
 
     const pixelPos = GridUtils.gridToPixel(gridPos, {
       width: GridUtils.GRID_COLUMNS,
@@ -259,7 +259,7 @@ export class LessonContentService {
           { text: 'Odpowiedź C', isCorrect: false }
         ],
         multipleCorrect: false,
-        backgroundColor: '#2563eb',
+        backgroundColor: '#D4D4D4',
         showBorder: true,
         questionFontFamily: 'Inter',
         questionFontSize: 18
@@ -313,7 +313,7 @@ export class LessonContentService {
         richDescription: '<p style="margin: 0;">Opis zadania programistycznego</p>',
         fontFamily: 'Inter, system-ui, sans-serif',
         fontSize: 16,
-        backgroundColor: '#ffffff',
+        backgroundColor: '#D4D4D4',
         showBorder: true,
         code: 'Wpisz swój kod tutaj',
         language: 'python',
@@ -341,8 +341,8 @@ export class LessonContentService {
     });
 
     // Default to 3x3 grid size for sequencing tiles
-    gridPos.colSpan = 3;
-    gridPos.rowSpan = 3;
+    gridPos.colSpan = 4;
+    gridPos.rowSpan = 5;
 
     const pixelPos = GridUtils.gridToPixel(gridPos, {
       width: GridUtils.GRID_COLUMNS,
@@ -370,7 +370,7 @@ export class LessonContentService {
         fontFamily: 'Inter, system-ui, sans-serif',
         fontSize: 16,
         verticalAlign: 'top',
-        backgroundColor: '#ffffff',
+        backgroundColor: '#D4D4D4',
         showBorder: true,
         items: [
           { id: 'item-1', text: 'Pierwszy element', correctPosition: 0 },
