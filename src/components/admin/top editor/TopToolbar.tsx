@@ -5,7 +5,13 @@ import { FontSizeSelector } from './FontSizeSelector.tsx';
 import { TextColorPicker } from './TextColorPicker.tsx';
 import { FontSelector } from './FontSelector.tsx';
 import { AlignmentControls } from './AlignmentControls.tsx';
-import { LessonTile, ProgrammingTile, TextTile, SequencingTile } from '../../../types/lessonEditor.ts';
+import {
+  LessonTile,
+  ProgrammingTile,
+  TextTile,
+  SequencingTile,
+  FillBlanksTile
+} from '../../../types/lessonEditor.ts';
 
 
 interface TopToolbarProps {
@@ -16,7 +22,7 @@ interface TopToolbarProps {
   isTextEditing: boolean;
   onFinishTextEditing?: () => void;
   editor?: Editor | null;
-  selectedTile?: TextTile | ProgrammingTile | SequencingTile | null;
+  selectedTile?: TextTile | ProgrammingTile | SequencingTile | FillBlanksTile | null;
   onUpdateTile?: (tileId: string, updates: Partial<LessonTile>) => void;
   className?: string;
 }
@@ -77,6 +83,10 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
 
   const handleVerticalChange = (alignment: 'top' | 'center' | 'bottom') => {
     setVerticalAlign(alignment);
+    if (selectedTile?.type === 'fillBlanks') {
+      return;
+    }
+
     if (selectedTile && onUpdateTile) {
       onUpdateTile(selectedTile.id, {
         content: {
@@ -165,7 +175,11 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             selectedHorizontal={horizontalAlign}
             selectedVertical={verticalAlign}
             onHorizontalChange={handleHorizontalChange}
-            onVerticalChange={selectedTile?.type === 'programming' ? undefined : handleVerticalChange}
+            onVerticalChange={
+              selectedTile?.type === 'programming' || selectedTile?.type === 'fillBlanks'
+                ? undefined
+                : handleVerticalChange
+            }
           />
           
           <div className="w-px h-6 bg-gray-300"></div>

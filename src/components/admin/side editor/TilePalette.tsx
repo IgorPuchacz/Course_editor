@@ -29,6 +29,11 @@ const TILE_TYPES: TilePaletteItem[] = [
     icon: 'HelpCircle'
   },
   {
+    type: 'fillBlanks',
+    title: 'Uzupełnij luki',
+    icon: 'Puzzle'
+  },
+  {
     type: 'programming',
     title: 'Zadanie programistyczne',
     icon: 'Code'

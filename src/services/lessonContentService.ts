@@ -1,5 +1,5 @@
 import { LessonContent, LessonTile, TextTile } from '../types/lessonEditor';
-import { ProgrammingTile, SequencingTile } from '../types/lessonEditor';
+import { ProgrammingTile, SequencingTile, FillBlanksTile } from '../types/lessonEditor';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
 
@@ -397,6 +397,68 @@ export class LessonContentService {
         ],
         correctFeedback: 'Świetnie! Prawidłowa kolejność.',
         incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.'
+      },
+      created_at: now,
+      updated_at: now,
+      z_index: 1
+    };
+  }
+
+  /**
+   * Create a new fill-in-the-blanks tile
+   */
+  static createFillBlanksTile(position: { x: number; y: number }, page = 1): FillBlanksTile {
+    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+
+    const gridPos = GridUtils.pixelToGrid(position, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    gridPos.colSpan = 4;
+    gridPos.rowSpan = 4;
+
+    const pixelPos = GridUtils.gridToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const defaultWordBank = ['kot', 'płot', 'pies', 'kotek'];
+
+    return {
+      id,
+      type: 'fillBlanks',
+      position: pixelPos,
+      size: pixelSize,
+      gridPosition: gridPos,
+      page,
+      content: {
+        instruction: 'Przeciągnij wyrazy z banku, aby uzupełnić zdania.',
+        richInstruction:
+          '<p style="margin: 0;">Przeciągnij wyrazy z banku, aby uzupełnić zdania.</p>',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        backgroundColor: '#2563eb',
+        showBorder: true,
+        text: '___ wskoczył na wysoki ___ i zawołał swojego przyjaciela ___',
+        blanks: [
+          { id: `${id}-blank-1`, correctAnswer: 'kot' },
+          { id: `${id}-blank-2`, correctAnswer: 'płot' },
+          { id: `${id}-blank-3`, correctAnswer: 'pies' }
+        ],
+        wordBank: defaultWordBank
       },
       created_at: now,
       updated_at: now,
