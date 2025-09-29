@@ -37,6 +37,11 @@ const TILE_TYPES: TilePaletteItem[] = [
     type: 'sequencing',
     title: 'Ćwiczenie sekwencyjne',
     icon: 'ArrowUpDown'
+  },
+  {
+    type: 'matchPairs',
+    title: 'Dopasuj wyrazy (luki)',
+    icon: 'Puzzle'
   }
 ];
 

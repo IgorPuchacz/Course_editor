@@ -5,7 +5,7 @@ import { FontSizeSelector } from './FontSizeSelector.tsx';
 import { TextColorPicker } from './TextColorPicker.tsx';
 import { FontSelector } from './FontSelector.tsx';
 import { AlignmentControls } from './AlignmentControls.tsx';
-import { LessonTile, ProgrammingTile, TextTile, SequencingTile } from '../../../types/lessonEditor.ts';
+import { LessonTile, ProgrammingTile, TextTile, SequencingTile, MatchPairsTile } from '../../../types/lessonEditor.ts';
 
 
 interface TopToolbarProps {
@@ -16,7 +16,7 @@ interface TopToolbarProps {
   isTextEditing: boolean;
   onFinishTextEditing?: () => void;
   editor?: Editor | null;
-  selectedTile?: TextTile | ProgrammingTile | SequencingTile | null;
+  selectedTile?: TextTile | ProgrammingTile | SequencingTile | MatchPairsTile | null;
   onUpdateTile?: (tileId: string, updates: Partial<LessonTile>) => void;
   className?: string;
 }
@@ -65,7 +65,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   }, [editor]);
 
   useEffect(() => {
-    if (selectedTile?.type === 'text' || selectedTile?.type === 'sequencing') {
+    if (selectedTile?.type === 'text' || selectedTile?.type === 'sequencing' || selectedTile?.type === 'matchPairs') {
       setVerticalAlign(selectedTile.content.verticalAlign || 'top');
     }
   }, [selectedTile]);

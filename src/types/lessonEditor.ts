@@ -17,7 +17,7 @@ export interface GridPosition {
 
 export interface LessonTile {
   id: string;
-  type: 'text' | 'image' | 'visualization' | 'quiz' | 'programming' | 'sequencing';
+  type: 'text' | 'image' | 'visualization' | 'quiz' | 'programming' | 'sequencing' | 'matchPairs';
   position: Position;
   size: Size;
   gridPosition: GridPosition;
@@ -123,6 +123,35 @@ export interface SequencingTile extends LessonTile {
       text: string;
       correctPosition: number; // 0-based index for correct order
     }>;
+    correctFeedback: string;
+    incorrectFeedback: string;
+  };
+}
+
+export interface MatchPairsBlank {
+  id: string;
+  label: string;
+  correctOptionId: string | null;
+}
+
+export interface MatchPairsOption {
+  id: string;
+  text: string;
+}
+
+export interface MatchPairsTile extends LessonTile {
+  type: 'matchPairs';
+  content: {
+    instruction: string;
+    richInstruction?: string;
+    textTemplate: string;
+    blanks: MatchPairsBlank[];
+    options: MatchPairsOption[];
+    fontFamily: string;
+    fontSize: number;
+    verticalAlign: 'top' | 'center' | 'bottom';
+    backgroundColor: string;
+    showBorder: boolean;
     correctFeedback: string;
     incorrectFeedback: string;
   };

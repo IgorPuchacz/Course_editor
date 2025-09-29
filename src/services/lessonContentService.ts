@@ -1,4 +1,4 @@
-import { LessonContent, LessonTile, TextTile } from '../types/lessonEditor';
+import { LessonContent, LessonTile, TextTile, MatchPairsTile } from '../types/lessonEditor';
 import { ProgrammingTile, SequencingTile } from '../types/lessonEditor';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
@@ -397,6 +397,73 @@ export class LessonContentService {
         ],
         correctFeedback: 'Świetnie! Prawidłowa kolejność.',
         incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.'
+      },
+      created_at: now,
+      updated_at: now,
+      z_index: 1
+    };
+  }
+
+  /**
+   * Create a new match pairs (fill-in-the-blanks) tile
+   */
+  static createMatchPairsTile(position: { x: number; y: number }, page = 1): MatchPairsTile {
+    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+
+    const gridPos = GridUtils.pixelToGrid(position, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    gridPos.colSpan = 4;
+    gridPos.rowSpan = 5;
+
+    const pixelPos = GridUtils.gridToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    return {
+      id,
+      type: 'matchPairs',
+      position: pixelPos,
+      size: pixelSize,
+      gridPosition: gridPos,
+      page,
+      content: {
+        instruction: 'Uzupełnij tekst, przeciągając słowa z banku do odpowiednich luk.',
+        richInstruction:
+          '<p style="margin: 0;">Uzupełnij tekst, przeciągając słowa z banku do odpowiednich luk.</p>',
+        textTemplate:
+          'Programowanie to [[blank-1]] umiejętność, która wymaga [[blank-2]] i ciągłej nauki.',
+        blanks: [
+          { id: 'blank-1', label: 'Pierwsza luka', correctOptionId: 'option-1' },
+          { id: 'blank-2', label: 'Druga luka', correctOptionId: 'option-2' }
+        ],
+        options: [
+          { id: 'option-1', text: 'praktyczna' },
+          { id: 'option-2', text: 'cierpliwości' },
+          { id: 'option-3', text: 'wyobraźni' }
+        ],
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        verticalAlign: 'top',
+        backgroundColor: '#2563eb',
+        showBorder: true,
+        correctFeedback: 'Świetna robota! Wszystkie luki zostały wypełnione poprawnie.',
+        incorrectFeedback: 'Sprawdź jeszcze raz. Niektóre luki zawierają niewłaściwe słowa.'
       },
       created_at: now,
       updated_at: now,
