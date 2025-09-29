@@ -1,21 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Play, Code2 } from 'lucide-react';
+import { GridUtils } from '../../utils/gridUtils';
+import { Editor } from '@tiptap/react';
 import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile, MatchPairsTile } from '../../types/lessonEditor';
-import { Editor, EditorContent, useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Underline from '@tiptap/extension-underline';
-import { TextStyle } from '@tiptap/extension-text-style';
-import Color from '@tiptap/extension-color';
-import FontFamily from '@tiptap/extension-font-family';
-import FontSize from '../../extensions/FontSize';
-import BulletList from '@tiptap/extension-bullet-list';
-import OrderedList from '@tiptap/extension-ordered-list';
-import ListItem from '@tiptap/extension-list-item';
-import TextAlign from '../../extensions/TextAlign';
 import { SequencingInteractive } from './SequencingInteractive';
 import { MatchPairsInteractive } from './MatchPairsInteractive';
 import { TaskInstructionPanel } from './common/TaskInstructionPanel';
 import { QuizInteractive } from './QuizInteractive';
+import { RichTextEditor, createRichTextAdapter, RichTextEditorProps } from './common/RichTextEditor';
 import { TileFrame } from './tiles/TileFrame';
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
@@ -91,117 +83,6 @@ interface TileRendererProps {
   onEditorReady: (editor: Editor | null) => void;
 }
 
-interface RichTextEditorProps {
-  textTile: TextTile;
-  tileId: string;
-  onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
-  onFinishTextEditing: () => void;
-  onEditorReady: (editor: Editor | null) => void;
-  textColor?: string;
-}
-
-const RichTextEditor: React.FC<RichTextEditorProps> = ({ textTile, tileId, onUpdateTile, onFinishTextEditing, onEditorReady, textColor }) => {
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        bulletList: false,
-        orderedList: false,
-        listItem: false,
-      }),
-      BulletList.configure({
-        HTMLAttributes: { class: 'bullet-list' },
-        keepMarks: true,
-        keepAttributes: true,
-      }),
-      OrderedList.configure({
-        HTMLAttributes: { class: 'ordered-list' },
-        keepMarks: true,
-        keepAttributes: true,
-      }),
-      ListItem,
-      Underline,
-      TextStyle,
-      Color.configure({ types: ['textStyle'] }),
-      FontFamily.configure({ types: ['textStyle'] }),
-      FontSize,
-      TextAlign.configure({ types: ['paragraph'] }),
-    ],
-    content:
-      textTile.content.richText ||
-      `<p style="margin: 0;">${textTile.content.text || ''}</p>`,
-    onUpdate: ({ editor }) => {
-      const html = editor.getHTML();
-      const plain = editor.getText();
-      onUpdateTile(tileId, {
-        content: {
-          ...textTile.content,
-          text: plain,
-          richText: html
-        }
-      });
-    },
-    autofocus: true
-  });
-
-  useEffect(() => {
-    onEditorReady(editor);
-    return () => onEditorReady(null);
-  }, [editor, onEditorReady]);
-
-  if (!editor) return null;
-
-  const handleBlur = (e: React.FocusEvent) => {
-    const toolbar = document.querySelector('.top-toolbar');
-    if (toolbar && e.relatedTarget && toolbar.contains(e.relatedTarget as Node)) {
-      e.preventDefault();
-      editor.commands.focus();
-      return;
-    }
-    onFinishTextEditing();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      if (editor.isActive('listItem')) {
-        if (e.shiftKey) {
-          editor.chain().focus().liftListItem('listItem').run();
-        } else {
-          editor.chain().focus().sinkListItem('listItem').run();
-        }
-      } else {
-        editor.chain().focus().insertContent('\t').run();
-      }
-    }
-  };
-
-  return (
-    <div
-      className="w-full h-full p-3 overflow-hidden relative tile-text-content tiptap-editor"
-      style={{
-        fontSize: `${textTile.content.fontSize}px`,
-        fontFamily: textTile.content.fontFamily,
-        color: textColor,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent:
-          textTile.content.verticalAlign === 'center'
-            ? 'center'
-            : textTile.content.verticalAlign === 'bottom'
-            ? 'flex-end'
-            : 'flex-start',
-      }}
-    >
-      <EditorContent
-        editor={editor}
-        className="w-full focus:outline-none break-words rich-text-content tile-formatted-text"
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-      />
-    </div>
-  );
-};
-
 export const TileRenderer: React.FC<TileRendererProps> = ({
   tile,
   isSelected,
@@ -275,12 +156,30 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 
           // If this text tile is being edited, use Tiptap editor
           if (isEditingText && isSelected) {
+            const adapter = createRichTextAdapter({
+              source: textTile.content,
+              fields: {
+                text: 'text',
+                richText: 'richText',
+                fontFamily: 'fontFamily',
+                fontSize: 'fontSize',
+                verticalAlign: 'verticalAlign'
+              },
+              defaults: {
+                backgroundColor: textTile.content.backgroundColor,
+                showBorder: textTile.content.showBorder
+              }
+            });
+
             contentToRender = (
               <RichTextEditor
-                textTile={textTile}
-                tileId={tile.id}
-                onUpdateTile={onUpdateTile}
-                onFinishTextEditing={onFinishTextEditing}
+                content={adapter.content}
+                onChange={(updatedContent) => {
+                  onUpdateTile(tile.id, {
+                    content: adapter.applyChanges(updatedContent)
+                  });
+                }}
+                onFinish={onFinishTextEditing}
                 onEditorReady={onEditorReady}
                 textColor={defaultTextColor}
               />
@@ -476,37 +375,33 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         );
 
         if (isEditingText && isSelected) {
+          const adapter = createRichTextAdapter({
+            source: programmingTile.content,
+            fields: {
+              text: 'description',
+              richText: 'richDescription',
+              fontFamily: 'fontFamily',
+              fontSize: 'fontSize'
+            },
+            defaults: {
+              backgroundColor: programmingTile.content.backgroundColor,
+              showBorder: programmingTile.content.showBorder,
+              verticalAlign: 'top'
+            }
+          });
+
           contentToRender = (
             <div className="w-full h-full flex flex-col gap-5 p-5" style={{ color: textColor }}>
               {renderDescriptionBlock(
                 <RichTextEditor
-                  textTile={{
-                    ...tile,
-                    type: 'text',
-                    content: {
-                      text: programmingTile.content.description,
-                      richText: programmingTile.content.richDescription,
-                      fontFamily: programmingTile.content.fontFamily,
-                      fontSize: programmingTile.content.fontSize,
-                      verticalAlign: 'top',
-                      backgroundColor: programmingTile.content.backgroundColor,
-                      showBorder: programmingTile.content.showBorder
-                    }
-                  } as TextTile}
-                  tileId={tile.id}
                   textColor={textColor}
-                  onUpdateTile={(tileId, updates) => {
-                    if (updates.content) {
-                      onUpdateTile(tileId, {
-                        content: {
-                          ...programmingTile.content,
-                          description: updates.content.text || programmingTile.content.description,
-                          richDescription: updates.content.richText || programmingTile.content.richDescription
-                        }
-                      });
-                    }
+                  content={adapter.content}
+                  onChange={(updatedContent) => {
+                    onUpdateTile(tile.id, {
+                      content: adapter.applyChanges(updatedContent)
+                    });
                   }}
-                  onFinishTextEditing={onFinishTextEditing}
+                  onFinish={onFinishTextEditing}
                   onEditorReady={onEditorReady}
                 />
               )}
@@ -543,12 +438,15 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         );
 
         if (isEditingText && isSelected) {
-          const questionEditorTile: TextTile = {
-            ...tile,
-            type: 'text',
-            content: {
-              text: quizTile.content.question,
-              richText: quizTile.content.richQuestion,
+          const questionAdapter = createRichTextAdapter({
+            source: quizTile.content,
+            fields: {
+              text: 'question',
+              richText: 'richQuestion',
+              fontFamily: 'questionFontFamily',
+              fontSize: 'questionFontSize'
+            },
+            defaults: {
               fontFamily: quizTile.content.questionFontFamily || 'Inter',
               fontSize: quizTile.content.questionFontSize ?? 16,
               verticalAlign: 'top',
@@ -558,36 +456,23 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                   ? quizTile.content.showBorder
                   : true
             }
-          };
+          });
 
           contentToRender = (
             <QuizInteractive
               tile={quizTile}
               isPreview
-              instructionContent={
-                <RichTextEditor
-                  textTile={questionEditorTile}
-                  tileId={tile.id}
-                  onUpdateTile={(tileId, updates) => {
-                    if (!updates.content) return;
-
-                    onUpdateTile(tileId, {
-                      content: {
-                        ...quizTile.content,
-                        question: updates.content.text ?? quizTile.content.question,
-                        richQuestion: updates.content.richText ?? quizTile.content.richQuestion,
-                        questionFontFamily:
-                          updates.content.fontFamily ?? quizTile.content.questionFontFamily,
-                        questionFontSize:
-                          updates.content.fontSize ?? quizTile.content.questionFontSize
-                      }
-                    });
-                  }}
-                  onFinishTextEditing={onFinishTextEditing}
-                  onEditorReady={onEditorReady}
-                  textColor={questionTextColor}
-                />
-              }
+              instructionEditorProps={{
+                content: questionAdapter.content,
+                onChange: (updatedContent) => {
+                  onUpdateTile(tile.id, {
+                    content: questionAdapter.applyChanges(updatedContent)
+                  });
+                },
+                onFinish: onFinishTextEditing,
+                onEditorReady,
+                textColor: questionTextColor
+              }}
             />
           );
         } else {
@@ -607,53 +492,47 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         const accentColor = sequencingTile.content.backgroundColor || computedBackground;
         const textColor = getReadableTextColor(accentColor);
 
-        const renderSequencingContent = (instructionContent?: React.ReactNode, isPreviewMode = false) => (
+        const renderSequencingContent = (
+          instructionEditorProps?: RichTextEditorProps,
+          isPreviewMode = false
+        ) => (
           <SequencingInteractive
             tile={sequencingTile}
             isTestingMode={isTestingMode}
-            instructionContent={instructionContent}
+            instructionEditorProps={instructionEditorProps}
             isPreview={isPreviewMode}
             onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
           />
         );
 
         if (isEditingText && isSelected) {
-          const questionEditorTile = {
-            ...tile,
-            type: 'text',
-            content: {
-              text: sequencingTile.content.question,
-              richText: sequencingTile.content.richQuestion,
-              fontFamily: sequencingTile.content.fontFamily,
-              fontSize: sequencingTile.content.fontSize,
-              verticalAlign: sequencingTile.content.verticalAlign,
+          const instructionAdapter = createRichTextAdapter({
+            source: sequencingTile.content,
+            fields: {
+              text: 'question',
+              richText: 'richQuestion',
+              fontFamily: 'fontFamily',
+              fontSize: 'fontSize',
+              verticalAlign: 'verticalAlign'
+            },
+            defaults: {
               backgroundColor: sequencingTile.content.backgroundColor,
               showBorder: sequencingTile.content.showBorder
             }
-          } as TextTile;
+          });
 
           contentToRender = renderSequencingContent(
-            <RichTextEditor
-              textTile={questionEditorTile}
-              tileId={tile.id}
-              textColor={textColor}
-              onUpdateTile={(tileId, updates) => {
-                if (!updates.content) return;
-
-                onUpdateTile(tileId, {
-                  content: {
-                    ...sequencingTile.content,
-                    question: updates.content.text ?? sequencingTile.content.question,
-                    richQuestion: updates.content.richText ?? sequencingTile.content.richQuestion,
-                    fontFamily: updates.content.fontFamily ?? sequencingTile.content.fontFamily,
-                    fontSize: updates.content.fontSize ?? sequencingTile.content.fontSize,
-                    verticalAlign: updates.content.verticalAlign ?? sequencingTile.content.verticalAlign
-                  }
+            {
+              content: instructionAdapter.content,
+              onChange: (updatedContent) => {
+                onUpdateTile(tile.id, {
+                  content: instructionAdapter.applyChanges(updatedContent)
                 });
-              }}
-              onFinishTextEditing={onFinishTextEditing}
-              onEditorReady={onEditorReady}
-            />,
+              },
+              onFinish: onFinishTextEditing,
+              onEditorReady,
+              textColor
+            },
             true
           );
         } else {
@@ -667,50 +546,47 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         const accentColor = matchPairsTile.content.backgroundColor || computedBackground;
         const textColor = getReadableTextColor(accentColor);
 
-        const renderMatchPairs = (instructionContent?: React.ReactNode, isPreviewMode = false) => (
+        const renderMatchPairs = (
+          instructionEditorProps?: RichTextEditorProps,
+          isPreviewMode = false
+        ) => (
           <MatchPairsInteractive
             tile={matchPairsTile}
             isTestingMode={isTestingMode}
-            instructionContent={instructionContent}
+            instructionEditorProps={instructionEditorProps}
             isPreview={isPreviewMode}
             onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
           />
         );
 
         if (isEditingText && isSelected) {
-          const instructionEditorTile = {
-            ...tile,
-            type: 'text',
-            content: {
-              text: matchPairsTile.content.instruction,
-              richText: matchPairsTile.content.richInstruction,
+          const instructionAdapter = createRichTextAdapter({
+            source: matchPairsTile.content,
+            fields: {
+              text: 'instruction',
+              richText: 'richInstruction'
+            },
+            defaults: {
               fontFamily: 'Inter, system-ui, sans-serif',
               fontSize: 16,
               verticalAlign: 'top',
               backgroundColor: matchPairsTile.content.backgroundColor,
               showBorder: true
             }
-          } as TextTile;
+          });
 
           contentToRender = renderMatchPairs(
-            <RichTextEditor
-              textTile={instructionEditorTile}
-              tileId={tile.id}
-              textColor={textColor}
-              onUpdateTile={(tileId, updates) => {
-                if (!updates.content) return;
-
-                onUpdateTile(tileId, {
-                  content: {
-                    ...matchPairsTile.content,
-                    instruction: updates.content.text ?? matchPairsTile.content.instruction,
-                    richInstruction: updates.content.richText ?? matchPairsTile.content.richInstruction
-                  }
+            {
+              content: instructionAdapter.content,
+              onChange: (updatedContent) => {
+                onUpdateTile(tile.id, {
+                  content: instructionAdapter.applyChanges(updatedContent)
                 });
-              }}
-              onFinishTextEditing={onFinishTextEditing}
-              onEditorReady={onEditorReady}
-            />,
+              },
+              onFinish: onFinishTextEditing,
+              onEditorReady,
+              textColor
+            },
             true
           );
         } else {
