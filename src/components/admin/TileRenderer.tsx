@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Move, Trash2, Play, Code2 } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Play, Code2 } from 'lucide-react';
 import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile, MatchPairsTile } from '../../types/lessonEditor';
-import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -17,6 +16,7 @@ import { SequencingInteractive } from './SequencingInteractive';
 import { MatchPairsInteractive } from './MatchPairsInteractive';
 import { TaskInstructionPanel } from './common/TaskInstructionPanel';
 import { QuizInteractive } from './QuizInteractive';
+import { TileFrame } from './tiles/TileFrame';
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
   if (!hex) return null;
@@ -72,8 +72,6 @@ const darkenColor = (hex: string, amount: number): string => {
 
 const surfaceColor = (accent: string, textColor: string, lightenAmount: number, darkenAmount: number): string =>
   textColor === '#0f172a' ? lightenColor(accent, lightenAmount) : darkenColor(accent, darkenAmount);
-
-const TILE_CORNER = 'rounded-xl';
 
 interface TileRendererProps {
   tile: LessonTile;
@@ -221,8 +219,6 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   showGrid,
   onEditorReady
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
-
   const tileContent = tile.content ?? {};
   const hasBackgroundColor =
     typeof tileContent.backgroundColor === 'string' && tileContent.backgroundColor.trim().length > 0;
@@ -236,17 +232,6 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
     borderRadius: 'inherit',
     backgroundColor: computedBackground,
     border: showBorder ? '1px solid rgba(0, 0, 0, 0.08)' : 'none'
-  };
-
-  const handleResizeStart = (e: React.MouseEvent, handle: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // This will be handled by the parent component
-    const resizeEvent = new CustomEvent('tileResizeStart', {
-      detail: { tileId: tile.id, handle, startEvent: e }
-    });
-    document.dispatchEvent(resizeEvent);
   };
 
   const handleImageDragStart = (e: React.MouseEvent, imageTile: ImageTile) => {
@@ -277,21 +262,6 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         scale: newScale
       }
     });
-  };
-
-  // Handle mouse events carefully to preserve text selection
-  const handleMouseEnter = () => {
-    // Only set hover state if not in text editing mode
-    if (!isEditingText) {
-      setIsHovered(true);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    // Only clear hover state if not in text editing mode
-    if (!isEditingText) {
-      setIsHovered(false);
-    }
   };
 
   const renderTileContent = () => {
@@ -759,99 +729,28 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 
     return contentToRender;
   };
-  const renderResizeHandles = () => {
-    if (!isSelected || isEditingText || isImageEditing || isTestingMode) return null;
-
-    const handles = GridUtils.getResizeHandles(tile.gridPosition);
-    
-    return (
-      <>
-        {handles.map(({ handle, position, cursor }) => (
-          <div
-            key={handle}
-            className={`absolute w-3 h-3 rounded-full transition-colors ${
-              isFramelessTextTile 
-                ? 'bg-blue-500 border-2 border-white shadow-lg hover:bg-blue-600 opacity-90 hover:opacity-100' 
-                : 'bg-blue-500 border-2 border-white shadow-md hover:bg-blue-600'
-            }`}
-            style={{
-              left: `${position.x * 100}%`,
-              top: `${position.y * 100}%`,
-              transform: 'translate(-50%, -50%)',
-              cursor,
-              zIndex: 10
-            }}
-            onMouseDown={(e) => handleResizeStart(e, handle)}
-          />
-        ))}
-      </>
-    );
-  };
-
-  const elevationClass = isSelected ? 'shadow-lg' : 'shadow-sm';
+  const handleDoubleClick = tile.type === 'sequencing' || tile.type === 'matchPairs' ? undefined : onDoubleClick;
 
   return (
-    <div
-      className={`absolute select-none transition-all duration-200 ${TILE_CORNER} ${
-        isEditing || isImageEditing || isEditingText ? 'z-20' : 'z-10'
-      } ${
-        isSelected ? 'ring-2 ring-blue-500 ring-opacity-75' : ''
-      } ${elevationClass}`}
-      style={{
-        left: tile.position.x,
-        top: tile.position.y,
-        width: tile.size.width,
-        height: tile.size.height
-      }}
-      onMouseDown={isDraggingImage || isTestingMode ? undefined : onMouseDown}
-      onDoubleClick={tile.type === 'sequencing' || tile.type === 'matchPairs' ? undefined : onDoubleClick}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+    <TileFrame
+      tile={tile}
+      isSelected={isSelected}
+      isEditing={isEditing}
+      isEditingText={isEditingText}
+      isImageEditing={isImageEditing}
+      isTestingMode={isTestingMode}
+      isDraggingImage={isDraggingImage}
+      showGrid={showGrid}
+      isFramelessTextTile={isFramelessTextTile}
+      onMouseDown={onMouseDown}
+      onDoubleClick={handleDoubleClick}
+      onDelete={onDelete}
     >
-      {/* Tile Content */}
-      <div className="w-full h-full overflow-hidden" style={cardWrapperStyle}>
-        {renderTileContent()}
-      </div>
-
-      {/* Tile Controls */}
-      {(isSelected || isHovered) && !isEditingText && !isImageEditing && (
-        <div className="absolute -top-8 left-0 flex items-center space-x-1 bg-white rounded-md shadow-md border border-gray-200 px-2 py-1">
-          <Move className="w-3 h-3 text-gray-500" />
-          <span className="text-xs text-gray-600 capitalize">{tile.type}</span>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(tile.id);
-            }}
-            className="ml-2 p-1 text-red-500 hover:text-red-700 transition-colors"
-            title="Usuń kafelek"
-          >
-            <Trash2 className="w-3 h-3" />
-          </button>
+      {() => (
+        <div className="w-full h-full overflow-hidden" style={cardWrapperStyle}>
+          {renderTileContent()}
         </div>
       )}
-
-      {/* Text Editing Indicator */}
-      {/* Text editing toolbar is now in the top bar - no need for overlay */}
-
-      {/* Image Editing Indicator */}
-      {isSelected && isImageEditing && tile.type === 'image' && (
-        <div className="absolute -top-8 left-0 flex items-center space-x-1 bg-blue-100 rounded-md shadow-md border border-blue-300 px-2 py-1">
-          <Move className="w-3 h-3 text-blue-600" />
-          <span className="text-xs text-blue-700 font-medium">Przeciągnij obraz aby zmienić pozycję</span>
-        </div>
-      )}
-
-      {/* Grid Position Info */}
-      {showGrid && isSelected && (
-        <div className="absolute -bottom-6 left-0 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
-          {tile.gridPosition.col},{tile.gridPosition.row} 
-          ({tile.gridPosition.colSpan}×{tile.gridPosition.rowSpan})
-        </div>
-      )}
-
-      {/* Resize Handles - Always Available When Selected */}
-      {!isEditingText && !isImageEditing && renderResizeHandles()}
-    </div>
+    </TileFrame>
   );
 };
