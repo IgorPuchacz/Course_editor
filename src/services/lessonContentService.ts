@@ -1,5 +1,5 @@
 import { LessonContent, LessonTile, TextTile } from '../types/lessonEditor';
-import { ProgrammingTile, SequencingTile } from '../types/lessonEditor';
+import { MatchingTile, ProgrammingTile, SequencingTile } from '../types/lessonEditor';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
 
@@ -397,6 +397,66 @@ export class LessonContentService {
         ],
         correctFeedback: 'Świetnie! Prawidłowa kolejność.',
         incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.'
+      },
+      created_at: now,
+      updated_at: now,
+      z_index: 1
+    };
+  }
+
+  /**
+   * Create a new matching tile
+   */
+  static createMatchingTile(position: { x: number; y: number }, page = 1): MatchingTile {
+    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+
+    const gridPos = GridUtils.pixelToGrid(position, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    gridPos.colSpan = 4;
+    gridPos.rowSpan = 5;
+
+    const pixelPos = GridUtils.gridToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    return {
+      id,
+      type: 'matching',
+      position: pixelPos,
+      size: pixelSize,
+      gridPosition: gridPos,
+      page,
+      content: {
+        question: 'Połącz pasujące elementy',
+        richQuestion: '<p style="margin: 0;">Połącz pasujące elementy</p>',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        verticalAlign: 'top',
+        backgroundColor: '#D4D4D4',
+        showBorder: true,
+        pairs: [
+          { id: 'pair-1', leftText: 'Element A', rightText: 'Pasujący element 1' },
+          { id: 'pair-2', leftText: 'Element B', rightText: 'Pasujący element 2' },
+          { id: 'pair-3', leftText: 'Element C', rightText: 'Pasujący element 3' }
+        ],
+        correctFeedback: 'Doskonała robota! Wszystkie połączenia są prawidłowe.',
+        incorrectFeedback: 'Spróbuj ponownie i upewnij się, że elementy pasują do siebie.'
       },
       created_at: now,
       updated_at: now,
