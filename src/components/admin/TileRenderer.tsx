@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Move, Trash2, Play, Code2 } from 'lucide-react';
-import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor';
+import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile, MatchingTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -14,8 +14,9 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import TextAlign from '../../extensions/TextAlign';
 import { SequencingInteractive } from './SequencingInteractive';
-import { TaskInstructionPanel } from './common/TaskInstructionPanel';
 import { QuizInteractive } from './QuizInteractive';
+import { TaskInstructionPanel } from './common/TaskInstructionPanel';
+import { MatchingInteractive } from './MatchingInteractive';
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
   if (!hex) return null;
@@ -690,6 +691,66 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         }
         break;
       }
+
+      case 'matching': {
+        const matchingTile = tile as MatchingTile;
+        const accentColor = matchingTile.content.backgroundColor || computedBackground;
+        const textColor = getReadableTextColor(accentColor);
+
+        const renderMatchingContent = (instructionContent?: React.ReactNode, isPreviewMode = false) => (
+          <MatchingInteractive
+            tile={matchingTile}
+            isTestingMode={isTestingMode}
+            instructionContent={instructionContent}
+            isPreview={isPreviewMode}
+            onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
+          />
+        );
+
+        if (isEditingText && isSelected) {
+          const instructionsEditorTile = {
+            ...tile,
+            type: 'text',
+            content: {
+              text: matchingTile.content.instructions,
+              richText: matchingTile.content.richInstructions,
+              fontFamily: matchingTile.content.fontFamily,
+              fontSize: matchingTile.content.fontSize,
+              verticalAlign: matchingTile.content.verticalAlign,
+              backgroundColor: matchingTile.content.backgroundColor,
+              showBorder: matchingTile.content.showBorder
+            }
+          } as TextTile;
+
+          contentToRender = renderMatchingContent(
+            <RichTextEditor
+              textTile={instructionsEditorTile}
+              tileId={tile.id}
+              textColor={textColor}
+              onUpdateTile={(tileId, updates) => {
+                if (!updates.content) return;
+
+                onUpdateTile(tileId, {
+                  content: {
+                    ...matchingTile.content,
+                    instructions: updates.content.text ?? matchingTile.content.instructions,
+                    richInstructions: updates.content.richText ?? matchingTile.content.richInstructions,
+                    fontFamily: updates.content.fontFamily ?? matchingTile.content.fontFamily,
+                    fontSize: updates.content.fontSize ?? matchingTile.content.fontSize,
+                    verticalAlign: updates.content.verticalAlign ?? matchingTile.content.verticalAlign
+                  }
+                });
+              }}
+              onFinishTextEditing={onFinishTextEditing}
+              onEditorReady={onEditorReady}
+            />,
+            true
+          );
+        } else {
+          contentToRender = renderMatchingContent();
+        }
+        break;
+      }
       default:
         contentToRender = (
           <div className="w-full h-full flex items-center justify-center">
@@ -746,7 +807,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         height: tile.size.height
       }}
       onMouseDown={isDraggingImage || isTestingMode ? undefined : onMouseDown}
-      onDoubleClick={tile.type === 'sequencing' ? undefined : onDoubleClick}
+      onDoubleClick={tile.type === 'sequencing' || tile.type === 'matching' ? undefined : onDoubleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >

@@ -1,5 +1,5 @@
 import { LessonContent, LessonTile, TextTile } from '../types/lessonEditor';
-import { ProgrammingTile, SequencingTile } from '../types/lessonEditor';
+import { ProgrammingTile, SequencingTile, MatchingTile } from '../types/lessonEditor';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
 
@@ -397,6 +397,75 @@ export class LessonContentService {
         ],
         correctFeedback: 'Świetnie! Prawidłowa kolejność.',
         incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.'
+      },
+      created_at: now,
+      updated_at: now,
+      z_index: 1
+    };
+  }
+
+  /**
+   * Create a new matching tile
+   */
+  static createMatchingTile(position: { x: number; y: number }, page = 1): MatchingTile {
+    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+
+    const gridPos = GridUtils.pixelToGrid(position, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    gridPos.colSpan = 4;
+    gridPos.rowSpan = 5;
+
+    const pixelPos = GridUtils.gridToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const wordBank = [
+      { id: 'word-1', text: 'chloroplastach' },
+      { id: 'word-2', text: 'światła słonecznego' },
+      { id: 'word-3', text: 'dwutlenku węgla' }
+    ];
+
+    const blanks = [
+      { id: 'blank-1', label: 'Miejsce procesu', correctWordId: 'word-1' },
+      { id: 'blank-2', label: 'Energia', correctWordId: 'word-2' }
+    ];
+
+    return {
+      id,
+      type: 'matching',
+      position: pixelPos,
+      size: pixelSize,
+      gridPosition: gridPos,
+      page,
+      content: {
+        instructions: 'Przeciągnij poprawne pojęcia do odpowiednich luk, aby uzupełnić opis fotosyntezy.',
+        richInstructions: '<p style="margin: 0;">Przeciągnij poprawne pojęcia do odpowiednich luk, aby uzupełnić opis fotosyntezy.</p>',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        verticalAlign: 'top',
+        backgroundColor: '#4f46e5',
+        showBorder: true,
+        storyText: 'Fotosynteza zachodzi w [[blank-1]] i wymaga [[blank-2]] oraz wody.',
+        blanks,
+        wordBank,
+        successFeedback: 'Doskonale! Wszystkie pojęcia znajdują się na właściwych miejscach.',
+        failureFeedback: 'Niektóre luki są jeszcze błędne. Sprawdź opis i spróbuj ponownie.'
       },
       created_at: now,
       updated_at: now,

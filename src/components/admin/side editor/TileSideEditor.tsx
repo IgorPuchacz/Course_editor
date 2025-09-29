@@ -1,9 +1,10 @@
 import React from 'react';
 import { Plus, Trash2, Type, X } from 'lucide-react';
-import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizTile } from '../../../types/lessonEditor.ts';
+import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizTile, MatchingTile } from '../../../types/lessonEditor.ts';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
 import { SequencingEditor } from './SequencingEditor.tsx';
+import { MatchingEditor } from './MatchingEditor.tsx';
 
 interface TileSideEditorProps {
   tile: LessonTile | undefined;
@@ -266,6 +267,24 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
             onUpdateTile={onUpdateTile}
             isTesting={isTesting}
             onToggleTesting={onToggleTesting}
+          />
+        );
+      }
+
+      case 'matching': {
+        const matchingTile = tile as MatchingTile;
+        return (
+          <MatchingEditor
+            tile={matchingTile}
+            onUpdateTile={(tileId, matchingUpdates) => {
+              onUpdateTile(tileId, {
+                content: {
+                  ...matchingTile.content,
+                  ...matchingUpdates.content
+                },
+                updated_at: new Date().toISOString()
+              });
+            }}
           />
         );
       }
