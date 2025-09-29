@@ -15,9 +15,16 @@ export interface GridPosition {
   rowSpan: number;
 }
 
+export interface LessonPage {
+  id: string;
+  title: string;
+  order: number;
+}
+
 export interface LessonTile {
   id: string;
   type: 'text' | 'image' | 'visualization' | 'quiz' | 'programming' | 'sequencing';
+  pageId: string;
   position: Position;
   size: Size;
   gridPosition: GridPosition;
@@ -139,6 +146,8 @@ export interface LessonContent {
   lesson_id: string;
   tiles: LessonTile[];
   canvas_settings: CanvasSettings;
+  pages: LessonPage[];
+  activePageId?: string;
   created_at: string;
   updated_at: string;
 }

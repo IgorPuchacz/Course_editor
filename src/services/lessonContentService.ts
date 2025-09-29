@@ -20,6 +20,14 @@ export class LessonContentService {
           gridSize: GridUtils.GRID_CELL_SIZE,
           snapToGrid: true
         },
+        pages: [
+          {
+            id: 'page-1',
+            title: 'Strona 1',
+            order: 1
+          }
+        ],
+        activePageId: 'page-1',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -36,8 +44,18 @@ export class LessonContentService {
    */
   static async saveLessonContent(content: LessonContent): Promise<void> {
     try {
-      // Update canvas height based on tiles
-      content.canvas_settings.height = GridUtils.calculateCanvasHeight(content.tiles);
+      const pages = content.pages.length ? content.pages : [
+        { id: 'page-1', title: 'Strona 1', order: 1 }
+      ];
+
+      const pageHeights = pages.map(page =>
+        GridUtils.calculateCanvasHeight(content.tiles.filter(tile => tile.pageId === page.id))
+      );
+
+      content.pages = [...pages].sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
+      content.canvas_settings.height = pageHeights.length
+        ? Math.max(...pageHeights)
+        : GridUtils.calculateCanvasHeight([]);
       content.updated_at = new Date().toISOString();
 
       // Simulate API call - replace with actual Supabase call
@@ -54,7 +72,7 @@ export class LessonContentService {
   /**
    * Create a new text tile
    */
-  static createTextTile(position: { x: number; y: number }): TextTile {
+  static createTextTile(position: { x: number; y: number }, pageId: string): TextTile {
     const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
     
@@ -87,6 +105,7 @@ export class LessonContentService {
     return {
       id,
       type: 'text',
+      pageId,
       position: pixelPos,
       size: pixelSize,
       gridPosition: gridPos,
@@ -108,7 +127,7 @@ export class LessonContentService {
   /**
    * Create a new image tile
    */
-  static createImageTile(position: { x: number; y: number }): LessonTile {
+  static createImageTile(position: { x: number; y: number }, pageId: string): LessonTile {
     const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
     
@@ -140,6 +159,7 @@ export class LessonContentService {
     return {
       id,
       type: 'image',
+      pageId,
       position: pixelPos,
       size: pixelSize,
       gridPosition: gridPos,
@@ -160,7 +180,7 @@ export class LessonContentService {
   /**
    * Create a new visualization tile
    */
-  static createVisualizationTile(position: { x: number; y: number }): LessonTile {
+  static createVisualizationTile(position: { x: number; y: number }, pageId: string): LessonTile {
     const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
     
@@ -192,6 +212,7 @@ export class LessonContentService {
     return {
       id,
       type: 'visualization',
+      pageId,
       position: pixelPos,
       size: pixelSize,
       gridPosition: gridPos,
@@ -215,7 +236,7 @@ export class LessonContentService {
   /**
    * Create a new quiz tile
    */
-  static createQuizTile(position: { x: number; y: number }): LessonTile {
+  static createQuizTile(position: { x: number; y: number }, pageId: string): LessonTile {
     const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
     
@@ -247,6 +268,7 @@ export class LessonContentService {
     return {
       id,
       type: 'quiz',
+      pageId,
       position: pixelPos,
       size: pixelSize,
       gridPosition: gridPos,
@@ -273,7 +295,7 @@ export class LessonContentService {
   /**
    * Create a new programming task tile
    */
-  static createProgrammingTile(position: { x: number; y: number }): ProgrammingTile {
+  static createProgrammingTile(position: { x: number; y: number }, pageId: string): ProgrammingTile {
     const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
     
@@ -305,6 +327,7 @@ export class LessonContentService {
     return {
       id,
       type: 'programming',
+      pageId,
       position: pixelPos,
       size: pixelSize,
       gridPosition: gridPos,
@@ -329,7 +352,7 @@ export class LessonContentService {
   /**
    * Create a new sequencing tile
    */
-  static createSequencingTile(position: { x: number; y: number }): SequencingTile {
+  static createSequencingTile(position: { x: number; y: number }, pageId: string): SequencingTile {
     const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
     
@@ -361,6 +384,7 @@ export class LessonContentService {
     return {
       id,
       type: 'sequencing',
+      pageId,
       position: pixelPos,
       size: pixelSize,
       gridPosition: gridPos,

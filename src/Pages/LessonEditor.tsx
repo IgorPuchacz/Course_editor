@@ -16,6 +16,7 @@ import { ConfirmDialog } from '../components/common/ConfirmDialog.tsx';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.tsx';
 import { GridUtils } from '../utils/gridUtils.ts';
 import { logger } from '../utils/logger.ts';
+import { LessonPageSelector } from '../components/admin/LessonPageSelector.tsx';
 
 interface LessonEditorProps {
   lesson: Lesson;
@@ -35,6 +36,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
 
   // Core state
   const [lessonContent, setLessonContent] = useState<LessonContent | null>(null);
+  const [currentPageId, setCurrentPageId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(64);
@@ -141,14 +143,58 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
     }
   }, [editorState.hasUnsavedChanges, lessonContent]);
 
+  useEffect(() => {
+    if (!lessonContent) return;
+
+    const availablePageIds = lessonContent.pages.map(page => page.id);
+    if (!availablePageIds.length) return;
+
+    const fallbackPageId = lessonContent.activePageId && availablePageIds.includes(lessonContent.activePageId)
+      ? lessonContent.activePageId
+      : availablePageIds[0];
+
+    if (!currentPageId || !availablePageIds.includes(currentPageId)) {
+      setCurrentPageId(fallbackPageId);
+    }
+  }, [lessonContent, currentPageId]);
+
   const loadLessonContent = async () => {
     try {
       setIsLoading(true);
       const content = await LessonContentService.getLessonContent(lesson.id);
       
       if (content) {
-        setLessonContent(content);
-        logger.info(`Loaded lesson content with ${content.tiles.length} tiles`);
+        const pages = (content.pages && content.pages.length > 0
+          ? [...content.pages]
+          : [
+              {
+                id: 'page-1',
+                title: 'Strona 1',
+                order: 1
+              }
+            ]
+        ).sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
+
+        const fallbackPageId = pages[0]?.id ?? 'page-1';
+        const activePageId = content.activePageId && pages.some(page => page.id === content.activePageId)
+          ? content.activePageId
+          : fallbackPageId;
+
+        const normalizedTiles = (content.tiles ?? []).map(tile => ({
+          ...tile,
+          pageId: tile.pageId || activePageId
+        }));
+
+        const normalizedContent: LessonContent = {
+          ...content,
+          tiles: normalizedTiles,
+          pages,
+          activePageId
+        };
+
+        setLessonContent(normalizedContent);
+        setCurrentPageId(activePageId);
+        logger.info(`Loaded lesson content with ${normalizedTiles.length} tiles`);
       } else {
         error('Błąd ładowania', 'Nie udało się załadować zawartości lekcji');
       }
@@ -185,26 +231,33 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
   const handleAddTile = (tileType: string, position: { x: number; y: number }) => {
     if (!lessonContent) return;
 
+    const targetPageId = currentPageId || lessonContent.activePageId || lessonContent.pages[0]?.id;
+
+    if (!targetPageId) {
+      warning('Brak strony', 'Dodaj najpierw stronę, aby umieścić na niej kafelki.');
+      return;
+    }
+
     let newTile: LessonTile | null = null;
 
     switch (tileType) {
       case 'text':
-        newTile = LessonContentService.createTextTile(position);
+        newTile = LessonContentService.createTextTile(position, targetPageId);
         break;
       case 'image':
-        newTile = LessonContentService.createImageTile(position);
+        newTile = LessonContentService.createImageTile(position, targetPageId);
         break;
       case 'visualization':
-        newTile = LessonContentService.createVisualizationTile(position);
+        newTile = LessonContentService.createVisualizationTile(position, targetPageId);
         break;
       case 'quiz':
-        newTile = LessonContentService.createQuizTile(position);
+        newTile = LessonContentService.createQuizTile(position, targetPageId);
         break;
       case 'programming':
-        newTile = LessonContentService.createProgrammingTile(position);
+        newTile = LessonContentService.createProgrammingTile(position, targetPageId);
         break;
       case 'sequencing':
-        newTile = LessonContentService.createSequencingTile(position);
+        newTile = LessonContentService.createSequencingTile(position, targetPageId);
         break;
       default:
         logger.warn(`Tile type ${tileType} not implemented yet`);
@@ -214,36 +267,118 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
 
     if (!newTile) return;
 
-    // Find available position using grid system
+    const tilesOnPage = lessonContent.tiles.filter(tile => tile.pageId === targetPageId);
+
+    // Find available position using grid system limited to the active page
     const availableGridPos = GridUtils.findNextAvailablePosition(
       newTile.gridPosition,
       lessonContent.canvas_settings,
-      lessonContent.tiles
+      tilesOnPage
     );
-    
+
     // Update tile with available position
     const finalPixelPos = GridUtils.gridToPixel(availableGridPos, lessonContent.canvas_settings);
     const finalPixelSize = GridUtils.gridSizeToPixel(availableGridPos, lessonContent.canvas_settings);
-    
+
     newTile.gridPosition = availableGridPos;
     newTile.position = finalPixelPos;
     newTile.size = finalPixelSize;
+
+    const updatedPageTiles = [...tilesOnPage, newTile];
+    const updatedCanvasHeight = GridUtils.calculateCanvasHeight(updatedPageTiles);
 
     const updatedContent = {
       ...lessonContent,
       tiles: [...lessonContent.tiles, newTile],
       canvas_settings: {
         ...lessonContent.canvas_settings,
-        height: GridUtils.calculateCanvasHeight([...lessonContent.tiles, newTile])
+        height: Math.max(updatedCanvasHeight, lessonContent.canvas_settings.height)
       },
+      activePageId: targetPageId,
+      updated_at: new Date().toISOString()
+    };
+
+    setLessonContent(updatedContent);
+    setCurrentPageId(targetPageId);
+    dispatch({ type: 'markUnsaved' });
+    dispatch({ type: 'selectTile', tileId: newTile.id });
+
+    logger.info(`Added new ${tileType} tile to lesson on page ${targetPageId}`);
+  };
+
+  const handleAddPage = () => {
+    if (!lessonContent) return;
+
+    const nextIndex = lessonContent.pages.length + 1;
+    const nextOrder = lessonContent.pages.length
+      ? Math.max(...lessonContent.pages.map(page => page.order)) + 1
+      : 1;
+
+    const newPage = {
+      id: `page-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      title: `Strona ${nextIndex}`,
+      order: nextOrder
+    };
+
+    const updatedContent = {
+      ...lessonContent,
+      pages: [...lessonContent.pages, newPage],
+      activePageId: newPage.id,
+      updated_at: new Date().toISOString()
+    };
+
+    setLessonContent(updatedContent);
+    setCurrentPageId(newPage.id);
+    dispatch({ type: 'selectTile', tileId: null });
+    dispatch({ type: 'stopEditing' });
+    setActiveEditor(null);
+    dispatch({ type: 'markUnsaved' });
+
+    logger.info(`Added new page ${newPage.id}`);
+    success('Dodano stronę', `Nowa strona "${newPage.title}" została utworzona.`);
+  };
+
+  const handleSelectPage = (pageId: string) => {
+    if (!lessonContent) return;
+    if (pageId === currentPageId) return;
+
+    const pageExists = lessonContent.pages.some(page => page.id === pageId);
+    if (!pageExists) return;
+
+    const selectedTileInstance = lessonContent.tiles.find(tile => tile.id === editorState.selectedTileId);
+
+    if (!selectedTileInstance || selectedTileInstance.pageId !== pageId) {
+      dispatch({ type: 'selectTile', tileId: null });
+      dispatch({ type: 'stopEditing' });
+      setActiveEditor(null);
+    }
+
+    setLessonContent(prev => (prev ? { ...prev, activePageId: pageId } : prev));
+    setCurrentPageId(pageId);
+  };
+
+  const handleRenamePage = (pageId: string, title: string) => {
+    if (!lessonContent) return;
+
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle.length) {
+      warning('Nieprawidłowa nazwa', 'Nazwa strony nie może być pusta.');
+      return;
+    }
+
+    const updatedPages = lessonContent.pages.map(page =>
+      page.id === pageId ? { ...page, title: trimmedTitle } : page
+    );
+
+    const updatedContent = {
+      ...lessonContent,
+      pages: updatedPages,
       updated_at: new Date().toISOString()
     };
 
     setLessonContent(updatedContent);
     dispatch({ type: 'markUnsaved' });
-    dispatch({ type: 'selectTile', tileId: newTile.id });
-
-    logger.info(`Added new ${tileType} tile to lesson`);
+    success('Zmieniono nazwę', `Strona została nazwana "${trimmedTitle}".`);
   };
 
   const handleUpdateTile = (tileId: string, updates: Partial<LessonTile>) => {
@@ -277,6 +412,17 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
     const newContent = {
       ...lessonContent,
       tiles: updatedTiles,
+      canvas_settings: {
+        ...lessonContent.canvas_settings,
+        height: (() => {
+          const heightCandidates = lessonContent.pages.map(page =>
+            GridUtils.calculateCanvasHeight(updatedTiles.filter(tile => tile.pageId === page.id))
+          );
+          return heightCandidates.length
+            ? Math.max(...heightCandidates)
+            : GridUtils.calculateCanvasHeight(updatedTiles);
+        })()
+      },
       updated_at: new Date().toISOString()
     };
     
@@ -303,10 +449,20 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       message: `Czy na pewno chcesz usunąć ten kafelek? Ta operacja jest nieodwracalna.`,
       onConfirm: () => {
         const updatedTiles = lessonContent.tiles.filter(t => t.id !== tileId);
-        
+        const heightCandidates = lessonContent.pages.map(page =>
+          GridUtils.calculateCanvasHeight(updatedTiles.filter(tile => tile.pageId === page.id))
+        );
+        const recalculatedHeight = heightCandidates.length
+          ? Math.max(...heightCandidates)
+          : GridUtils.calculateCanvasHeight(updatedTiles);
+
         setLessonContent({
           ...lessonContent,
           tiles: updatedTiles,
+          canvas_settings: {
+            ...lessonContent.canvas_settings,
+            height: recalculatedHeight
+          },
           updated_at: new Date().toISOString()
         });
 
@@ -355,27 +511,47 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
   };
 
   const handleClearCanvas = () => {
-    if (!lessonContent || lessonContent.tiles.length === 0) return;
+    if (!lessonContent) return;
+
+    const targetPageId = currentPageId || lessonContent.activePageId || lessonContent.pages[0]?.id;
+    if (!targetPageId) return;
+
+    const tilesOnPage = lessonContent.tiles.filter(tile => tile.pageId === targetPageId);
+    if (tilesOnPage.length === 0) return;
+
+    const page = lessonContent.pages.find(p => p.id === targetPageId);
 
     setConfirmDialog({
       isOpen: true,
-      title: 'Wyczyść płótno',
-      message: 'Czy na pewno chcesz usunąć wszystkie kafelki z płótna? Ta operacja jest nieodwracalna.',
+      title: 'Wyczyść stronę',
+      message: `Czy na pewno chcesz usunąć wszystkie kafelki ze strony "${page?.title ?? 'Strona'}"? Ta operacja jest nieodwracalna.`,
       onConfirm: () => {
+        const remainingTiles = lessonContent.tiles.filter(tile => tile.pageId !== targetPageId);
+        const heightCandidates = lessonContent.pages.map(page =>
+          GridUtils.calculateCanvasHeight(remainingTiles.filter(tile => tile.pageId === page.id))
+        );
+        const recalculatedHeight = heightCandidates.length
+          ? Math.max(...heightCandidates)
+          : GridUtils.calculateCanvasHeight(remainingTiles);
+
         setLessonContent({
-          ...lessonContent!,
-          tiles: [],
+          ...lessonContent,
+          tiles: remainingTiles,
+          canvas_settings: {
+            ...lessonContent.canvas_settings,
+            height: recalculatedHeight
+          },
           updated_at: new Date().toISOString()
         });
 
-        setTestingTileIds([]);
+        setTestingTileIds(prev => prev.filter(id => !tilesOnPage.some(tile => tile.id === id)));
 
         dispatch({ type: 'markUnsaved' });
         dispatch({ type: 'selectTile', tileId: null });
         dispatch({ type: 'stopEditing' });
 
         setConfirmDialog(prev => ({ ...prev, isOpen: false }));
-        success('Płótno wyczyszczone', 'Wszystkie kafelki zostały usunięte');
+        success('Strona wyczyszczona', `Wszystkie kafelki zostały usunięte ze strony "${page?.title ?? 'Strona'}"`);
       }
     });
   };
@@ -405,9 +581,25 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       </div>
     );
   }
+  const availablePageIds = lessonContent.pages.map(page => page.id);
+  const fallbackPageId = lessonContent.activePageId && availablePageIds.includes(lessonContent.activePageId)
+    ? lessonContent.activePageId
+    : availablePageIds[0] ?? null;
+  const activePageId = currentPageId && availablePageIds.includes(currentPageId)
+    ? currentPageId
+    : fallbackPageId;
+  const activePage = lessonContent.pages.find(page => page.id === activePageId) || null;
+  const activePageTiles = activePageId
+    ? lessonContent.tiles.filter(tile => tile.pageId === activePageId)
+    : [];
+  const activeCanvasSettings = {
+    ...lessonContent.canvas_settings,
+    height: GridUtils.calculateCanvasHeight(activePageTiles)
+  };
+  const sortedPages = [...lessonContent.pages].sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
+  const activePageTestingTileIds = testingTileIds.filter(id => activePageTiles.some(tile => tile.id === id));
 
-
-  const selectedTile = lessonContent.tiles.find(t => t.id === editorState.selectedTileId) || null;
+  const selectedTile = activePageTiles.find(t => t.id === editorState.selectedTileId) || null;
   const selectedRichTextTile = isRichTextTile(selectedTile) ? selectedTile : null;
 
   const toastOffset = headerHeight + toolbarHeight + 16;
@@ -471,7 +663,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
                 
                 <button
                   onClick={handleClearCanvas}
-                  disabled={!lessonContent.tiles.length}
+                  disabled={!activePageTiles.length}
                   className="p-2 text-gray-600 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed hidden sm:block"
                   title="Wyczyść płótno"
                 >
@@ -512,7 +704,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
                 tile={selectedTile}
                 onUpdateTile={handleUpdateTile}
                 onSelectTile={handleSelectTile}
-                isTesting={selectedTile ? testingTileIds.includes(selectedTile.id) : false}
+                isTesting={selectedTile ? activePageTestingTileIds.includes(selectedTile.id) : false}
                 onToggleTesting={handleToggleTestingTile}
               />
             </div>
@@ -536,9 +728,9 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
           >
             <TopToolbar
               key={`toolbar-${editorState.mode}-${editorState.selectedTileId}`}
-              tilesCount={lessonContent.tiles.length}
+              tilesCount={activePageTiles.length}
               gridColumns={GridUtils.GRID_COLUMNS}
-              gridRows={lessonContent.canvas_settings.height}
+              gridRows={activeCanvasSettings.height}
               currentMode={editorState.selectedTileId ? 'Tryb edycji' : 'Tryb dodawania'}
               isTextEditing={editorState.mode === 'textEditing'}
               onFinishTextEditing={handleFinishTextEditing}
@@ -549,20 +741,45 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
           </div>
           {/* Canvas */}
           <div className="flex-1 p-4 lg:p-6 overflow-auto overscroll-contain bg-gray-100">
-            <LessonCanvas
-              ref={canvasRef}
-              content={lessonContent}
-              editorState={editorState}
-              onUpdateTile={handleUpdateTile}
-              onSelectTile={handleSelectTile}
-              onFinishTextEditing={handleFinishTextEditing}
-              onDeleteTile={handleDeleteTile}
-              onAddTile={handleAddTile}
-              dispatch={dispatch}
-              showGrid={editorState.showGrid}
-              onEditorReady={setActiveEditor}
-              testingTileIds={testingTileIds}
-            />
+            <div className="mx-auto max-w-5xl space-y-4">
+              <LessonPageSelector
+                pages={sortedPages}
+                activePageId={activePageId ?? ''}
+                onSelectPage={handleSelectPage}
+                onAddPage={handleAddPage}
+                onRenamePage={handleRenamePage}
+                activePage={activePage}
+              />
+
+              <LessonCanvas
+                ref={canvasRef}
+                content={{
+                  ...lessonContent,
+                  tiles: activePageTiles,
+                  canvas_settings: activeCanvasSettings
+                }}
+                editorState={editorState}
+                onUpdateTile={handleUpdateTile}
+                onSelectTile={handleSelectTile}
+                onFinishTextEditing={handleFinishTextEditing}
+                onDeleteTile={handleDeleteTile}
+                onAddTile={handleAddTile}
+                dispatch={dispatch}
+                showGrid={editorState.showGrid}
+                onEditorReady={setActiveEditor}
+                testingTileIds={activePageTestingTileIds}
+              />
+
+              <LessonPageSelector
+                pages={sortedPages}
+                activePageId={activePageId ?? ''}
+                onSelectPage={handleSelectPage}
+                onAddPage={handleAddPage}
+                onRenamePage={handleRenamePage}
+                activePage={activePage}
+                position="bottom"
+              />
+            </div>
           </div>
         </div>
       </div>
