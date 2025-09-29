@@ -1,5 +1,11 @@
-import { LessonContent, LessonTile, TextTile } from '../types/lessonEditor';
-import { ProgrammingTile, SequencingTile } from '../types/lessonEditor';
+import {
+  LessonContent,
+  LessonTile,
+  TextTile,
+  ProgrammingTile,
+  SequencingTile,
+  MatchingTile
+} from '../types/lessonEditor';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
 
@@ -397,6 +403,66 @@ export class LessonContentService {
         ],
         correctFeedback: 'Świetnie! Prawidłowa kolejność.',
         incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.'
+      },
+      created_at: now,
+      updated_at: now,
+      z_index: 1
+    };
+  }
+
+  /**
+   * Create a new matching tile
+   */
+  static createMatchingTile(position: { x: number; y: number }, page = 1): MatchingTile {
+    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+
+    const gridPos = GridUtils.pixelToGrid(position, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    gridPos.colSpan = 4;
+    gridPos.rowSpan = 5;
+
+    const pixelPos = GridUtils.gridToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    return {
+      id,
+      type: 'matching',
+      position: pixelPos,
+      size: pixelSize,
+      gridPosition: gridPos,
+      page,
+      content: {
+        question: 'Połącz elementy w pasujące pary',
+        richQuestion: '<p style="margin: 0;">Połącz elementy w pasujące pary</p>',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        verticalAlign: 'top',
+        backgroundColor: '#CBD5F5',
+        showBorder: true,
+        pairs: [
+          { id: 'pair-1', left: 'Element A', right: 'Dopasowanie 1' },
+          { id: 'pair-2', left: 'Element B', right: 'Dopasowanie 2' },
+          { id: 'pair-3', left: 'Element C', right: 'Dopasowanie 3' }
+        ],
+        correctFeedback: 'Świetnie! Wszystkie pary są poprawne.',
+        incorrectFeedback: 'Nie wszystkie połączenia są poprawne. Spróbuj ponownie.'
       },
       created_at: now,
       updated_at: now,
