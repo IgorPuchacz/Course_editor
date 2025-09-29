@@ -3,13 +3,14 @@ import { CheckCircle, XCircle, RefreshCw, Sparkles, Puzzle, RotateCcw } from 'lu
 import { MatchPairsTile } from '../../types/lessonEditor';
 import { createBlankId, createPlaceholderRegex } from '../../utils/matchPairs';
 import { TaskInstructionPanel } from './common/TaskInstructionPanel';
+import { RichTextEditor, RichTextEditorProps } from './common/RichTextEditor';
 
 interface MatchPairsInteractiveProps {
   tile: MatchPairsTile;
   isPreview?: boolean;
   isTestingMode?: boolean;
-  instructionContent?: React.ReactNode;
   onRequestTextEditing?: () => void;
+  instructionEditorProps?: RichTextEditorProps;
 }
 
 type Segment =
@@ -127,8 +128,8 @@ export const MatchPairsInteractive: React.FC<MatchPairsInteractiveProps> = ({
   tile,
   isPreview = false,
   isTestingMode = false,
-  instructionContent,
-  onRequestTextEditing
+  onRequestTextEditing,
+  instructionEditorProps
 }) => {
   const [placements, setPlacements] = useState<Record<string, string | null>>({});
   const [evaluation, setEvaluation] = useState<EvaluationState>('idle');
@@ -384,7 +385,9 @@ export const MatchPairsInteractive: React.FC<MatchPairsInteractiveProps> = ({
           }}
           labelStyle={{ color: mutedLabelColor }}
         >
-          {instructionContent ?? (
+          {instructionEditorProps ? (
+            <RichTextEditor {...instructionEditorProps} />
+          ) : (
             <div
               className="text-base leading-relaxed"
               dangerouslySetInnerHTML={{

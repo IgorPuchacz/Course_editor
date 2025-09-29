@@ -2,13 +2,14 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Circle, HelpCircle, RotateCcw, XCircle } from 'lucide-react';
 import { QuizTile } from '../../types/lessonEditor';
 import { TaskInstructionPanel } from './common/TaskInstructionPanel';
+import { RichTextEditor, RichTextEditorProps } from './common/RichTextEditor';
 
 interface QuizInteractiveProps {
   tile: QuizTile;
   isPreview?: boolean;
   isTestingMode?: boolean;
   onRequestTextEditing?: () => void;
-  instructionContent?: React.ReactNode;
+  instructionEditorProps?: RichTextEditorProps;
 }
 
 type EvaluationState = 'idle' | 'correct' | 'incorrect';
@@ -77,7 +78,7 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
   isPreview = false,
   isTestingMode = false,
   onRequestTextEditing,
-  instructionContent
+  instructionEditorProps
 }) => {
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
   const [evaluationState, setEvaluationState] = useState<EvaluationState>('idle');
@@ -177,8 +178,8 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
   };
 
   const renderInstructionContent = () => {
-    if (instructionContent) {
-      return instructionContent;
+    if (instructionEditorProps) {
+      return <RichTextEditor {...instructionEditorProps} />;
     }
 
     return (

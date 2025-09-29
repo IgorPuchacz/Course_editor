@@ -2,13 +2,14 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { CheckCircle, XCircle, RotateCcw, Sparkles, GripVertical, Shuffle, ArrowLeftRight } from 'lucide-react';
 import { SequencingTile } from '../../types/lessonEditor';
 import { TaskInstructionPanel } from './common/TaskInstructionPanel';
+import { RichTextEditor, RichTextEditorProps } from './common/RichTextEditor';
 
 interface SequencingInteractiveProps {
   tile: SequencingTile;
   isPreview?: boolean;
   isTestingMode?: boolean;
   onRequestTextEditing?: () => void;
-  instructionContent?: React.ReactNode;
+  instructionEditorProps?: RichTextEditorProps;
   variant?: 'standalone' | 'embedded';
 }
 
@@ -90,7 +91,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   isPreview = false,
   isTestingMode = false,
   onRequestTextEditing,
-  instructionContent,
+  instructionEditorProps,
   variant = 'embedded'
 }) => {
   const [availableItems, setAvailableItems] = useState<DraggedItem[]>([]);
@@ -542,7 +543,9 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
           labelStyle={{ color: mutedLabelColor }}
           bodyClassName="px-5 pb-5"
         >
-          {instructionContent ?? (
+          {instructionEditorProps ? (
+            <RichTextEditor {...instructionEditorProps} />
+          ) : (
             <div
               className="text-base leading-relaxed"
               style={{
