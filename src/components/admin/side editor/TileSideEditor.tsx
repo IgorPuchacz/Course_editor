@@ -386,30 +386,33 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900">Odpowiedzi</h4>
-                  <p className="text-xs text-gray-500">
-                    Dodaj, edytuj i oznacz prawidłowe odpowiedzi dla pytania
-                  </p>
-                </div>
-                <button
+              <div>
+              <button
                   type="button"
                   onClick={handleAddAnswer}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition"
-                >
-                  <Plus className="w-4 h-4" />
-                  Dodaj odpowiedź
-                </button>
-              </div>
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition"
+              >
+                <Plus className="w-4 h-4" />
+                Dodaj odpowiedź
+              </button>
+            </div>
 
-              <div className="space-y-3">
+
+            <div className="space-y-3">
                 {quizTile.content.answers.map((answer, index) => (
                   <div key={index} className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-gray-700">
-                        Odpowiedź {index + 1}
-                      </span>
+                      <label className="flex items-center gap-3 text-sm text-gray-700">
+                        <input
+                            type={quizTile.content.multipleCorrect ? 'checkbox' : 'radio'}
+                            name={quizTile.content.multipleCorrect ? `answer-${tile.id}` : `correct-answer-${tile.id}`}
+                            checked={answer.isCorrect}
+                            onChange={(e) => handleAnswerCorrectToggle(index, e.target.checked)}
+                            className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span>Poprawna</span>
+                      </label>
+
                       <button
                         type="button"
                         onClick={() => handleRemoveAnswer(index)}
@@ -433,16 +436,6 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                       placeholder={`Treść odpowiedzi ${index + 1}`}
                     />
 
-                    <label className="flex items-center gap-3 text-sm text-gray-700">
-                      <input
-                        type={quizTile.content.multipleCorrect ? 'checkbox' : 'radio'}
-                        name={quizTile.content.multipleCorrect ? `answer-${tile.id}` : `correct-answer-${tile.id}`}
-                        checked={answer.isCorrect}
-                        onChange={(e) => handleAnswerCorrectToggle(index, e.target.checked)}
-                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span>Oznacz jako poprawną</span>
-                    </label>
                   </div>
                 ))}
               </div>
@@ -487,16 +480,6 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
       {/* Properties Panel */}
       <div className="flex-1 overflow-y-auto overscroll-contain p-6 space-y-6">
         {renderContentEditor()}
-      </div>
-
-      {/* Footer */}
-      <div className="p-6 border-t border-gray-200">
-        <div className="text-xs text-gray-500 space-y-1">
-          <p>ID: {tile.id.slice(0, 8)}...</p>
-          <p>Typ: {tile.type}</p>
-          <p>Utworzony: {new Date(tile.created_at).toLocaleDateString('pl-PL')}</p>
-          <p>Edytowany: {new Date(tile.updated_at).toLocaleDateString('pl-PL')}</p>
-        </div>
       </div>
     </div>
   );

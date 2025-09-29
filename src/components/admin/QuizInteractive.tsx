@@ -276,19 +276,9 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
     );
   };
 
-  const selectionHint = isInteractionEnabled
-    ? tile.content.multipleCorrect
-      ? 'Wybierz wszystkie poprawne odpowiedzi'
-      : 'Wybierz jedną poprawną odpowiedź'
-    : 'Podgląd pytania — odpowiedzi niedostępne w trybie edycji';
-
   return (
     <div className="relative w-full h-full" onDoubleClick={handleTileDoubleClick}>
       <div className="w-full h-full flex flex-col gap-5 p-6">
-        <div className="flex items-center justify-between text-xs font-medium" style={{ color: mutedTextColor }}>
-          <span>{tile.content.multipleCorrect ? 'Tryb: wiele odpowiedzi' : 'Tryb: jedna odpowiedź'}</span>
-          <span>{selectionHint}</span>
-        </div>
 
         <TaskInstructionPanel
           icon={<HelpCircle className="w-4 h-4" />}
