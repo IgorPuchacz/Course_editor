@@ -383,37 +383,16 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
             </div>
 
             <div className="space-y-6">
-              <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4 text-xs text-gray-600">
-                Poprawne odpowiedzi są automatycznie wykrywane z tekstu umieszczonego w podwójnych klamrach. Edytuj tekst powyżej,
-                aby zaktualizować luki oraz listę poprawnych wyrażeń.
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="text-sm font-semibold text-gray-900">Poprawne odpowiedzi (z tekstu)</h4>
-                {autoOptions.length === 0 ? (
-                  <p className="text-sm text-gray-600">Dodaj wyrażenia w klamrach, aby wygenerować poprawne odpowiedzi.</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {autoOptions.map(option => (
-                      <li key={option.id} className="flex items-center justify-between rounded-lg bg-white px-3 py-2 text-sm text-gray-700 border border-gray-200">
-                        <span>{option.text}</span>
-                        <span className="text-xs uppercase tracking-widest text-gray-400">ID: {option.id}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-semibold text-gray-900">Słowa zapychacze</h4>
+                  <h4 className="text-sm font-semibold text-gray-900">Słowa Zapychacze</h4>
                   <button
                     type="button"
                     onClick={handleAddDistractor}
                     className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition"
                   >
                     <Plus className="w-4 h-4" />
-                    Dodaj zapychacz
+                    Dodaj
                   </button>
                 </div>
 
@@ -422,30 +401,34 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                     Dodaj dodatkowe słowa lub wyrażenia, które utrudnią zadanie uczniowi.
                   </p>
                 ) : (
-                  <div className="space-y-3">
-                    {distractorOptions.map(option => (
-                      <div key={option.id} className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs uppercase tracking-widest text-gray-500">ID: {option.id}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveDistractor(option.id)}
-                            className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg text-rose-600 hover:bg-rose-50"
+                    <div className="space-y-3">
+                      {distractorOptions.map(option => (
+                          <div
+                              key={option.id}
+                              className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3"
                           >
-                            <Trash2 className="w-4 h-4" />
-                            Usuń
-                          </button>
-                        </div>
-                        <input
-                          type="text"
-                          value={option.text}
-                          onChange={(e) => handleDistractorTextChange(option.id, e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          placeholder="Treść zapychacza"
-                        />
-                      </div>
-                    ))}
-                  </div>
+                            <div className="flex items-center gap-2">
+                              <input
+                                  type="text"
+                                  value={option.text}
+                                  onChange={(e) =>
+                                      handleDistractorTextChange(option.id, e.target.value)
+                                  }
+                                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                  placeholder="Treść zapychacza"
+                              />
+                              <button
+                                  type="button"
+                                  onClick={() => handleRemoveDistractor(option.id)}
+                                  className="inline-flex items-center justify-center text-rose-600 hover:bg-rose-50 p-2 rounded-lg"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                      ))}
+                    </div>
+
                 )}
               </div>
             </div>
