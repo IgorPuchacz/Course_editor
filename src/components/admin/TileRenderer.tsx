@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Move, Trash2, Play, Code2 } from 'lucide-react';
-import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor';
+import {
+  LessonTile,
+  TextTile,
+  ImageTile,
+  QuizTile,
+  ProgrammingTile,
+  SequencingTile,
+  FillBlanksTile
+} from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -16,6 +24,7 @@ import TextAlign from '../../extensions/TextAlign';
 import { SequencingInteractive } from './SequencingInteractive';
 import { TaskInstructionPanel } from './common/TaskInstructionPanel';
 import { QuizInteractive } from './QuizInteractive';
+import { FillInBlanksInteractive } from './FillInBlanksInteractive';
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
   if (!hex) return null;
@@ -687,6 +696,70 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
           );
         } else {
           contentToRender = renderSequencingContent();
+        }
+        break;
+      }
+
+      case 'fillBlanks': {
+        const fillBlanksTile = tile as FillBlanksTile;
+        const accentColor = fillBlanksTile.content.backgroundColor || computedBackground;
+        const textColor = getReadableTextColor(accentColor);
+
+        const renderFillBlanksContent = (
+          instructionContent?: React.ReactNode,
+          isPreviewMode = false
+        ) => (
+          <FillInBlanksInteractive
+            tile={fillBlanksTile}
+            isTestingMode={isTestingMode}
+            instructionContent={instructionContent}
+            isPreview={isPreviewMode}
+            onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
+          />
+        );
+
+        if (isEditingText && isSelected) {
+          const promptEditorTile = {
+            ...tile,
+            type: 'text',
+            content: {
+              text: fillBlanksTile.content.prompt,
+              richText: fillBlanksTile.content.richPrompt,
+              fontFamily: fillBlanksTile.content.fontFamily,
+              fontSize: fillBlanksTile.content.fontSize,
+              verticalAlign: fillBlanksTile.content.verticalAlign,
+              backgroundColor: fillBlanksTile.content.backgroundColor,
+              showBorder: fillBlanksTile.content.showBorder
+            }
+          } as TextTile;
+
+          contentToRender = renderFillBlanksContent(
+            <RichTextEditor
+              textTile={promptEditorTile}
+              tileId={tile.id}
+              textColor={textColor}
+              onUpdateTile={(tileId, updates) => {
+                if (!updates.content) return;
+
+                onUpdateTile(tileId, {
+                  content: {
+                    ...fillBlanksTile.content,
+                    prompt: updates.content.text ?? fillBlanksTile.content.prompt,
+                    richPrompt: updates.content.richText ?? fillBlanksTile.content.richPrompt,
+                    fontFamily: updates.content.fontFamily ?? fillBlanksTile.content.fontFamily,
+                    fontSize: updates.content.fontSize ?? fillBlanksTile.content.fontSize,
+                    verticalAlign:
+                      updates.content.verticalAlign ?? fillBlanksTile.content.verticalAlign
+                  }
+                });
+              }}
+              onFinishTextEditing={onFinishTextEditing}
+              onEditorReady={onEditorReady}
+            />,
+            true
+          );
+        } else {
+          contentToRender = renderFillBlanksContent();
         }
         break;
       }

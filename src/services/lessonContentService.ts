@@ -1,5 +1,5 @@
 import { LessonContent, LessonTile, TextTile } from '../types/lessonEditor';
-import { ProgrammingTile, SequencingTile } from '../types/lessonEditor';
+import { ProgrammingTile, SequencingTile, FillBlanksTile } from '../types/lessonEditor';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
 
@@ -397,6 +397,74 @@ export class LessonContentService {
         ],
         correctFeedback: 'Świetnie! Prawidłowa kolejność.',
         incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.'
+      },
+      created_at: now,
+      updated_at: now,
+      z_index: 1
+    };
+  }
+
+  /**
+   * Create a new fill-in-the-blanks tile
+   */
+  static createFillBlanksTile(position: { x: number; y: number }, page = 1): FillBlanksTile {
+    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+
+    const gridPos = GridUtils.pixelToGrid(position, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    gridPos.colSpan = 4;
+    gridPos.rowSpan = 4;
+
+    const pixelPos = GridUtils.gridToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const defaultOptions = [
+      { id: 'option-1', text: 'słów' },
+      { id: 'option-2', text: 'luk' },
+      { id: 'option-3', text: 'wyrazów' }
+    ];
+
+    const defaultSegments = [
+      { id: 'segment-1', type: 'text', text: 'Przeciągnij odpowiednie ' },
+      { id: 'segment-2', type: 'blank', correctOptionId: defaultOptions[0].id },
+      { id: 'segment-3', type: 'text', text: ' do poniższego tekstu, aby go uzupełnić.' }
+    ];
+
+    return {
+      id,
+      type: 'fillBlanks',
+      position: pixelPos,
+      size: pixelSize,
+      gridPosition: gridPos,
+      page,
+      content: {
+        prompt: 'Uzupełnij tekst, przeciągając pasujące wyrazy w odpowiednie miejsca.',
+        richPrompt:
+          '<p style="margin: 0;">Uzupełnij tekst, przeciągając pasujące wyrazy w odpowiednie miejsca.</p>',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        verticalAlign: 'top',
+        backgroundColor: '#D4D4D4',
+        showBorder: true,
+        segments: defaultSegments,
+        options: defaultOptions
       },
       created_at: now,
       updated_at: now,

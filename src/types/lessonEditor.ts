@@ -17,7 +17,7 @@ export interface GridPosition {
 
 export interface LessonTile {
   id: string;
-  type: 'text' | 'image' | 'visualization' | 'quiz' | 'programming' | 'sequencing';
+  type: 'text' | 'image' | 'visualization' | 'quiz' | 'programming' | 'sequencing' | 'fillBlanks';
   position: Position;
   size: Size;
   gridPosition: GridPosition;
@@ -125,6 +125,38 @@ export interface SequencingTile extends LessonTile {
     }>;
     correctFeedback: string;
     incorrectFeedback: string;
+  };
+}
+
+export interface FillBlanksSegmentText {
+  id: string;
+  type: 'text';
+  text: string;
+}
+
+export interface FillBlanksSegmentBlank {
+  id: string;
+  type: 'blank';
+  correctOptionId: string;
+}
+
+export type FillBlanksSegment = FillBlanksSegmentText | FillBlanksSegmentBlank;
+
+export interface FillBlanksTile extends LessonTile {
+  type: 'fillBlanks';
+  content: {
+    prompt: string;
+    richPrompt?: string;
+    fontFamily: string;
+    fontSize: number;
+    verticalAlign: 'top' | 'center' | 'bottom';
+    backgroundColor: string;
+    showBorder: boolean;
+    segments: FillBlanksSegment[];
+    options: Array<{
+      id: string;
+      text: string;
+    }>;
   };
 }
 
