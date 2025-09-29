@@ -94,17 +94,17 @@ export const TilePalette: React.FC<TilePaletteProps> = ({
       </div>
 
       {/* Tile Types */}
-      <div className="flex-1 p-4 space-y-3 overflow-y-auto overscroll-contain">
+      <div className="flex-1 px-4 py-3 space-y-2 overflow-y-auto overscroll-contain">
         {TILE_TYPES.map((tileType) => {
           const IconComponent = getIcon(tileType.icon);
-          
+
           return (
             <div
               key={tileType.type}
               draggable
               onDragStart={(e) => handleDragStart(e, tileType.type)}
               onClick={() => handleClick(tileType.type)}
-              className="group p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-300 hover:shadow-md transition-all duration-200 active:scale-95"
+              className="group p-3 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-300 hover:shadow-md transition-all duration-200 active:scale-95"
             >
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
