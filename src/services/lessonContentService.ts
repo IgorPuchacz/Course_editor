@@ -1,5 +1,5 @@
 import { LessonContent, LessonTile, TextTile } from '../types/lessonEditor';
-import { ProgrammingTile, SequencingTile } from '../types/lessonEditor';
+import { ProgrammingTile, SequencingTile, FillBlanksTile } from '../types/lessonEditor';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
 
@@ -397,6 +397,71 @@ export class LessonContentService {
         ],
         correctFeedback: 'Świetnie! Prawidłowa kolejność.',
         incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.'
+      },
+      created_at: now,
+      updated_at: now,
+      z_index: 1
+    };
+  }
+
+  /**
+   * Create a new fill-in-the-blanks tile
+   */
+  static createFillBlanksTile(position: { x: number; y: number }, page = 1): FillBlanksTile {
+    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+
+    const gridPos = GridUtils.pixelToGrid(position, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    gridPos.colSpan = 4;
+    gridPos.rowSpan = 4;
+
+    const pixelPos = GridUtils.gridToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const defaultWordBank = [
+      { id: 'word-1', text: 'programowania' },
+      { id: 'word-2', text: 'algorytmów' },
+      { id: 'word-3', text: 'rozwiązań' }
+    ];
+
+    return {
+      id,
+      type: 'fillBlanks',
+      position: pixelPos,
+      size: pixelSize,
+      gridPosition: gridPos,
+      page,
+      content: {
+        instruction: '<p style="margin: 0;">Przeciągnij wyrazy do odpowiednich luk w tekście.</p>',
+        richInstruction: '<p style="margin: 0;">Przeciągnij wyrazy do odpowiednich luk w tekście.</p>',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        backgroundColor: '#2563eb',
+        showBorder: true,
+        textTemplate: 'Nauka ___ pomaga w zrozumieniu ___ i tworzeniu własnych ___.',
+        slots: [
+          { id: 'slot-1', correctWordId: 'word-1' },
+          { id: 'slot-2', correctWordId: 'word-2' },
+          { id: 'slot-3', correctWordId: 'word-3' }
+        ],
+        wordBank: defaultWordBank
       },
       created_at: now,
       updated_at: now,

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Save, RotateCcw, Grid, Edit } from 'lucide-react';
 import { Lesson, Course } from '../types/course.ts';
-import { LessonContent, LessonTile, ProgrammingTile, TextTile } from '../types/lessonEditor.ts';
+import { LessonContent, LessonTile, ProgrammingTile, TextTile, FillBlanksTile } from '../types/lessonEditor.ts';
 import { SequencingTile } from '../types/lessonEditor.ts';
 import { useLessonEditor } from '../hooks/useLessonEditor.ts';
 import { LessonContentService } from '../services/lessonContentService.ts';
@@ -24,8 +24,13 @@ interface LessonEditorProps {
   onBack: () => void;
 }
 
-const isRichTextTile = (tile: LessonTile | null): tile is TextTile | ProgrammingTile | SequencingTile => {
-  return !!tile && (tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing');
+const isRichTextTile = (tile: LessonTile | null): tile is TextTile | ProgrammingTile | SequencingTile | FillBlanksTile => {
+  return !!tile && (
+    tile.type === 'text' ||
+    tile.type === 'programming' ||
+    tile.type === 'sequencing' ||
+    tile.type === 'fillBlanks'
+  );
 };
 
 export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBack }) => {
@@ -253,6 +258,9 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       case 'sequencing':
         newTile = LessonContentService.createSequencingTile(position, currentPage);
         break;
+      case 'fillBlanks':
+        newTile = LessonContentService.createFillBlanksTile(position, currentPage);
+        break;
       default:
         logger.warn(`Tile type ${tileType} not implemented yet`);
         warning('Funkcja niedostępna', `Typ kafelka "${tileType}" nie jest jeszcze dostępny`);
@@ -313,7 +321,14 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
         };
 
         // Special handling for text-based tiles to ensure content properties are merged
-        if ((tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing') && updates.content) {
+        if (
+          (
+            tile.type === 'text' ||
+            tile.type === 'programming' ||
+            tile.type === 'sequencing' ||
+            tile.type === 'fillBlanks'
+          ) && updates.content
+        ) {
           updatedTile.content = {
             ...tile.content,
             ...updates.content

@@ -1,9 +1,10 @@
 import React from 'react';
 import { Plus, Trash2, Type, X } from 'lucide-react';
-import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizTile } from '../../../types/lessonEditor.ts';
+import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizTile, FillBlanksTile } from '../../../types/lessonEditor.ts';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
 import { SequencingEditor } from './SequencingEditor.tsx';
+import { FillBlanksEditor } from './FillBlanksEditor.tsx';
 
 interface TileSideEditorProps {
   tile: LessonTile | undefined;
@@ -97,6 +98,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
       case 'image': return 'Edytor Obrazu';
       case 'visualization': return 'Edytor Wizualizacji';
       case 'quiz': return 'Edytor Quiz';
+      case 'fillBlanks': return 'Edytor uzupełniania luk';
       default: return 'Edytor Kafelka';
     }
   };
@@ -266,6 +268,16 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
             onUpdateTile={onUpdateTile}
             isTesting={isTesting}
             onToggleTesting={onToggleTesting}
+          />
+        );
+      }
+
+      case 'fillBlanks': {
+        const fillTile = tile as FillBlanksTile;
+        return (
+          <FillBlanksEditor
+            tile={fillTile}
+            onUpdateTile={onUpdateTile}
           />
         );
       }

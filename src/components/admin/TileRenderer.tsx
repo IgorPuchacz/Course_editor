@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Move, Trash2, Play, Code2 } from 'lucide-react';
-import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor';
+import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile, FillBlanksTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -16,6 +16,7 @@ import TextAlign from '../../extensions/TextAlign';
 import { SequencingInteractive } from './SequencingInteractive';
 import { TaskInstructionPanel } from './common/TaskInstructionPanel';
 import { QuizInteractive } from './QuizInteractive';
+import { FillBlanksInteractive } from './FillBlanksInteractive';
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
   if (!hex) return null;
@@ -688,6 +689,67 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         } else {
           contentToRender = renderSequencingContent();
         }
+        break;
+      }
+
+      case 'fillBlanks': {
+        const fillTile = tile as FillBlanksTile;
+        const accentColor = fillTile.content.backgroundColor || computedBackground;
+        const textColor = getReadableTextColor(accentColor);
+
+        if (isEditingText && isSelected) {
+          const instructionEditorTile: TextTile = {
+            ...tile,
+            type: 'text',
+            content: {
+              text: fillTile.content.instruction,
+              richText: fillTile.content.richInstruction,
+              fontFamily: fillTile.content.fontFamily,
+              fontSize: fillTile.content.fontSize,
+              verticalAlign: 'top',
+              backgroundColor: accentColor,
+              showBorder: fillTile.content.showBorder
+            }
+          };
+
+          contentToRender = (
+            <FillBlanksInteractive
+              tile={fillTile}
+              isPreview
+              instructionContent={
+                <RichTextEditor
+                  textTile={instructionEditorTile}
+                  tileId={tile.id}
+                  onUpdateTile={(tileId, updates) => {
+                    if (!updates.content) return;
+
+                    onUpdateTile(tileId, {
+                      content: {
+                        ...fillTile.content,
+                        instruction: updates.content.text ?? fillTile.content.instruction,
+                        richInstruction: updates.content.richText ?? fillTile.content.richInstruction,
+                        fontFamily: updates.content.fontFamily ?? fillTile.content.fontFamily,
+                        fontSize: updates.content.fontSize ?? fillTile.content.fontSize
+                      }
+                    });
+                  }}
+                  onFinishTextEditing={onFinishTextEditing}
+                  onEditorReady={onEditorReady}
+                  textColor={textColor}
+                />
+              }
+            />
+          );
+        } else {
+          contentToRender = (
+            <FillBlanksInteractive
+              tile={fillTile}
+              isTestingMode={isTestingMode}
+              onRequestTextEditing={onDoubleClick}
+            />
+          );
+        }
+
         break;
       }
       default:
