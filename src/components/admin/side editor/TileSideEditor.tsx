@@ -1,6 +1,6 @@
 import React from 'react';
-import { Plus, Trash2, Type, X } from 'lucide-react';
-import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizTile } from '../../../types/lessonEditor.ts';
+import { Plus, Trash2, Type, X, Image as ImageIcon, Eye, HelpCircle, Code, ArrowUpDown, Puzzle } from 'lucide-react';
+import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizTile, MatchPairsTile } from '../../../types/lessonEditor.ts';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
 import { SequencingEditor } from './SequencingEditor.tsx';
@@ -86,7 +86,12 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
   const getTileIcon = () => {
     switch (tile.type) {
       case 'text': return Type;
-      case 'image': return Type; // You can import Image icon
+      case 'image': return ImageIcon;
+      case 'visualization': return Eye;
+      case 'quiz': return HelpCircle;
+      case 'programming': return Code;
+      case 'sequencing': return ArrowUpDown;
+      case 'matchPairs': return Puzzle;
       default: return Type;
     }
   };
@@ -97,6 +102,9 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
       case 'image': return 'Edytor Obrazu';
       case 'visualization': return 'Edytor Wizualizacji';
       case 'quiz': return 'Edytor Quiz';
+      case 'programming': return 'Edytor Zadania programistycznego';
+      case 'sequencing': return 'Edytor sekwencji';
+      case 'matchPairs': return 'Edytor dopasowywania';
       default: return 'Edytor Kafelka';
     }
   };
@@ -267,6 +275,269 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
             isTesting={isTesting}
             onToggleTesting={onToggleTesting}
           />
+        );
+      }
+
+      case 'matchPairs': {
+        const matchPairsTile = tile as MatchPairsTile;
+
+        const updateContent = (updates: Partial<MatchPairsTile['content']>) => {
+          onUpdateTile(tile.id, {
+            content: {
+              ...matchPairsTile.content,
+              ...updates
+            },
+            updated_at: new Date().toISOString()
+          });
+        };
+
+        const handleTemplateChange = (value: string) => {
+          const placeholderRegex = /\{\{(.*?)\}\}/g;
+          const matches = Array.from(value.matchAll(placeholderRegex));
+          const uniqueIds = Array.from(
+            new Set(
+              matches
+                .map(match => match[1]?.trim())
+                .filter((id): id is string => Boolean(id))
+            )
+          );
+
+          const currentBlanksMap = new Map(
+            matchPairsTile.content.blanks.map(blank => [blank.id, blank.correctOptionId])
+          );
+
+          const normalizedBlanks = uniqueIds.map(id => ({
+            id,
+            correctOptionId: currentBlanksMap.get(id) ?? ''
+          }));
+
+          updateContent({
+            textTemplate: value,
+            blanks: normalizedBlanks
+          });
+        };
+
+        const handleOptionTextChange = (optionId: string, value: string) => {
+          const options = matchPairsTile.content.options.map(option =>
+            option.id === optionId ? { ...option, text: value } : option
+          );
+          updateContent({ options });
+        };
+
+        const handleAddOption = () => {
+          const newOptionId = `option-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+          const options = [
+            ...matchPairsTile.content.options,
+            {
+              id: newOptionId,
+              text: `Nowe wyrażenie ${matchPairsTile.content.options.length + 1}`
+            }
+          ];
+          updateContent({ options });
+        };
+
+        const handleRemoveOption = (optionId: string) => {
+          const options = matchPairsTile.content.options.filter(option => option.id !== optionId);
+          const blanks = matchPairsTile.content.blanks.map(blank => ({
+            ...blank,
+            correctOptionId: blank.correctOptionId === optionId ? '' : blank.correctOptionId
+          }));
+          updateContent({ options, blanks });
+        };
+
+        const handleCorrectOptionChange = (blankId: string, optionId: string) => {
+          const blanks = matchPairsTile.content.blanks.map(blank =>
+            blank.id === blankId ? { ...blank, correctOptionId: optionId } : blank
+          );
+          updateContent({ blanks });
+        };
+
+        const handleFeedbackChange = (field: 'successFeedback' | 'failureFeedback', value: string) => {
+          updateContent({ [field]: value } as Partial<MatchPairsTile['content']>);
+        };
+
+        const FONT_OPTIONS = [
+          'Inter, system-ui, sans-serif',
+          'Lato, system-ui, sans-serif',
+          'Merriweather, serif',
+          'Roboto, system-ui, sans-serif'
+        ];
+
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Kolor akcentu</label>
+                <input
+                  type="color"
+                  value={matchPairsTile.content.backgroundColor}
+                  onChange={(e) => updateContent({ backgroundColor: e.target.value })}
+                  className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
+                />
+              </div>
+
+              <label className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
+                <input
+                  type="checkbox"
+                  checked={matchPairsTile.content.showBorder}
+                  onChange={(e) => updateContent({ showBorder: e.target.checked })}
+                  className="w-5 h-5 text-blue-600"
+                />
+                <div>
+                  <span className="text-sm font-medium text-gray-900">Pokaż dekoracyjną ramkę</span>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Wyłączenie ramki doda kafelkowi bardziej minimalistyczny wygląd.
+                  </p>
+                </div>
+              </label>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Kr&oacute;j pisma</label>
+                  <select
+                    value={matchPairsTile.content.fontFamily}
+                    onChange={(e) => updateContent({ fontFamily: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  >
+                    {FONT_OPTIONS.map(option => (
+                      <option key={option} value={option}>
+                        {option.split(',')[0]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Rozmiar tekstu</label>
+                  <input
+                    type="number"
+                    min={12}
+                    max={36}
+                    value={matchPairsTile.content.fontSize}
+                    onChange={(e) => updateContent({ fontSize: Number.parseInt(e.target.value, 10) || 16 })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Tekst z lukami</label>
+              <p className="text-xs text-gray-600 mb-2">
+                Wstaw luki przy pomocy podw&oacute;jnych nawias&oacute;w klamrowych, np. <code className="bg-gray-100 px-1 py-0.5 rounded">{'{{miasto}}'}</code>.
+              </p>
+              <textarea
+                value={matchPairsTile.content.textTemplate}
+                onChange={(e) => handleTemplateChange(e.target.value)}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                placeholder="Tekst zadania z lukami"
+              />
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold text-gray-900">Bank wyrażeń</h4>
+                <button
+                  type="button"
+                  onClick={handleAddOption}
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  Dodaj wyrażenie
+                </button>
+              </div>
+
+              {matchPairsTile.content.options.length === 0 ? (
+                <p className="text-sm text-gray-600">
+                  Dodaj co najmniej jedno wyrażenie, aby uczniowie mogli je przeciągnąć do luk.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {matchPairsTile.content.options.map(option => (
+                    <div key={option.id} className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs uppercase tracking-widest text-gray-500">ID: {option.id}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveOption(option.id)}
+                          className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg text-rose-600 hover:bg-rose-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Usuń
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        value={option.text}
+                        onChange={(e) => handleOptionTextChange(option.id, e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        placeholder="Treść wyrażenia"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-gray-900">Poprawne odpowiedzi</h4>
+              {matchPairsTile.content.blanks.length === 0 ? (
+                <p className="text-sm text-gray-600">
+                  Dodaj luki w tekście, aby skonfigurować poprawne odpowiedzi.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {matchPairsTile.content.blanks.map(blank => (
+                    <div key={blank.id} className="border border-gray-200 rounded-xl p-4 bg-white flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs uppercase tracking-widest text-gray-500">Luka: {blank.id}</span>
+                        {blank.correctOptionId && (
+                          <span className="text-xs font-medium text-emerald-600">Przypisano odpowiedź</span>
+                        )}
+                      </div>
+                      <select
+                        value={blank.correctOptionId}
+                        onChange={(e) => handleCorrectOptionChange(blank.id, e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      >
+                        <option value="">Wybierz poprawne wyrażenie</option>
+                        {matchPairsTile.content.options.map(option => (
+                          <option key={option.id} value={option.id}>
+                            {option.text}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Informacja zwrotna – poprawnie</label>
+                <textarea
+                  value={matchPairsTile.content.successFeedback}
+                  onChange={(e) => handleFeedbackChange('successFeedback', e.target.value)}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  placeholder="Komunikat dla poprawnego rozwiązania"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Informacja zwrotna – spr&oacute;buj ponownie</label>
+                <textarea
+                  value={matchPairsTile.content.failureFeedback}
+                  onChange={(e) => handleFeedbackChange('failureFeedback', e.target.value)}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  placeholder="Komunikat dla niepoprawnego rozwiązania"
+                />
+              </div>
+            </div>
+          </div>
         );
       }
 

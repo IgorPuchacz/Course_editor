@@ -1,5 +1,4 @@
-import { LessonContent, LessonTile, TextTile } from '../types/lessonEditor';
-import { ProgrammingTile, SequencingTile } from '../types/lessonEditor';
+import { LessonContent, LessonTile, TextTile, ProgrammingTile, SequencingTile, MatchPairsTile } from '../types/lessonEditor';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
 
@@ -397,6 +396,70 @@ export class LessonContentService {
         ],
         correctFeedback: 'Świetnie! Prawidłowa kolejność.',
         incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.'
+      },
+      created_at: now,
+      updated_at: now,
+      z_index: 1
+    };
+  }
+
+  /**
+   * Create a new match pairs (fill-in-the-blanks) tile
+   */
+  static createMatchPairsTile(position: { x: number; y: number }, page = 1): MatchPairsTile {
+    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+
+    const gridPos = GridUtils.pixelToGrid(position, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    gridPos.colSpan = 4;
+    gridPos.rowSpan = 4;
+
+    const pixelPos = GridUtils.gridToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    return {
+      id,
+      type: 'matchPairs',
+      position: pixelPos,
+      size: pixelSize,
+      gridPosition: gridPos,
+      page,
+      content: {
+        instruction: 'Przeciągnij właściwe wyrażenia do luk w tekście.',
+        richInstruction: '<p style="margin: 0;">Przeciągnij właściwe wyrażenia do luk w tekście.</p>',
+        textTemplate: 'Stolicą Polski jest {{miasto}}. Narodowym symbolem jest {{symbol}}.',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 18,
+        backgroundColor: '#d4d4d4',
+        showBorder: true,
+        blanks: [
+          { id: 'miasto', correctOptionId: 'option-1' },
+          { id: 'symbol', correctOptionId: 'option-2' }
+        ],
+        options: [
+          { id: 'option-1', text: 'Warszawa' },
+          { id: 'option-2', text: 'biało-czerwona flaga' },
+          { id: 'option-3', text: 'wisła' }
+        ],
+        successFeedback: 'Brawo! Wszystkie odpowiedzi są poprawne.',
+        failureFeedback: 'Sprawdź jeszcze raz – część luk zawiera błędne odpowiedzi.'
       },
       created_at: now,
       updated_at: now,
