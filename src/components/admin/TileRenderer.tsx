@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Move, Trash2, Play, Code2 } from 'lucide-react';
-import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor';
+import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile, MatchPairsTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -14,6 +14,7 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import TextAlign from '../../extensions/TextAlign';
 import { SequencingInteractive } from './SequencingInteractive';
+import { MatchPairsInteractive } from './MatchPairsInteractive';
 import { TaskInstructionPanel } from './common/TaskInstructionPanel';
 import { QuizInteractive } from './QuizInteractive';
 
@@ -690,6 +691,63 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         }
         break;
       }
+
+      case 'matchPairs': {
+        const matchPairsTile = tile as MatchPairsTile;
+        const accentColor = matchPairsTile.content.backgroundColor || computedBackground;
+        const textColor = getReadableTextColor(accentColor);
+
+        const renderMatchPairs = (instructionContent?: React.ReactNode, isPreviewMode = false) => (
+          <MatchPairsInteractive
+            tile={matchPairsTile}
+            isTestingMode={isTestingMode}
+            instructionContent={instructionContent}
+            isPreview={isPreviewMode}
+            onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
+          />
+        );
+
+        if (isEditingText && isSelected) {
+          const instructionEditorTile = {
+            ...tile,
+            type: 'text',
+            content: {
+              text: matchPairsTile.content.instruction,
+              richText: matchPairsTile.content.richInstruction,
+              fontFamily: 'Inter, system-ui, sans-serif',
+              fontSize: 16,
+              verticalAlign: 'top',
+              backgroundColor: matchPairsTile.content.backgroundColor,
+              showBorder: true
+            }
+          } as TextTile;
+
+          contentToRender = renderMatchPairs(
+            <RichTextEditor
+              textTile={instructionEditorTile}
+              tileId={tile.id}
+              textColor={textColor}
+              onUpdateTile={(tileId, updates) => {
+                if (!updates.content) return;
+
+                onUpdateTile(tileId, {
+                  content: {
+                    ...matchPairsTile.content,
+                    instruction: updates.content.text ?? matchPairsTile.content.instruction,
+                    richInstruction: updates.content.richText ?? matchPairsTile.content.richInstruction
+                  }
+                });
+              }}
+              onFinishTextEditing={onFinishTextEditing}
+              onEditorReady={onEditorReady}
+            />,
+            true
+          );
+        } else {
+          contentToRender = renderMatchPairs();
+        }
+        break;
+      }
       default:
         contentToRender = (
           <div className="w-full h-full flex items-center justify-center">
@@ -746,7 +804,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         height: tile.size.height
       }}
       onMouseDown={isDraggingImage || isTestingMode ? undefined : onMouseDown}
-      onDoubleClick={tile.type === 'sequencing' ? undefined : onDoubleClick}
+      onDoubleClick={tile.type === 'sequencing' || tile.type === 'matchPairs' ? undefined : onDoubleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >

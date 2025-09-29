@@ -253,6 +253,9 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       case 'sequencing':
         newTile = LessonContentService.createSequencingTile(position, currentPage);
         break;
+      case 'matchPairs':
+        newTile = LessonContentService.createMatchPairsTile(position, currentPage);
+        break;
       default:
         logger.warn(`Tile type ${tileType} not implemented yet`);
         warning('Funkcja niedostępna', `Typ kafelka "${tileType}" nie jest jeszcze dostępny`);
@@ -313,7 +316,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
         };
 
         // Special handling for text-based tiles to ensure content properties are merged
-        if ((tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing') && updates.content) {
+        if ((tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing' || tile.type === 'matchPairs') && updates.content) {
           updatedTile.content = {
             ...tile.content,
             ...updates.content
