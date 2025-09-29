@@ -128,13 +128,10 @@ export const MatchPairsInteractive: React.FC<MatchPairsInteractiveProps> = ({
 
   const accentColor = tile.content.backgroundColor || '#0f172a';
   const textColor = useMemo(() => getReadableTextColor(accentColor), [accentColor]);
-  const gradientStart = useMemo(() => lightenColor(accentColor, 0.08), [accentColor]);
-  const gradientEnd = useMemo(() => darkenColor(accentColor, 0.08), [accentColor]);
   const panelBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.62, 0.45), [accentColor, textColor]);
   const panelBorder = useMemo(() => surfaceColor(accentColor, textColor, 0.5, 0.55), [accentColor, textColor]);
   const iconBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.54, 0.48), [accentColor, textColor]);
   const mutedLabelColor = textColor === '#0f172a' ? '#475569' : '#d1d5db';
-  const frameBorderColor = useMemo(() => surfaceColor(accentColor, textColor, 0.52, 0.58), [accentColor, textColor]);
   const blankBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.65, 0.38), [accentColor, textColor]);
   const blankBorder = useMemo(() => surfaceColor(accentColor, textColor, 0.54, 0.52), [accentColor, textColor]);
   const blankHoverBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.75, 0.32), [accentColor, textColor]);
@@ -355,14 +352,10 @@ export const MatchPairsInteractive: React.FC<MatchPairsInteractiveProps> = ({
   return (
     <div className="relative w-full h-full" onDoubleClick={handleTileDoubleClick}>
       <div
-        className={`w-full h-full flex flex-col gap-6 transition-all duration-300 p-6 ${
-          tile.content.showBorder ? 'rounded-3xl border shadow-lg shadow-slate-950/20' : ''
-        }`}
+        className="w-full h-full flex flex-col gap-6 transition-all duration-300 p-6 rounded-[inherit]"
         style={{
-          backgroundColor: accentColor,
-          backgroundImage: `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`,
-          color: textColor,
-          borderColor: tile.content.showBorder ? frameBorderColor : undefined
+          background: 'transparent',
+          color: textColor
         }}
       >
         <TaskInstructionPanel
