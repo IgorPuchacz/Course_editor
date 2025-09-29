@@ -417,7 +417,7 @@ export class LessonContentService {
       snapToGrid: true
     });
 
-    gridPos.colSpan = 4;
+    gridPos.colSpan = 5;
     gridPos.rowSpan = 4;
 
     const pixelPos = GridUtils.gridToPixel(gridPos, {
