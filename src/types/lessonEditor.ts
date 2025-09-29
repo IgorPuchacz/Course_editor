@@ -21,6 +21,7 @@ export interface LessonTile {
   position: Position;
   size: Size;
   gridPosition: GridPosition;
+  page: number;
   content: any;
   created_at: string;
   updated_at: string;
@@ -139,6 +140,7 @@ export interface LessonContent {
   lesson_id: string;
   tiles: LessonTile[];
   canvas_settings: CanvasSettings;
+  total_pages: number;
   created_at: string;
   updated_at: string;
 }

@@ -20,6 +20,7 @@ export class LessonContentService {
           gridSize: GridUtils.GRID_CELL_SIZE,
           snapToGrid: true
         },
+        total_pages: 1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -36,8 +37,19 @@ export class LessonContentService {
    */
   static async saveLessonContent(content: LessonContent): Promise<void> {
     try {
-      // Update canvas height based on tiles
-      content.canvas_settings.height = GridUtils.calculateCanvasHeight(content.tiles);
+      const totalPages = Math.max(
+        content.total_pages || 1,
+        ...content.tiles.map(tile => tile.page ?? 1)
+      );
+
+      let maxHeight = 6;
+      for (let page = 1; page <= totalPages; page++) {
+        const pageTiles = content.tiles.filter(tile => (tile.page ?? 1) === page);
+        maxHeight = Math.max(maxHeight, GridUtils.calculateCanvasHeight(pageTiles));
+      }
+
+      content.total_pages = totalPages;
+      content.canvas_settings.height = maxHeight;
       content.updated_at = new Date().toISOString();
 
       // Simulate API call - replace with actual Supabase call
@@ -54,7 +66,7 @@ export class LessonContentService {
   /**
    * Create a new text tile
    */
-  static createTextTile(position: { x: number; y: number }): TextTile {
+  static createTextTile(position: { x: number; y: number }, page = 1): TextTile {
     const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
     
@@ -90,6 +102,7 @@ export class LessonContentService {
       position: pixelPos,
       size: pixelSize,
       gridPosition: gridPos,
+      page,
       content: {
         text: 'Nowy tekst',
         richText: '<p style="margin: 0;">Nowy tekst</p>',
@@ -108,7 +121,7 @@ export class LessonContentService {
   /**
    * Create a new image tile
    */
-  static createImageTile(position: { x: number; y: number }): LessonTile {
+  static createImageTile(position: { x: number; y: number }, page = 1): LessonTile {
     const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
     
@@ -143,6 +156,7 @@ export class LessonContentService {
       position: pixelPos,
       size: pixelSize,
       gridPosition: gridPos,
+      page,
       content: {
         url: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400',
         alt: 'Przykładowy obraz',
@@ -160,7 +174,7 @@ export class LessonContentService {
   /**
    * Create a new visualization tile
    */
-  static createVisualizationTile(position: { x: number; y: number }): LessonTile {
+  static createVisualizationTile(position: { x: number; y: number }, page = 1): LessonTile {
     const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
     
@@ -195,6 +209,7 @@ export class LessonContentService {
       position: pixelPos,
       size: pixelSize,
       gridPosition: gridPos,
+      page,
       content: {
         title: 'Nowa wizualizacja',
         contentType: 'chart',
@@ -215,7 +230,7 @@ export class LessonContentService {
   /**
    * Create a new quiz tile
    */
-  static createQuizTile(position: { x: number; y: number }): LessonTile {
+  static createQuizTile(position: { x: number; y: number }, page = 1): LessonTile {
     const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
     
@@ -250,6 +265,7 @@ export class LessonContentService {
       position: pixelPos,
       size: pixelSize,
       gridPosition: gridPos,
+      page,
       content: {
         question: 'Przykładowe pytanie?',
         richQuestion: '<p>Przykładowe pytanie?</p>',
@@ -273,7 +289,7 @@ export class LessonContentService {
   /**
    * Create a new programming task tile
    */
-  static createProgrammingTile(position: { x: number; y: number }): ProgrammingTile {
+  static createProgrammingTile(position: { x: number; y: number }, page = 1): ProgrammingTile {
     const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
     
@@ -308,6 +324,7 @@ export class LessonContentService {
       position: pixelPos,
       size: pixelSize,
       gridPosition: gridPos,
+      page,
       content: {
         description: 'Opis zadania programistycznego',
         richDescription: '<p style="margin: 0;">Opis zadania programistycznego</p>',
@@ -329,7 +346,7 @@ export class LessonContentService {
   /**
    * Create a new sequencing tile
    */
-  static createSequencingTile(position: { x: number; y: number }): SequencingTile {
+  static createSequencingTile(position: { x: number; y: number }, page = 1): SequencingTile {
     const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
     
@@ -364,6 +381,7 @@ export class LessonContentService {
       position: pixelPos,
       size: pixelSize,
       gridPosition: gridPos,
+      page,
       content: {
         question: 'Ułóż elementy w prawidłowej kolejności',
         richQuestion: '<p style="margin: 0;">Ułóż elementy w prawidłowej kolejności</p>',
