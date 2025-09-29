@@ -33,6 +33,7 @@ export const useTileInteractions = ({
       tile.type === 'text' ||
       tile.type === 'programming' ||
       tile.type === 'sequencing' ||
+      tile.type === 'matching' ||
       tile.type === 'quiz'
     ) {
       dispatch({ type: 'startTextEditing', tileId: tile.id });
