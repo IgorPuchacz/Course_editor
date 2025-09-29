@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Move, Trash2, Play, Code2 } from 'lucide-react';
-import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor';
+import {
+  LessonTile,
+  TextTile,
+  ImageTile,
+  QuizTile,
+  ProgrammingTile,
+  SequencingTile,
+  MatchPairsTile
+} from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -16,6 +24,7 @@ import TextAlign from '../../extensions/TextAlign';
 import { SequencingInteractive } from './SequencingInteractive';
 import { TaskInstructionPanel } from './common/TaskInstructionPanel';
 import { QuizInteractive } from './QuizInteractive';
+import { MatchPairsInteractive } from './MatchPairsInteractive';
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
   if (!hex) return null;
@@ -687,6 +696,71 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
           );
         } else {
           contentToRender = renderSequencingContent();
+        }
+        break;
+      }
+
+      case 'matchPairs': {
+        const matchPairsTile = tile as MatchPairsTile;
+        const accentColor = matchPairsTile.content.backgroundColor || computedBackground;
+        const textColor = getReadableTextColor(accentColor);
+
+        const renderMatchPairsContent = (
+          instructionContent?: React.ReactNode,
+          isPreviewMode = false
+        ) => (
+          <MatchPairsInteractive
+            tile={matchPairsTile}
+            isTestingMode={isTestingMode}
+            instructionContent={instructionContent}
+            isPreview={isPreviewMode}
+            onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
+          />
+        );
+
+        if (isEditingText && isSelected) {
+          const instructionEditorTile: TextTile = {
+            ...tile,
+            type: 'text',
+            content: {
+              text: matchPairsTile.content.instructions,
+              richText: matchPairsTile.content.richInstructions,
+              fontFamily: matchPairsTile.content.fontFamily,
+              fontSize: matchPairsTile.content.fontSize,
+              verticalAlign: 'top',
+              backgroundColor: matchPairsTile.content.backgroundColor,
+              showBorder: matchPairsTile.content.showBorder
+            }
+          };
+
+          contentToRender = renderMatchPairsContent(
+            <RichTextEditor
+              textTile={instructionEditorTile}
+              tileId={tile.id}
+              textColor={textColor}
+              onUpdateTile={(tileId, updates) => {
+                if (!updates.content) return;
+
+                onUpdateTile(tileId, {
+                  content: {
+                    ...matchPairsTile.content,
+                    instructions:
+                      updates.content.text ?? matchPairsTile.content.instructions,
+                    richInstructions:
+                      updates.content.richText ?? matchPairsTile.content.richInstructions,
+                    fontFamily:
+                      updates.content.fontFamily ?? matchPairsTile.content.fontFamily,
+                    fontSize: updates.content.fontSize ?? matchPairsTile.content.fontSize
+                  }
+                });
+              }}
+              onFinishTextEditing={onFinishTextEditing}
+              onEditorReady={onEditorReady}
+            />,
+            true
+          );
+        } else {
+          contentToRender = renderMatchPairsContent();
         }
         break;
       }

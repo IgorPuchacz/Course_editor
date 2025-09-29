@@ -1,9 +1,18 @@
 import React from 'react';
 import { Plus, Trash2, Type, X } from 'lucide-react';
-import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizTile } from '../../../types/lessonEditor.ts';
+import {
+  TextTile,
+  ImageTile,
+  LessonTile,
+  ProgrammingTile,
+  SequencingTile,
+  QuizTile,
+  MatchPairsTile
+} from '../../../types/lessonEditor.ts';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
 import { SequencingEditor } from './SequencingEditor.tsx';
+import { MatchPairsEditor } from './MatchPairsEditor.tsx';
 
 interface TileSideEditorProps {
   tile: LessonTile | undefined;
@@ -97,6 +106,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
       case 'image': return 'Edytor Obrazu';
       case 'visualization': return 'Edytor Wizualizacji';
       case 'quiz': return 'Edytor Quiz';
+      case 'matchPairs': return 'Edytor luk w tekście';
       default: return 'Edytor Kafelka';
     }
   };
@@ -263,6 +273,18 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
         return (
           <SequencingEditor
             tile={sequencingTile}
+            onUpdateTile={onUpdateTile}
+            isTesting={isTesting}
+            onToggleTesting={onToggleTesting}
+          />
+        );
+      }
+
+      case 'matchPairs': {
+        const matchPairsTile = tile as MatchPairsTile;
+        return (
+          <MatchPairsEditor
+            tile={matchPairsTile}
             onUpdateTile={onUpdateTile}
             isTesting={isTesting}
             onToggleTesting={onToggleTesting}

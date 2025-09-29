@@ -1,5 +1,5 @@
 import { LessonContent, LessonTile, TextTile } from '../types/lessonEditor';
-import { ProgrammingTile, SequencingTile } from '../types/lessonEditor';
+import { MatchPairsTile, ProgrammingTile, SequencingTile } from '../types/lessonEditor';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
 
@@ -397,6 +397,75 @@ export class LessonContentService {
         ],
         correctFeedback: 'Świetnie! Prawidłowa kolejność.',
         incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.'
+      },
+      created_at: now,
+      updated_at: now,
+      z_index: 1
+    };
+  }
+
+  /**
+   * Create a new match pairs (fill-in-the-blanks) tile
+   */
+  static createMatchPairsTile(position: { x: number; y: number }, page = 1): MatchPairsTile {
+    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+
+    const gridPos = GridUtils.pixelToGrid(position, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    gridPos.colSpan = 4;
+    gridPos.rowSpan = 4;
+
+    const pixelPos = GridUtils.gridToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const defaultOptions = [
+      { id: 'option-1', text: 'czyta' },
+      { id: 'option-2', text: 'cichym' },
+      { id: 'option-3', text: 'wieczorem' },
+      { id: 'option-4', text: 'głośnym' }
+    ];
+
+    return {
+      id,
+      type: 'matchPairs',
+      position: pixelPos,
+      size: pixelSize,
+      gridPosition: gridPos,
+      page,
+      content: {
+        instructions: 'Przeciągnij właściwe wyrazy do luk w tekście.',
+        richInstructions:
+          '<p style="margin: 0;">Przeciągnij właściwe wyrazy do luk w tekście.</p>',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        backgroundColor: '#D4D4D4',
+        showBorder: true,
+        template:
+          'Anna {{blank-1}} książkę w {{blank-2}} salonie podczas {{blank-3}}.',
+        blanks: [
+          { id: 'blank-1', label: 'Czynność', correctOptionId: 'option-1' },
+          { id: 'blank-2', label: 'Opis miejsca', correctOptionId: 'option-2' },
+          { id: 'blank-3', label: 'Czas', correctOptionId: 'option-3' }
+        ],
+        options: defaultOptions,
+        shuffleOptions: true
       },
       created_at: now,
       updated_at: now,
