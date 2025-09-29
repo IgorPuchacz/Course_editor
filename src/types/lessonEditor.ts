@@ -21,6 +21,7 @@ export interface LessonTile {
   position: Position;
   size: Size;
   gridPosition: GridPosition;
+  page: number;
   content: any;
   created_at: string;
   updated_at: string;
@@ -132,6 +133,7 @@ export interface CanvasSettings {
   height: number; // Grid rows (dynamic)
   gridSize: number; // Size of each grid cell in pixels
   snapToGrid: boolean;
+  pages: number;
 }
 
 export interface LessonContent {

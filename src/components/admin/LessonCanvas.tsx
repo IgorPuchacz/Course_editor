@@ -19,6 +19,7 @@ interface LessonCanvasProps {
   showGrid?: boolean;
   onEditorReady: (editor: Editor | null) => void;
   testingTileIds?: string[];
+  currentPage: number;
 }
 
 export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({ 
@@ -32,8 +33,11 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
   onFinishTextEditing,
   showGrid = true,
   onEditorReady,
-  testingTileIds = []
+  testingTileIds = [],
+  currentPage
 }, ref) => {
+  const visibleTiles = content.tiles.filter(tile => tile.page === currentPage);
+
   const {
     dragPreview,
     handleTileDoubleClick,
@@ -45,6 +49,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
     handleImageMouseDown,
   } = useTileInteractions({
     content,
+    tiles: visibleTiles,
     editorState,
     dispatch,
     onUpdateTile,
@@ -121,7 +126,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
         {renderDragPreview()}
 
         {/* Render Tiles */}
-        {content.tiles.map((tile) => (
+        {visibleTiles.map((tile) => (
           <TileRenderer
             key={tile.id}
             tile={tile}
@@ -143,7 +148,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
         ))}
 
         {/* Empty State */}
-        {content.tiles.length === 0 && (
+        {visibleTiles.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center text-gray-400">
               <Type className="w-16 h-16 mx-auto mb-4" />
@@ -157,7 +162,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
       {/* Canvas Info */}
       <div className="mt-4 text-center">
         <p className="text-xs text-gray-500">
-          Siatka: {GridUtils.GRID_COLUMNS} × {content.canvas_settings.height} kafelków
+          Strona {currentPage} z {content.canvas_settings.pages || 1} • Siatka: {GridUtils.GRID_COLUMNS} × {content.canvas_settings.height} kafelków
           {showGrid && ' • Siatka włączona'}
         </p>
       </div>

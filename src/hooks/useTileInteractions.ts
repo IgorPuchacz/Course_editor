@@ -1,11 +1,12 @@
 import { useState, useEffect, RefObject } from 'react';
-import { LessonContent, LessonTile, GridPosition, EditorState, TextTile, ImageTile, SequencingTile } from '../types/lessonEditor';
+import { LessonContent, LessonTile, GridPosition, EditorState, TextTile, ImageTile } from '../types/lessonEditor';
 import { EditorAction } from '../state/editorReducer';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
 
 interface UseTileInteractionsProps {
   content: LessonContent;
+  tiles: LessonTile[];
   editorState: EditorState;
   dispatch: React.Dispatch<EditorAction>;
   onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
@@ -17,6 +18,7 @@ interface UseTileInteractionsProps {
 
 export const useTileInteractions = ({
   content,
+  tiles,
   editorState,
   dispatch,
   onUpdateTile,
@@ -63,7 +65,7 @@ export const useTileInteractions = ({
         const availableGridPos = GridUtils.findNextAvailablePosition(
           { ...desiredGridPos, colSpan: 2, rowSpan: 1 },
           content.canvas_settings,
-          content.tiles
+          tiles
         );
         const finalPixelPos = GridUtils.gridToPixel(availableGridPos, content.canvas_settings);
         onAddTile(data.tileType, finalPixelPos);
@@ -83,7 +85,7 @@ export const useTileInteractions = ({
     const previewPos = GridUtils.findNextAvailablePosition(
       { ...gridPos, colSpan: 2, rowSpan: 1 },
       content.canvas_settings,
-      content.tiles
+      tiles
     );
     setDragPreview(previewPos);
   };
@@ -134,7 +136,7 @@ export const useTileInteractions = ({
   useEffect(() => {
     const handleResizeStart = (e: CustomEvent) => {
       const { tileId, handle, startEvent } = e.detail;
-      const tile = content.tiles.find(t => t.id === tileId);
+      const tile = tiles.find(t => t.id === tileId);
       if (!tile) return;
       dispatch({
         type: 'startResize',
@@ -147,7 +149,7 @@ export const useTileInteractions = ({
     };
     document.addEventListener('tileResizeStart', handleResizeStart as EventListener);
     return () => document.removeEventListener('tileResizeStart', handleResizeStart as EventListener);
-  }, [content.tiles, dispatch]);
+  }, [tiles, dispatch]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -167,7 +169,7 @@ export const useTileInteractions = ({
           col: Math.max(0, Math.min(maxCol, gridPos.col)),
           row: Math.max(0, gridPos.row)
         };
-        if (GridUtils.isValidGridPosition(boundedGridPos, content.canvas_settings, content.tiles, interaction.tile.id)) {
+        if (GridUtils.isValidGridPosition(boundedGridPos, content.canvas_settings, tiles, interaction.tile.id)) {
           const finalPixelPos = GridUtils.gridToPixel(boundedGridPos, content.canvas_settings);
           onUpdateTile(interaction.tile.id, {
             position: finalPixelPos,
@@ -182,7 +184,7 @@ export const useTileInteractions = ({
           x: Math.min(0, interaction.start.imageX + deltaX),
           y: Math.min(0, interaction.start.imageY + deltaY)
         };
-        const draggedTile = content.tiles.find(t => t.id === editorState.selectedTileId);
+        const draggedTile = tiles.find(t => t.id === editorState.selectedTileId);
         if (draggedTile && draggedTile.type === 'image') {
           onUpdateTile(draggedTile.id, {
             content: {
@@ -193,7 +195,7 @@ export const useTileInteractions = ({
         }
       }
       if (interaction.type === 'resize') {
-        const tile = content.tiles.find(t => t.id === interaction.tileId);
+        const tile = tiles.find(t => t.id === interaction.tileId);
         if (!tile) return;
         const deltaX = e.clientX - interaction.startPosition.x;
         const deltaY = e.clientY - interaction.startPosition.y;
@@ -301,7 +303,7 @@ export const useTileInteractions = ({
             break;
           }
         }
-        if (GridUtils.isValidGridPosition(newGridPos, content.canvas_settings, content.tiles, tile.id)) {
+        if (GridUtils.isValidGridPosition(newGridPos, content.canvas_settings, tiles, tile.id)) {
           const newPixelPos = GridUtils.gridToPixel(newGridPos, content.canvas_settings);
           const newPixelSize = GridUtils.gridSizeToPixel(newGridPos, content.canvas_settings);
           onUpdateTile(tile.id, {
@@ -329,7 +331,7 @@ export const useTileInteractions = ({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [editorState.interaction, content, onUpdateTile, dispatch, editorState.selectedTileId, canvasRef]);
+  }, [editorState.interaction, content, tiles, onUpdateTile, dispatch, editorState.selectedTileId, canvasRef]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
