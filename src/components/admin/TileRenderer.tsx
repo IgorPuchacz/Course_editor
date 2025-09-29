@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Move, Trash2, Play, Code2 } from 'lucide-react';
-import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile } from '../../types/lessonEditor';
+import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile, MatchPairsTile } from '../../types/lessonEditor';
 import { GridUtils } from '../../utils/gridUtils';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -16,6 +16,8 @@ import TextAlign from '../../extensions/TextAlign';
 import { SequencingInteractive } from './SequencingInteractive';
 import { TaskInstructionPanel } from './common/TaskInstructionPanel';
 import { QuizInteractive } from './QuizInteractive';
+import { MatchPairsInteractive } from './MatchPairsInteractive';
+import { ensureValidBlankAssignments, synchronizeBlanksWithPrompt } from '../../utils/matchPairs';
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
   if (!hex) return null;
@@ -690,6 +692,77 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         }
         break;
       }
+
+      case 'matchPairs': {
+        const matchPairsTile = tile as MatchPairsTile;
+        const accentColor = matchPairsTile.content.backgroundColor || computedBackground;
+        const textColor = getReadableTextColor(accentColor);
+
+        const renderMatchPairsContent = (instructionContent?: React.ReactNode, isPreviewMode = false) => (
+          <MatchPairsInteractive
+            tile={matchPairsTile}
+            isTestingMode={isTestingMode}
+            isPreview={isPreviewMode}
+            onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
+            instructionContent={instructionContent}
+          />
+        );
+
+        if (isEditingText && isSelected) {
+          const promptEditorTile = {
+            ...tile,
+            type: 'text',
+            content: {
+              text: matchPairsTile.content.prompt,
+              richText: matchPairsTile.content.richPrompt,
+              fontFamily: matchPairsTile.content.fontFamily,
+              fontSize: matchPairsTile.content.fontSize,
+              verticalAlign: matchPairsTile.content.verticalAlign,
+              backgroundColor: matchPairsTile.content.backgroundColor,
+              showBorder: matchPairsTile.content.showBorder
+            }
+          } as TextTile;
+
+          contentToRender = renderMatchPairsContent(
+            <RichTextEditor
+              textTile={promptEditorTile}
+              tileId={tile.id}
+              textColor={textColor}
+              onUpdateTile={(tileId, updates) => {
+                if (!updates.content) return;
+
+                const updatedPrompt = updates.content.text ?? matchPairsTile.content.prompt;
+                const updatedRichPrompt = updates.content.richText ?? matchPairsTile.content.richPrompt;
+                const updatedFontFamily = updates.content.fontFamily ?? matchPairsTile.content.fontFamily;
+                const updatedFontSize = updates.content.fontSize ?? matchPairsTile.content.fontSize;
+                const updatedVerticalAlign = updates.content.verticalAlign ?? matchPairsTile.content.verticalAlign;
+
+                const synchronizedBlanks = synchronizeBlanksWithPrompt(updatedPrompt, matchPairsTile.content.blanks);
+                const normalizedBlanks = ensureValidBlankAssignments(synchronizedBlanks, matchPairsTile.content.options);
+
+                onUpdateTile(tileId, {
+                  content: {
+                    ...matchPairsTile.content,
+                    prompt: updatedPrompt,
+                    richPrompt: updatedRichPrompt,
+                    fontFamily: updatedFontFamily,
+                    fontSize: updatedFontSize,
+                    verticalAlign: updatedVerticalAlign,
+                    blanks: normalizedBlanks
+                  }
+                });
+              }}
+              onFinishTextEditing={onFinishTextEditing}
+              onEditorReady={onEditorReady}
+            />,
+            true
+          );
+        } else {
+          contentToRender = renderMatchPairsContent();
+        }
+
+        break;
+      }
       default:
         contentToRender = (
           <div className="w-full h-full flex items-center justify-center">
@@ -746,7 +819,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
         height: tile.size.height
       }}
       onMouseDown={isDraggingImage || isTestingMode ? undefined : onMouseDown}
-      onDoubleClick={tile.type === 'sequencing' ? undefined : onDoubleClick}
+      onDoubleClick={tile.type === 'sequencing' || tile.type === 'matchPairs' ? undefined : onDoubleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >

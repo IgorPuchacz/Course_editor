@@ -1,5 +1,11 @@
-import { LessonContent, LessonTile, TextTile } from '../types/lessonEditor';
-import { ProgrammingTile, SequencingTile } from '../types/lessonEditor';
+import {
+  LessonContent,
+  LessonTile,
+  TextTile,
+  ProgrammingTile,
+  SequencingTile,
+  MatchPairsTile
+} from '../types/lessonEditor';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
 
@@ -336,6 +342,76 @@ export class LessonContentService {
         language: 'python',
         startingCode: '',
         endingCode: ''
+      },
+      created_at: now,
+      updated_at: now,
+      z_index: 1
+    };
+  }
+
+  /**
+   * Create a new match pairs tile
+   */
+  static createMatchPairsTile(position: { x: number; y: number }, page = 1): MatchPairsTile {
+    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+
+    const gridPos = GridUtils.pixelToGrid(position, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    gridPos.colSpan = 4;
+    gridPos.rowSpan = 4;
+
+    const pixelPos = GridUtils.gridToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
+      width: GridUtils.GRID_COLUMNS,
+      height: 6,
+      gridSize: GridUtils.GRID_CELL_SIZE,
+      snapToGrid: true
+    });
+
+    const options: MatchPairsTile['content']['options'] = [
+      { id: `option-${Date.now()}-1`, text: 'czyta' },
+      { id: `option-${Date.now()}-2`, text: 'książkę' },
+      { id: `option-${Date.now()}-3`, text: 'wieczorem' },
+      { id: `option-${Date.now()}-4`, text: 'głośno' }
+    ];
+
+    const blanks: MatchPairsTile['content']['blanks'] = [
+      { id: `blank-${Date.now()}-1`, correctOptionId: options[0].id },
+      { id: `blank-${Date.now()}-2`, correctOptionId: options[1].id },
+      { id: `blank-${Date.now()}-3`, correctOptionId: options[2].id }
+    ];
+
+    const prompt = 'Basia __ swoją ulubioną __ __.';
+
+    return {
+      id,
+      type: 'matchPairs',
+      position: pixelPos,
+      size: pixelSize,
+      gridPosition: gridPos,
+      page,
+      content: {
+        prompt,
+        richPrompt: '<p style="margin: 0;">Basia __ swoją ulubioną __ __.</p>',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        verticalAlign: 'top',
+        backgroundColor: '#c4b5fd',
+        showBorder: true,
+        blanks,
+        options
       },
       created_at: now,
       updated_at: now,
