@@ -4,6 +4,7 @@ import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizT
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
 import { SequencingEditor } from './SequencingEditor.tsx';
+import { extractPlaceholdersFromTemplate } from '../../../utils/matchPairs.ts';
 
 interface TileSideEditorProps {
   tile: LessonTile | undefined;
@@ -292,65 +293,66 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
         };
 
         const handleTemplateChange = (value: string) => {
-          const placeholderRegex = /\{\{(.*?)\}\}/g;
-          const matches = Array.from(value.matchAll(placeholderRegex));
-          const uniqueIds = Array.from(
-            new Set(
-              matches
-                .map(match => match[1]?.trim())
-                .filter((id): id is string => Boolean(id))
-            )
-          );
-
-          const currentBlanksMap = new Map(
-            matchPairsTile.content.blanks.map(blank => [blank.id, blank.correctOptionId])
-          );
-
-          const normalizedBlanks = uniqueIds.map(id => ({
-            id,
-            correctOptionId: currentBlanksMap.get(id) ?? ''
+          const placeholders = extractPlaceholdersFromTemplate(value);
+          const autoOptions = placeholders.map(({ optionId, answerText }) => ({
+            id: optionId,
+            text: answerText,
+            isAuto: true as const
           }));
+
+          const blanks = placeholders.map(({ blankId, optionId }) => ({
+            id: blankId,
+            correctOptionId: optionId
+          }));
+
+          const distractors = matchPairsTile.content.options.filter(option => option.isAuto !== true);
 
           updateContent({
             textTemplate: value,
-            blanks: normalizedBlanks
+            blanks,
+            options: [...autoOptions, ...distractors]
           });
         };
 
-        const handleOptionTextChange = (optionId: string, value: string) => {
-          const options = matchPairsTile.content.options.map(option =>
-            option.id === optionId ? { ...option, text: value } : option
-          );
+        const handleDistractorTextChange = (optionId: string, value: string) => {
+          const options = matchPairsTile.content.options.map(option => {
+            if (option.id !== optionId) {
+              return option;
+            }
+
+            if (option.isAuto === true) {
+              return option;
+            }
+
+            return { ...option, text: value };
+          });
+
           updateContent({ options });
         };
 
-        const handleAddOption = () => {
-          const newOptionId = `option-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+        const handleAddDistractor = () => {
+          const autoOptions = matchPairsTile.content.options.filter(option => option.isAuto === true);
+          const distractors = matchPairsTile.content.options.filter(option => option.isAuto !== true);
+          const newOptionId = `distractor-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
           const options = [
-            ...matchPairsTile.content.options,
+            ...autoOptions,
+            ...distractors,
             {
               id: newOptionId,
-              text: `Nowe wyrażenie ${matchPairsTile.content.options.length + 1}`
+              text: `Nowe wyrażenie ${distractors.length + 1}`,
+              isAuto: false as const
             }
           ];
           updateContent({ options });
         };
 
-        const handleRemoveOption = (optionId: string) => {
-          const options = matchPairsTile.content.options.filter(option => option.id !== optionId);
-          const blanks = matchPairsTile.content.blanks.map(blank => ({
-            ...blank,
-            correctOptionId: blank.correctOptionId === optionId ? '' : blank.correctOptionId
-          }));
-          updateContent({ options, blanks });
+        const handleRemoveDistractor = (optionId: string) => {
+          const options = matchPairsTile.content.options.filter(option => option.id !== optionId || option.isAuto === true);
+          updateContent({ options });
         };
 
-        const handleCorrectOptionChange = (blankId: string, optionId: string) => {
-          const blanks = matchPairsTile.content.blanks.map(blank =>
-            blank.id === blankId ? { ...blank, correctOptionId: optionId } : blank
-          );
-          updateContent({ blanks });
-        };
+        const autoOptions = matchPairsTile.content.options.filter(option => option.isAuto === true);
+        const distractorOptions = matchPairsTile.content.options.filter(option => option.isAuto !== true);
 
         return (
           <div className="space-y-6">
@@ -369,7 +371,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Tekst z lukami</label>
               <p className="text-xs text-gray-600 mb-2">
-                Wstaw luki przy pomocy podw&oacute;jnych nawias&oacute;w klamrowych, np. <code className="bg-gray-100 px-1 py-0.5 rounded">{'{{miasto}}'}</code>.
+                Wstaw poprawne odpowiedzi w podw&oacute;jnych nawiasach klamrowych, np. <code className="bg-gray-100 px-1 py-0.5 rounded">{'{{Warszawa}}'}</code>.
               </p>
               <textarea
                 value={matchPairsTile.content.textTemplate}
@@ -380,83 +382,72 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
               />
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold text-gray-900">Bank wyrażeń</h4>
-                <button
-                  type="button"
-                  onClick={handleAddOption}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition"
-                >
-                  <Plus className="w-4 h-4" />
-                  Dodaj wyrażenie
-                </button>
+            <div className="space-y-6">
+              <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4 text-xs text-gray-600">
+                Poprawne odpowiedzi są automatycznie wykrywane z tekstu umieszczonego w podwójnych klamrach. Edytuj tekst powyżej,
+                aby zaktualizować luki oraz listę poprawnych wyrażeń.
               </div>
 
-              {matchPairsTile.content.options.length === 0 ? (
-                <p className="text-sm text-gray-600">
-                  Dodaj co najmniej jedno wyrażenie, aby uczniowie mogli je przeciągnąć do luk.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {matchPairsTile.content.options.map(option => (
-                    <div key={option.id} className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs uppercase tracking-widest text-gray-500">ID: {option.id}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveOption(option.id)}
-                          className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg text-rose-600 hover:bg-rose-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Usuń
-                        </button>
-                      </div>
-                      <input
-                        type="text"
-                        value={option.text}
-                        onChange={(e) => handleOptionTextChange(option.id, e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                        placeholder="Treść wyrażenia"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-gray-900">Poprawne odpowiedzi (z tekstu)</h4>
+                {autoOptions.length === 0 ? (
+                  <p className="text-sm text-gray-600">Dodaj wyrażenia w klamrach, aby wygenerować poprawne odpowiedzi.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {autoOptions.map(option => (
+                      <li key={option.id} className="flex items-center justify-between rounded-lg bg-white px-3 py-2 text-sm text-gray-700 border border-gray-200">
+                        <span>{option.text}</span>
+                        <span className="text-xs uppercase tracking-widest text-gray-400">ID: {option.id}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
 
-            <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-gray-900">Poprawne odpowiedzi</h4>
-              {matchPairsTile.content.blanks.length === 0 ? (
-                <p className="text-sm text-gray-600">
-                  Dodaj luki w tekście, aby skonfigurować poprawne odpowiedzi.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {matchPairsTile.content.blanks.map(blank => (
-                    <div key={blank.id} className="border border-gray-200 rounded-xl p-4 bg-white flex flex-col gap-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs uppercase tracking-widest text-gray-500">Luka: {blank.id}</span>
-                        {blank.correctOptionId && (
-                          <span className="text-xs font-medium text-emerald-600">Przypisano odpowiedź</span>
-                        )}
-                      </div>
-                      <select
-                        value={blank.correctOptionId}
-                        onChange={(e) => handleCorrectOptionChange(blank.id, e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                      >
-                        <option value="">Wybierz poprawne wyrażenie</option>
-                        {matchPairsTile.content.options.map(option => (
-                          <option key={option.id} value={option.id}>
-                            {option.text}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  ))}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-semibold text-gray-900">Słowa zapychacze</h4>
+                  <button
+                    type="button"
+                    onClick={handleAddDistractor}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Dodaj zapychacz
+                  </button>
                 </div>
-              )}
+
+                {distractorOptions.length === 0 ? (
+                  <p className="text-sm text-gray-600">
+                    Dodaj dodatkowe słowa lub wyrażenia, które utrudnią zadanie uczniowi.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {distractorOptions.map(option => (
+                      <div key={option.id} className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs uppercase tracking-widest text-gray-500">ID: {option.id}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveDistractor(option.id)}
+                            className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg text-rose-600 hover:bg-rose-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Usuń
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          value={option.text}
+                          onChange={(e) => handleDistractorTextChange(option.id, e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          placeholder="Treść zapychacza"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         );

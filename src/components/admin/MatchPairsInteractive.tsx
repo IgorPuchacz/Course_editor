@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { CheckCircle, XCircle, RefreshCw, Sparkles, Puzzle, RotateCcw } from 'lucide-react';
 import { MatchPairsTile } from '../../types/lessonEditor';
+import { createBlankId, createPlaceholderRegex } from '../../utils/matchPairs';
 import { TaskInstructionPanel } from './common/TaskInstructionPanel';
 
 interface MatchPairsInteractiveProps {
@@ -79,19 +80,25 @@ const surfaceColor = (accent: string, textColor: string, lightenAmount: number, 
   textColor === '#0f172a' ? lightenColor(accent, lightenAmount) : darkenColor(accent, darkenAmount);
 
 const parseTemplate = (template: string): Segment[] => {
-  const regex = /\{\{(.*?)\}\}/g;
+  const regex = createPlaceholderRegex();
   const segments: Segment[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
+  let occurrenceIndex = 0;
 
   while ((match = regex.exec(template)) !== null) {
     if (match.index > lastIndex) {
       segments.push({ type: 'text', value: template.slice(lastIndex, match.index) });
     }
 
-    const placeholderId = match[1]?.trim();
-    if (placeholderId) {
-      segments.push({ type: 'blank', id: placeholderId });
+    const answerText = (match[1] ?? '').trim();
+
+    if (answerText) {
+      const blankId = createBlankId(answerText, occurrenceIndex);
+      segments.push({ type: 'blank', id: blankId });
+      occurrenceIndex += 1;
+    } else {
+      segments.push({ type: 'text', value: template.slice(match.index, regex.lastIndex) });
     }
 
     lastIndex = regex.lastIndex;

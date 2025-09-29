@@ -142,6 +142,7 @@ export interface MatchPairsTile extends LessonTile {
     options: Array<{
       id: string;
       text: string;
+      isAuto?: boolean;
     }>;
   };
 }
