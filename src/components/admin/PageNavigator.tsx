@@ -1,12 +1,15 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react';
 
 interface PageNavigatorProps {
   currentPage: number;
   totalPages: number;
   onSelectPage: (page: number) => void;
   onAddPage?: () => void;
+  onDeletePage?: () => void;
   showAddButton?: boolean;
+  showDeleteButton?: boolean;
+  canDeletePage?: boolean;
   className?: string;
 }
 
@@ -15,7 +18,10 @@ export const PageNavigator: React.FC<PageNavigatorProps> = ({
   totalPages,
   onSelectPage,
   onAddPage,
+  onDeletePage,
   showAddButton = true,
+  showDeleteButton = true,
+  canDeletePage = true,
   className = ''
 }) => {
   const safeTotal = Math.max(totalPages, 1);
@@ -105,6 +111,18 @@ export const PageNavigator: React.FC<PageNavigatorProps> = ({
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Nowa strona</span>
             <span className="sm:hidden">Dodaj</span>
+          </button>
+        )}
+        {showDeleteButton && onDeletePage && (
+          <button
+            type="button"
+            onClick={onDeletePage}
+            disabled={!canDeletePage}
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-medium shadow-sm hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Usuń stronę</span>
+            <span className="sm:hidden">Usuń</span>
           </button>
         )}
       </div>

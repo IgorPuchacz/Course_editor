@@ -428,6 +428,54 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
     dispatch({ type: 'markUnsaved' });
   };
 
+  const handleDeletePage = () => {
+    if (!lessonContent) return;
+    if (lessonContent.total_pages <= 1) return;
+
+    const pageToDelete = currentPage;
+    const contentSnapshot = lessonContent;
+
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Usuń stronę',
+      message: `Czy na pewno chcesz usunąć stronę ${pageToDelete}? Wszystkie kafelki na tej stronie zostaną usunięte, a układ kolejnych stron zostanie zaktualizowany.`,
+      onConfirm: () => {
+        if (!contentSnapshot) return;
+
+        const filteredTiles = contentSnapshot.tiles
+          .filter(tile => tile.page !== pageToDelete)
+          .map(tile => (tile.page > pageToDelete ? { ...tile, page: tile.page - 1 } : tile));
+
+        const newTotalPages = Math.max(1, contentSnapshot.total_pages - 1);
+        const maxHeight = computeMaxCanvasHeight(filteredTiles, newTotalPages);
+
+        const updatedContent: LessonContent = {
+          ...contentSnapshot,
+          tiles: filteredTiles,
+          total_pages: newTotalPages,
+          canvas_settings: {
+            ...contentSnapshot.canvas_settings,
+            height: maxHeight
+          },
+          updated_at: new Date().toISOString()
+        };
+
+        setLessonContent(updatedContent);
+
+        const nextPage = Math.min(pageToDelete, newTotalPages);
+        setCurrentPage(nextPage);
+        setActiveEditor(null);
+        setTestingTileIds(prev => prev.filter(id => filteredTiles.some(tile => tile.id === id)));
+        dispatch({ type: 'selectTile', tileId: null });
+        dispatch({ type: 'stopEditing' });
+        dispatch({ type: 'markUnsaved' });
+
+        setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+        success('Strona usunięta', `Strona ${pageToDelete} została usunięta.`);
+      }
+    });
+  };
+
   const handlePageChange = (page: number) => {
     if (!lessonContent) return;
 
@@ -679,6 +727,8 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
                 totalPages={totalPages}
                 onSelectPage={handlePageChange}
                 onAddPage={handleAddPage}
+                onDeletePage={handleDeletePage}
+                canDeletePage={totalPages > 1}
               />
 
               <LessonCanvas
@@ -703,6 +753,8 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
                 onSelectPage={handlePageChange}
                 onAddPage={handleAddPage}
                 showAddButton={false}
+                onDeletePage={handleDeletePage}
+                canDeletePage={totalPages > 1}
               />
             </div>
           </div>
