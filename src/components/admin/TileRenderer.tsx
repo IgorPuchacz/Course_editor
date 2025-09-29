@@ -714,11 +714,11 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
             content: {
               text: matchPairsTile.content.instruction,
               richText: matchPairsTile.content.richInstruction,
-              fontFamily: matchPairsTile.content.fontFamily,
-              fontSize: matchPairsTile.content.fontSize,
+              fontFamily: 'Inter, system-ui, sans-serif',
+              fontSize: 16,
               verticalAlign: 'top',
               backgroundColor: matchPairsTile.content.backgroundColor,
-              showBorder: matchPairsTile.content.showBorder
+              showBorder: true
             }
           } as TextTile;
 
@@ -734,9 +734,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
                   content: {
                     ...matchPairsTile.content,
                     instruction: updates.content.text ?? matchPairsTile.content.instruction,
-                    richInstruction: updates.content.richText ?? matchPairsTile.content.richInstruction,
-                    fontFamily: updates.content.fontFamily ?? matchPairsTile.content.fontFamily,
-                    fontSize: updates.content.fontSize ?? matchPairsTile.content.fontSize
+                    richInstruction: updates.content.richText ?? matchPairsTile.content.richInstruction
                   }
                 });
               }}

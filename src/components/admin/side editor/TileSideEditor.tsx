@@ -352,17 +352,6 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
           updateContent({ blanks });
         };
 
-        const handleFeedbackChange = (field: 'successFeedback' | 'failureFeedback', value: string) => {
-          updateContent({ [field]: value } as Partial<MatchPairsTile['content']>);
-        };
-
-        const FONT_OPTIONS = [
-          'Inter, system-ui, sans-serif',
-          'Lato, system-ui, sans-serif',
-          'Merriweather, serif',
-          'Roboto, system-ui, sans-serif'
-        ];
-
         return (
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-4">
@@ -374,50 +363,6 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                   onChange={(e) => updateContent({ backgroundColor: e.target.value })}
                   className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
                 />
-              </div>
-
-              <label className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
-                <input
-                  type="checkbox"
-                  checked={matchPairsTile.content.showBorder}
-                  onChange={(e) => updateContent({ showBorder: e.target.checked })}
-                  className="w-5 h-5 text-blue-600"
-                />
-                <div>
-                  <span className="text-sm font-medium text-gray-900">Pokaż dekoracyjną ramkę</span>
-                  <p className="text-xs text-gray-600 mt-1">
-                    Wyłączenie ramki doda kafelkowi bardziej minimalistyczny wygląd.
-                  </p>
-                </div>
-              </label>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Kr&oacute;j pisma</label>
-                  <select
-                    value={matchPairsTile.content.fontFamily}
-                    onChange={(e) => updateContent({ fontFamily: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                  >
-                    {FONT_OPTIONS.map(option => (
-                      <option key={option} value={option}>
-                        {option.split(',')[0]}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Rozmiar tekstu</label>
-                  <input
-                    type="number"
-                    min={12}
-                    max={36}
-                    value={matchPairsTile.content.fontSize}
-                    onChange={(e) => updateContent({ fontSize: Number.parseInt(e.target.value, 10) || 16 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                  />
-                </div>
               </div>
             </div>
 
@@ -512,30 +457,6 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                   ))}
                 </div>
               )}
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Informacja zwrotna – poprawnie</label>
-                <textarea
-                  value={matchPairsTile.content.successFeedback}
-                  onChange={(e) => handleFeedbackChange('successFeedback', e.target.value)}
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                  placeholder="Komunikat dla poprawnego rozwiązania"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Informacja zwrotna – spr&oacute;buj ponownie</label>
-                <textarea
-                  value={matchPairsTile.content.failureFeedback}
-                  onChange={(e) => handleFeedbackChange('failureFeedback', e.target.value)}
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                  placeholder="Komunikat dla niepoprawnego rozwiązania"
-                />
-              </div>
             </div>
           </div>
         );

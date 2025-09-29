@@ -134,10 +134,7 @@ export interface MatchPairsTile extends LessonTile {
     instruction: string;
     richInstruction?: string;
     textTemplate: string;
-    fontFamily: string;
-    fontSize: number;
     backgroundColor: string;
-    showBorder: boolean;
     blanks: Array<{
       id: string;
       correctOptionId: string;
@@ -146,8 +143,6 @@ export interface MatchPairsTile extends LessonTile {
       id: string;
       text: string;
     }>;
-    successFeedback: string;
-    failureFeedback: string;
   };
 }
 

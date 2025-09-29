@@ -113,6 +113,9 @@ const mapTextToNodes = (text: string): React.ReactNode =>
     part === '\n' ? <br key={`br-${index}`} /> : <span key={`segment-${index}`}>{part}</span>
   );
 
+const DEFAULT_SUCCESS_FEEDBACK = 'Brawo! Wszystkie odpowiedzi są poprawne.';
+const DEFAULT_FAILURE_FEEDBACK = 'Sprawdź jeszcze raz – część luk zawiera błędne odpowiedzi.';
+
 export const MatchPairsInteractive: React.FC<MatchPairsInteractiveProps> = ({
   tile,
   isPreview = false,
@@ -281,7 +284,7 @@ export const MatchPairsInteractive: React.FC<MatchPairsInteractiveProps> = ({
     const backgroundColor = isSuccess ? evaluationSuccessBackground : evaluationErrorBackground;
     const textColorClass = isSuccess ? 'text-emerald-700' : 'text-rose-700';
     const Icon = isSuccess ? CheckCircle : XCircle;
-    const message = isSuccess ? tile.content.successFeedback : tile.content.failureFeedback;
+    const message = isSuccess ? DEFAULT_SUCCESS_FEEDBACK : DEFAULT_FAILURE_FEEDBACK;
 
     return (
       <div className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium ${textColorClass}`} style={{ backgroundColor }}>
@@ -377,10 +380,6 @@ export const MatchPairsInteractive: React.FC<MatchPairsInteractiveProps> = ({
           {instructionContent ?? (
             <div
               className="text-base leading-relaxed"
-              style={{
-                fontFamily: tile.content.fontFamily,
-                fontSize: `${tile.content.fontSize}px`
-              }}
               dangerouslySetInnerHTML={{
                 __html: tile.content.richInstruction || `<p>${tile.content.instruction}</p>`
               }}
@@ -415,7 +414,6 @@ export const MatchPairsInteractive: React.FC<MatchPairsInteractiveProps> = ({
             </div>
             <div
               className="text-base leading-relaxed space-y-3"
-              style={{ fontFamily: tile.content.fontFamily, fontSize: `${tile.content.fontSize}px` }}
             >
               {segments.map((segment, index) => (
                 segment.type === 'text'

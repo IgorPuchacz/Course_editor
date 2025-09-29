@@ -445,10 +445,7 @@ export class LessonContentService {
         instruction: 'Przeciągnij właściwe wyrażenia do luk w tekście.',
         richInstruction: '<p style="margin: 0;">Przeciągnij właściwe wyrażenia do luk w tekście.</p>',
         textTemplate: 'Stolicą Polski jest {{miasto}}. Narodowym symbolem jest {{symbol}}.',
-        fontFamily: 'Inter, system-ui, sans-serif',
-        fontSize: 18,
         backgroundColor: '#d4d4d4',
-        showBorder: true,
         blanks: [
           { id: 'miasto', correctOptionId: 'option-1' },
           { id: 'symbol', correctOptionId: 'option-2' }
@@ -457,9 +454,7 @@ export class LessonContentService {
           { id: 'option-1', text: 'Warszawa' },
           { id: 'option-2', text: 'biało-czerwona flaga' },
           { id: 'option-3', text: 'wisła' }
-        ],
-        successFeedback: 'Brawo! Wszystkie odpowiedzi są poprawne.',
-        failureFeedback: 'Sprawdź jeszcze raz – część luk zawiera błędne odpowiedzi.'
+        ]
       },
       created_at: now,
       updated_at: now,
