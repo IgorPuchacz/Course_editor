@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { CheckCircle, XCircle, RotateCcw, Sparkles, GripVertical, Shuffle, ArrowLeftRight } from 'lucide-react';
 import { SequencingTile } from '../../types/lessonEditor';
+import {
+  getReadableTextColor,
+  lightenColor,
+  darkenColor,
+  surfaceColor,
+} from '../../utils/colorUtils';
 import { TaskInstructionPanel } from './common/TaskInstructionPanel';
 import { RichTextEditor, RichTextEditorProps } from './common/RichTextEditor';
 
@@ -26,65 +32,6 @@ interface DragState {
   source: DragSource;
   index?: number;
 }
-
-const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
-  if (!hex) return null;
-
-  let normalized = hex.replace('#', '').trim();
-  if (normalized.length === 3) {
-    normalized = normalized
-      .split('')
-      .map(char => `${char}${char}`)
-      .join('');
-  }
-
-  if (normalized.length !== 6) return null;
-
-  const intValue = Number.parseInt(normalized, 16);
-  if (Number.isNaN(intValue)) return null;
-
-  return {
-    r: (intValue >> 16) & 255,
-    g: (intValue >> 8) & 255,
-    b: intValue & 255
-  };
-};
-
-const channelToLinear = (value: number): number => {
-  const scaled = value / 255;
-  return scaled <= 0.03928 ? scaled / 12.92 : Math.pow((scaled + 0.055) / 1.055, 2.4);
-};
-
-const getReadableTextColor = (hex: string): string => {
-  const rgb = hexToRgb(hex);
-  if (!rgb) return '#f8fafc';
-
-  const luminance =
-    0.2126 * channelToLinear(rgb.r) +
-    0.7152 * channelToLinear(rgb.g) +
-    0.0722 * channelToLinear(rgb.b);
-
-  return luminance > 0.6 ? '#0f172a' : '#f8fafc';
-};
-
-const lightenColor = (hex: string, amount: number): string => {
-  const rgb = hexToRgb(hex);
-  if (!rgb) return hex;
-
-  const lightenChannel = (channel: number) => Math.round(channel + (255 - channel) * amount);
-  return `rgb(${lightenChannel(rgb.r)}, ${lightenChannel(rgb.g)}, ${lightenChannel(rgb.b)})`;
-};
-
-const darkenColor = (hex: string, amount: number): string => {
-  const rgb = hexToRgb(hex);
-  if (!rgb) return hex;
-
-  const darkenChannel = (channel: number) => Math.round(channel * (1 - amount));
-  return `rgb(${darkenChannel(rgb.r)}, ${darkenChannel(rgb.g)}, ${darkenChannel(rgb.b)})`;
-};
-
-const surfaceColor = (accent: string, textColor: string, lightenAmount: number, darkenAmount: number): string =>
-  textColor === '#0f172a' ? lightenColor(accent, lightenAmount) : darkenColor(accent, darkenAmount);
 
 export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   tile,
