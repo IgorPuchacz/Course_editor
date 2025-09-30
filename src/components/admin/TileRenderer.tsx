@@ -1,19 +1,12 @@
 import React from 'react';
-import { Play, Code2 } from 'lucide-react';
-import { GridUtils } from '../../utils/gridUtils';
-import {
-  getReadableTextColor,
-  darkenColor,
-  surfaceColor,
-} from '../../utils/colorUtils';
 import { Editor } from '@tiptap/react';
-import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile, MatchPairsTile } from '../../types/lessonEditor';
-import { SequencingInteractive } from './SequencingInteractive';
-import { MatchPairsInteractive } from './MatchPairsInteractive';
-import { TaskInstructionPanel } from './common/TaskInstructionPanel';
-import { QuizInteractive } from './QuizInteractive';
-import { RichTextEditor, createRichTextAdapter, RichTextEditorProps } from './common/RichTextEditor';
+import { LessonTile, ImageTile } from '../../types/lessonEditor';
 import { TileFrame } from './tiles/TileFrame';
+import { BaseTileRendererProps } from './tiles/shared';
+import { TextTileRenderer, ImageTileRenderer, ProgrammingTileRenderer } from './tiles/renderers';
+import { QuizTileRenderer } from './tiles/quiz';
+import { SequencingTileRenderer } from './tiles/sequencing';
+import { MatchPairsTileRenderer } from './tiles/matchPairs';
 
 interface TileRendererProps {
   tile: LessonTile;

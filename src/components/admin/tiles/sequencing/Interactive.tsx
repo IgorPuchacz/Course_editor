@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { CheckCircle, XCircle, RotateCcw, Sparkles, GripVertical, Shuffle, ArrowLeftRight } from 'lucide-react';
-import { SequencingTile } from '../../types/lessonEditor';
+import { SequencingTile } from '../../../../types/lessonEditor';
 import {
   getReadableTextColor,
   lightenColor,
   darkenColor,
   surfaceColor,
-} from '../../utils/colorUtils';
-import { TaskInstructionPanel } from './common/TaskInstructionPanel';
-import { RichTextEditor, RichTextEditorProps } from './common/RichTextEditor';
+} from '../../../../utils/colorUtils';
+import { TaskInstructionPanel } from '../../common/TaskInstructionPanel';
+import { RichTextEditor, RichTextEditorProps } from '../../common/RichTextEditor';
 
 interface SequencingInteractiveProps {
   tile: SequencingTile;

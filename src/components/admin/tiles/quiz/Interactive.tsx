@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Circle, HelpCircle, RotateCcw, XCircle } from 'lucide-react';
-import { QuizTile } from '../../types/lessonEditor';
-import { getReadableTextColor, surfaceColor } from '../../utils/colorUtils';
-import { TaskInstructionPanel } from './common/TaskInstructionPanel';
-import { RichTextEditor, RichTextEditorProps } from './common/RichTextEditor';
+import { QuizTile } from '../../../../types/lessonEditor';
+import { getReadableTextColor, surfaceColor } from '../../../../utils/colorUtils';
+import { TaskInstructionPanel } from '../../common/TaskInstructionPanel';
+import { RichTextEditor, RichTextEditorProps } from '../../common/RichTextEditor';
 
 interface QuizInteractiveProps {
   tile: QuizTile;
