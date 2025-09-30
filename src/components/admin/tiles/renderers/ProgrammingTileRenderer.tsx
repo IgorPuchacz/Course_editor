@@ -3,7 +3,7 @@ import { Code2, Play } from 'lucide-react';
 import { ProgrammingTile } from '../../../../types/lessonEditor';
 import { TaskInstructionPanel } from '../../common/TaskInstructionPanel';
 import { RichTextEditor, createRichTextAdapter } from '../../common/RichTextEditor';
-import { BaseTileRendererProps, darkenColor, getReadableTextColor, surfaceColor } from './shared';
+import { BaseTileRendererProps, darkenColor, getReadableTextColor, surfaceColor } from '../shared';
 
 export const ProgrammingTileRenderer: React.FC<BaseTileRendererProps<ProgrammingTile>> = ({
   tile,

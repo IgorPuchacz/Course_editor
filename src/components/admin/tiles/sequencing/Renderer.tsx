@@ -1,10 +1,10 @@
 import React from 'react';
-import { MatchPairsTile } from '../../../../types/lessonEditor';
-import { MatchPairsInteractive } from '../../MatchPairsInteractive';
+import { SequencingTile } from '../../../../types/lessonEditor';
 import { createRichTextAdapter, type RichTextEditorProps } from '../../common/RichTextEditor';
-import { BaseTileRendererProps, getReadableTextColor } from './shared';
+import { BaseTileRendererProps, getReadableTextColor } from '../shared';
+import { SequencingInteractive } from './Interactive';
 
-export const MatchPairsTileRenderer: React.FC<BaseTileRendererProps<MatchPairsTile>> = ({
+export const SequencingTileRenderer: React.FC<BaseTileRendererProps<SequencingTile>> = ({
   tile,
   isSelected,
   isEditingText,
@@ -16,8 +16,8 @@ export const MatchPairsTileRenderer: React.FC<BaseTileRendererProps<MatchPairsTi
   backgroundColor,
   showBorder,
 }) => {
-  const matchPairsTile = tile;
-  const textColor = getReadableTextColor(matchPairsTile.content.backgroundColor || backgroundColor);
+  const sequencingTile = tile;
+  const textColor = getReadableTextColor(sequencingTile.content.backgroundColor || backgroundColor);
 
   const wrapperStyle: React.CSSProperties = {
     borderRadius: 'inherit',
@@ -25,12 +25,12 @@ export const MatchPairsTileRenderer: React.FC<BaseTileRendererProps<MatchPairsTi
     border: showBorder ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
   };
 
-  const renderMatchPairs = (
+  const renderSequencingContent = (
     instructionEditorProps?: RichTextEditorProps,
     isPreviewMode = false,
   ) => (
-    <MatchPairsInteractive
-      tile={matchPairsTile}
+    <SequencingInteractive
+      tile={sequencingTile}
       isTestingMode={isTestingMode}
       instructionEditorProps={instructionEditorProps}
       isPreview={isPreviewMode}
@@ -40,23 +40,23 @@ export const MatchPairsTileRenderer: React.FC<BaseTileRendererProps<MatchPairsTi
 
   if (isEditingText && isSelected) {
     const instructionAdapter = createRichTextAdapter({
-      source: matchPairsTile.content,
+      source: sequencingTile.content,
       fields: {
-        text: 'instruction',
-        richText: 'richInstruction',
+        text: 'question',
+        richText: 'richQuestion',
+        fontFamily: 'fontFamily',
+        fontSize: 'fontSize',
+        verticalAlign: 'verticalAlign',
       },
       defaults: {
-        fontFamily: 'Inter, system-ui, sans-serif',
-        fontSize: 16,
-        verticalAlign: 'top',
-        backgroundColor: matchPairsTile.content.backgroundColor,
-        showBorder: true,
+        backgroundColor: sequencingTile.content.backgroundColor,
+        showBorder: sequencingTile.content.showBorder,
       },
     });
 
     return (
       <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
-        {renderMatchPairs(
+        {renderSequencingContent(
           {
             content: instructionAdapter.content,
             onChange: (updatedContent) => {
@@ -76,7 +76,7 @@ export const MatchPairsTileRenderer: React.FC<BaseTileRendererProps<MatchPairsTi
 
   return (
     <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
-      {renderMatchPairs()}
+      {renderSequencingContent()}
     </div>
   );
 };

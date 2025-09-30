@@ -1,8 +1,8 @@
 import React from 'react';
 import { QuizTile } from '../../../../types/lessonEditor';
-import { QuizInteractive } from '../../QuizInteractive';
 import { createRichTextAdapter } from '../../common/RichTextEditor';
-import { BaseTileRendererProps, getReadableTextColor } from './shared';
+import { BaseTileRendererProps, getReadableTextColor } from '../shared';
+import { QuizInteractive } from './Interactive';
 
 export const QuizTileRenderer: React.FC<BaseTileRendererProps<QuizTile>> = ({
   tile,

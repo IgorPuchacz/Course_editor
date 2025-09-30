@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { CheckCircle, XCircle, RefreshCw, Sparkles, Puzzle, RotateCcw } from 'lucide-react';
-import { MatchPairsTile } from '../../types/lessonEditor';
-import { createBlankId, createPlaceholderRegex } from '../../utils/matchPairs';
-import { getReadableTextColor, surfaceColor } from '../../utils/colorUtils';
-import { TaskInstructionPanel } from './common/TaskInstructionPanel';
-import { RichTextEditor, RichTextEditorProps } from './common/RichTextEditor';
+import { MatchPairsTile } from '../../../../types/lessonEditor';
+import { createBlankId, createPlaceholderRegex } from '../../../../utils/matchPairs';
+import { getReadableTextColor, surfaceColor } from '../../../../utils/colorUtils';
+import { TaskInstructionPanel } from '../../common/TaskInstructionPanel';
+import { RichTextEditor, RichTextEditorProps } from '../../common/RichTextEditor';
 
 interface MatchPairsInteractiveProps {
   tile: MatchPairsTile;
