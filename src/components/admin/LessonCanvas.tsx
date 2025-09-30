@@ -131,7 +131,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
             isImageEditing={editorState.mode === 'imageEditing' && editorState.selectedTileId === tile.id}
             isTestingMode={testingTileIds.includes(tile.id)}
             onMouseDown={(e) => handleTileMouseDown(e, tile)}
-            onImageMouseDown={(e) => handleImageMouseDown(e, tile)}
+            onImageMouseDown={handleImageMouseDown}
             isDraggingImage={editorState.interaction.type === 'imageDrag'}
             onDoubleClick={() => handleTileDoubleClick(tile)}
             onUpdateTile={onUpdateTile}
