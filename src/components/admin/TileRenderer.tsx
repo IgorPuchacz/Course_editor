@@ -1,14 +1,19 @@
 import React from 'react';
-import type { Editor } from '@tiptap/react';
-import type { LessonTile, ImageTile } from '../../types/lessonEditor';
+import { Play, Code2 } from 'lucide-react';
+import { GridUtils } from '../../utils/gridUtils';
+import {
+  getReadableTextColor,
+  darkenColor,
+  surfaceColor,
+} from '../../utils/colorUtils';
+import { Editor } from '@tiptap/react';
+import { LessonTile, TextTile, ImageTile, QuizTile, ProgrammingTile, SequencingTile, MatchPairsTile } from '../../types/lessonEditor';
+import { SequencingInteractive } from './SequencingInteractive';
+import { MatchPairsInteractive } from './MatchPairsInteractive';
+import { TaskInstructionPanel } from './common/TaskInstructionPanel';
+import { QuizInteractive } from './QuizInteractive';
+import { RichTextEditor, createRichTextAdapter, RichTextEditorProps } from './common/RichTextEditor';
 import { TileFrame } from './tiles/TileFrame';
-import { BaseTileRendererProps } from './tiles/renderers/shared';
-import { TextTileRenderer } from './tiles/renderers/TextTileRenderer';
-import { ImageTileRenderer } from './tiles/renderers/ImageTileRenderer';
-import { ProgrammingTileRenderer } from './tiles/renderers/ProgrammingTileRenderer';
-import { QuizTileRenderer } from './tiles/renderers/QuizTileRenderer';
-import { SequencingTileRenderer } from './tiles/renderers/SequencingTileRenderer';
-import { MatchPairsTileRenderer } from './tiles/renderers/MatchPairsTileRenderer';
 
 interface TileRendererProps {
   tile: LessonTile;
@@ -82,6 +87,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
 
   const handleDoubleClick =
     tile.type === 'sequencing' || tile.type === 'matchPairs' ? undefined : onDoubleClick;
+
 
   return (
     <TileFrame
