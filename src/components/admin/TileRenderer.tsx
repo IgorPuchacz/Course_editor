@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Play, Code2 } from 'lucide-react';
 import { GridUtils } from '../../utils/gridUtils';
 import {
@@ -401,10 +401,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
               fontSize: quizTile.content.questionFontSize ?? 16,
               verticalAlign: 'top',
               backgroundColor: quizTile.content.backgroundColor || computedBackground,
-              showBorder:
-                typeof quizTile.content.showBorder === 'boolean'
-                  ? quizTile.content.showBorder
-                  : true
+              showBorder: true
             }
           });
 
