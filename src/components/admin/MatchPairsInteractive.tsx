@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { CheckCircle, XCircle, RefreshCw, Sparkles, Puzzle, RotateCcw } from 'lucide-react';
 import { MatchPairsTile } from '../../types/lessonEditor';
 import { createBlankId, createPlaceholderRegex } from '../../utils/matchPairs';
-import { getReadableTextColor, surfaceColor } from '../../utils/colorUtils';
+import { useTileAccentPalette } from '../../utils/colorUtils';
 import { TaskInstructionPanel } from './common/TaskInstructionPanel';
 import { RichTextEditor, RichTextEditorProps } from './common/RichTextEditor';
 
@@ -83,18 +83,22 @@ export const MatchPairsInteractive: React.FC<MatchPairsInteractiveProps> = ({
   const [activeBlankId, setActiveBlankId] = useState<string | null>(null);
 
   const accentColor = tile.content.backgroundColor || '#0f172a';
-  const textColor = useMemo(() => getReadableTextColor(accentColor), [accentColor]);
-  const panelBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.62, 0.45), [accentColor, textColor]);
-  const panelBorder = useMemo(() => surfaceColor(accentColor, textColor, 0.5, 0.55), [accentColor, textColor]);
-  const iconBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.54, 0.48), [accentColor, textColor]);
+  const {
+    textColor,
+    shared: { testingCaptionColor },
+    matchPairs: {
+      panelBackground,
+      panelBorder,
+      iconBackground,
+      blankBackground,
+      blankBorder,
+      blankHoverBackground,
+      blankFilledBackground,
+      optionBackground,
+      optionBorder
+    }
+  } = useTileAccentPalette(accentColor);
   const mutedLabelColor = textColor === '#0f172a' ? '#475569' : '#d1d5db';
-  const blankBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.65, 0.38), [accentColor, textColor]);
-  const blankBorder = useMemo(() => surfaceColor(accentColor, textColor, 0.54, 0.52), [accentColor, textColor]);
-  const blankHoverBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.75, 0.32), [accentColor, textColor]);
-  const blankFilledBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.52, 0.46), [accentColor, textColor]);
-  const optionBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.52, 0.46), [accentColor, textColor]);
-  const optionBorder = useMemo(() => surfaceColor(accentColor, textColor, 0.44, 0.56), [accentColor, textColor]);
-  const testingCaptionColor = useMemo(() => surfaceColor(accentColor, textColor, 0.42, 0.4), [accentColor, textColor]);
   const evaluationSuccessBackground = '#dcfce7';
   const evaluationErrorBackground = '#fee2e2';
 

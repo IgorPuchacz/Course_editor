@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { CheckCircle2, Circle, HelpCircle, RotateCcw, XCircle } from 'lucide-react';
 import { QuizTile } from '../../types/lessonEditor';
-import { getReadableTextColor, surfaceColor } from '../../utils/colorUtils';
+import { useTileAccentPalette } from '../../utils/colorUtils';
 import { TaskInstructionPanel } from './common/TaskInstructionPanel';
 import { RichTextEditor, RichTextEditorProps } from './common/RichTextEditor';
 
@@ -31,8 +31,19 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
   }, [tile.content.answers, tile.content.multipleCorrect]);
 
   const accentColor = tile.content.backgroundColor || '#1d4ed8';
-  const textColor = useMemo(() => getReadableTextColor(accentColor), [accentColor]);
-  const mutedTextColor = textColor === '#0f172a' ? '#475569' : '#e2e8f0';
+  const {
+    textColor,
+    mutedTextColor,
+    quiz: {
+      panelBackground,
+      panelBorder,
+      iconBackground,
+      answerBackground,
+      answerBorder,
+      answerSelectedBackground,
+      answerSelectedBorder
+    }
+  } = useTileAccentPalette(accentColor);
   const isInteractionEnabled = !isPreview && isTestingMode;
 
   useEffect(() => {
@@ -41,35 +52,6 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
       setEvaluationState('idle');
     }
   }, [isInteractionEnabled]);
-
-  const panelBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.66, 0.42),
-    [accentColor, textColor]
-  );
-  const panelBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.54, 0.52),
-    [accentColor, textColor]
-  );
-  const iconBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.58, 0.48),
-    [accentColor, textColor]
-  );
-  const answerBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.7, 0.38),
-    [accentColor, textColor]
-  );
-  const answerBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.58, 0.48),
-    [accentColor, textColor]
-  );
-  const answerSelectedBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.46, 0.56),
-    [accentColor, textColor]
-  );
-  const answerSelectedBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.38, 0.62),
-    [accentColor, textColor]
-  );
 
   const handleTileDoubleClick = useCallback(
     (event: React.MouseEvent) => {
