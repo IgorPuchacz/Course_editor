@@ -11,6 +11,7 @@ interface PageNavigatorProps {
   showDeleteButton?: boolean;
   canDeletePage?: boolean;
   className?: string;
+  variant?: 'card' | 'toolbar';
 }
 
 export const PageNavigator: React.FC<PageNavigatorProps> = ({
@@ -22,7 +23,8 @@ export const PageNavigator: React.FC<PageNavigatorProps> = ({
   showAddButton = true,
   showDeleteButton = true,
   canDeletePage = true,
-  className = ''
+  className = '',
+  variant = 'card'
 }) => {
   const safeTotal = Math.max(totalPages, 1);
   const pages = Array.from({ length: safeTotal }, (_, index) => index + 1);
@@ -40,6 +42,97 @@ export const PageNavigator: React.FC<PageNavigatorProps> = ({
       onSelectPage(currentPage + 1);
     }
   };
+
+  if (variant === 'toolbar') {
+    return (
+      <div className={`flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ${className}`}>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handlePrev}
+              disabled={!canGoPrev}
+              className={`h-9 w-9 flex items-center justify-center rounded-lg border transition-colors ${
+                canGoPrev
+                  ? 'text-gray-600 border-gray-200 hover:bg-gray-100 hover:text-gray-900'
+                  : 'text-gray-300 border-gray-100 cursor-not-allowed'
+              }`}
+              aria-label="Poprzednia strona"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <div
+              className="flex items-center gap-1 overflow-x-auto max-w-xs sm:max-w-[16rem]"
+              aria-label="Lista stron"
+            >
+              {pages.map((page) => {
+                const isActive = page === currentPage;
+                return (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => onSelectPage(page)}
+                    className={`h-9 min-w-[2.25rem] px-3 rounded-lg text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                    }`}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={!canGoNext}
+              className={`h-9 w-9 flex items-center justify-center rounded-lg border transition-colors ${
+                canGoNext
+                  ? 'text-gray-600 border-gray-200 hover:bg-gray-100 hover:text-gray-900'
+                  : 'text-gray-300 border-gray-100 cursor-not-allowed'
+              }`}
+              aria-label="Następna strona"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3">
+          <span className="text-sm text-gray-500 whitespace-nowrap">
+            Strona {currentPage} z {safeTotal}
+          </span>
+          {showAddButton && onAddPage && (
+            <button
+              type="button"
+              onClick={onAddPage}
+              className="h-9 inline-flex items-center gap-2 px-3 rounded-lg bg-blue-600 text-white text-sm font-medium shadow-sm hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Nowa strona</span>
+              <span className="sm:hidden">Dodaj</span>
+            </button>
+          )}
+          {showDeleteButton && onDeletePage && (
+            <button
+              type="button"
+              onClick={onDeletePage}
+              disabled={!canDeletePage}
+              className="h-9 inline-flex items-center gap-2 px-3 rounded-lg border border-red-200 text-red-600 text-sm font-medium shadow-sm hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Usuń stronę</span>
+              <span className="sm:hidden">Usuń</span>
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

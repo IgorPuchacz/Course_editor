@@ -6,6 +6,7 @@ import { TextColorPicker } from './TextColorPicker.tsx';
 import { FontSelector } from './FontSelector.tsx';
 import { AlignmentControls } from './AlignmentControls.tsx';
 import { LessonTile, ProgrammingTile, TextTile, SequencingTile } from '../../../types/lessonEditor.ts';
+import { PageNavigator } from './PageNavigator.tsx';
 
 
 interface TopToolbarProps {
@@ -14,10 +15,18 @@ interface TopToolbarProps {
   gridRows: number;
   currentMode: string;
   isTextEditing: boolean;
+  currentPage?: number;
+  totalPages?: number;
   onFinishTextEditing?: () => void;
   editor?: Editor | null;
   selectedTile?: TextTile | ProgrammingTile | SequencingTile | null;
   onUpdateTile?: (tileId: string, updates: Partial<LessonTile>) => void;
+  onSelectPage?: (page: number) => void;
+  onAddPage?: () => void;
+  onDeletePage?: () => void;
+  canDeletePage?: boolean;
+  showAddPageButton?: boolean;
+  showDeletePageButton?: boolean;
   className?: string;
 }
 
@@ -27,10 +36,18 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   gridRows,
   currentMode,
   isTextEditing,
+  currentPage,
+  totalPages,
   onFinishTextEditing,
   editor,
   selectedTile,
   onUpdateTile,
+  onSelectPage,
+  onAddPage,
+  onDeletePage,
+  canDeletePage = true,
+  showAddPageButton = true,
+  showDeletePageButton = true,
   className = ''
 }) => {
   const [currentFont, setCurrentFont] = useState('Inter, system-ui, sans-serif');
@@ -258,8 +275,37 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   }
 
   return (
-    <div>
-      implement pagination here
+    <div
+      className={`top-toolbar z-30 flex items-center justify-between px-4 lg:px-6 py-3 bg-white ${className}`}
+      onMouseDown={(e) => e.preventDefault()}
+    >
+      <div className="flex items-center gap-3 text-sm text-gray-500">
+        <span className="text-gray-700 font-medium">{currentMode}</span>
+        <span className="hidden md:inline-flex items-center gap-1">
+          <span className="text-gray-400">•</span>
+          <span>{tilesCount} kafelków</span>
+        </span>
+        <span className="hidden lg:inline-flex items-center gap-1">
+          <span className="text-gray-400">•</span>
+          <span>
+            Siatka: {gridColumns} × {gridRows}
+          </span>
+        </span>
+      </div>
+
+      {typeof currentPage === 'number' && typeof totalPages === 'number' && onSelectPage ? (
+        <PageNavigator
+          variant="toolbar"
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onSelectPage={onSelectPage}
+          onAddPage={showAddPageButton ? onAddPage : undefined}
+          onDeletePage={showDeletePageButton ? onDeletePage : undefined}
+          canDeletePage={canDeletePage}
+          showAddButton={showAddPageButton}
+          showDeleteButton={showDeletePageButton}
+        />
+      ) : null}
     </div>
   );
 };

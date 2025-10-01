@@ -709,31 +709,28 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
             className="sticky z-40 bg-white border-b border-gray-200"
             style={{ top: headerHeight }}
           >
-            <TopToolbar
-              key={`toolbar-${editorState.mode}-${editorState.selectedTileId}`}
-              tilesCount={pageTiles.length}
-              gridColumns={GridUtils.GRID_COLUMNS}
-              gridRows={pagedCanvasSettings.height}
-              currentMode={editorState.selectedTileId ? 'Tryb edycji' : 'Tryb dodawania'}
-              isTextEditing={editorState.mode === 'textEditing'}
-              onFinishTextEditing={handleFinishTextEditing}
-              editor={activeEditor}
-              selectedTile={selectedRichTextTile}
-              onUpdateTile={handleUpdateTile}
-            />
+          <TopToolbar
+            key={`toolbar-${editorState.mode}-${editorState.selectedTileId}`}
+            tilesCount={pageTiles.length}
+            gridColumns={GridUtils.GRID_COLUMNS}
+            gridRows={pagedCanvasSettings.height}
+            currentMode={editorState.selectedTileId ? 'Tryb edycji' : 'Tryb dodawania'}
+            isTextEditing={editorState.mode === 'textEditing'}
+            currentPage={safePage}
+            totalPages={totalPages}
+            onFinishTextEditing={handleFinishTextEditing}
+            editor={activeEditor}
+            selectedTile={selectedRichTextTile}
+            onUpdateTile={handleUpdateTile}
+            onSelectPage={handlePageChange}
+            onAddPage={handleAddPage}
+            onDeletePage={handleDeletePage}
+            canDeletePage={totalPages > 1}
+          />
           </div>
           {/* Canvas */}
           <div className="flex-1 p-4 lg:p-6 overflow-auto overscroll-contain bg-gray-100">
             <div className="max-w-6xl mx-auto flex flex-col gap-4">
-              <PageNavigator
-                currentPage={safePage}
-                totalPages={totalPages}
-                onSelectPage={handlePageChange}
-                onAddPage={handleAddPage}
-                onDeletePage={handleDeletePage}
-                canDeletePage={totalPages > 1}
-              />
-
               <LessonCanvas
                 ref={canvasRef}
                 key={`canvas-page-${safePage}`}
