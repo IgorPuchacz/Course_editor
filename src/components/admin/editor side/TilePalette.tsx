@@ -39,8 +39,8 @@ const TILE_TYPES: TilePaletteItem[] = [
     icon: 'ArrowUpDown'
   },
   {
-    type: 'matchPairs',
-    title: 'Dobierz pary (luki)',
+    type: 'blanks',
+    title: 'Uzupełnij luki',
     icon: 'Puzzle'
   }
 ];

@@ -1,12 +1,14 @@
 import React from 'react';
 import { Editor } from '@tiptap/react';
-import { LessonTile, ImageTile } from '../../types/lessonEditor';
-import { TileFrame } from './tiles/TileFrame';
-import { BaseTileRendererProps } from './tiles/shared';
-import { TextTileRenderer, ImageTileRenderer, ProgrammingTileRenderer } from './tiles/renderers';
-import { QuizTileRenderer } from './tiles/quiz';
-import { SequencingTileRenderer } from './tiles/sequencing';
-import { MatchPairsTileRenderer } from './tiles/matchPairs';
+import { LessonTile, ImageTile } from '../../../types/lessonEditor.ts';
+import { TileFrame } from '../canvas/TileFrame.tsx';
+import { BaseTileRendererProps } from './shared.ts';
+import { BlanksTileRenderer } from './blanks';
+import { ImageTileRenderer } from './image';
+import { ProgrammingTileRenderer} from "./programming/Renderer.tsx";
+import { QuizTileRenderer } from './quiz';
+import { SequencingTileRenderer } from './sequencing';
+import { TextTileRenderer} from "./text/Renderer.tsx";
 
 interface TileRendererProps {
   tile: LessonTile;
@@ -32,7 +34,7 @@ const TILE_RENDERERS: Partial<Record<LessonTile['type'], React.ComponentType<any
   programming: ProgrammingTileRenderer,
   quiz: QuizTileRenderer,
   sequencing: SequencingTileRenderer,
-  matchPairs: MatchPairsTileRenderer,
+  blanks: BlanksTileRenderer,
 };
 
 export const TileRenderer: React.FC<TileRendererProps> = ({
@@ -79,7 +81,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   };
 
   const handleDoubleClick =
-    tile.type === 'sequencing' || tile.type === 'matchPairs' ? undefined : onDoubleClick;
+    tile.type === 'sequencing' || tile.type === 'blanks' ? undefined : onDoubleClick;
 
 
   return (

@@ -1,7 +1,7 @@
 import React from 'react';
-import { TextTile } from '../../../../types/lessonEditor';
-import { RichTextEditor, createRichTextAdapter } from '../../common/RichTextEditor';
-import { BaseTileRendererProps, getReadableTextColor } from '../shared';
+import { TextTile } from '../../../../types/lessonEditor.ts';
+import { RichTextEditor, createRichTextAdapter } from '../RichTextEditor.tsx';
+import { BaseTileRendererProps, getReadableTextColor } from '../shared.ts';
 
 export const TextTileRenderer: React.FC<BaseTileRendererProps<TextTile>> = ({
   tile,

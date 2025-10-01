@@ -1,4 +1,4 @@
-export interface MatchPairsPlaceholderDefinition {
+export interface BlanksPlaceholderDefinition {
   answerText: string;
   blankId: string;
   optionId: string;
@@ -39,9 +39,9 @@ export const createAutoOptionId = (answerText: string, index: number): string =>
   return `auto-${ensureBase(slug, index)}-${index + 1}`;
 };
 
-export const extractPlaceholdersFromTemplate = (template: string): MatchPairsPlaceholderDefinition[] => {
+export const extractPlaceholdersFromTemplate = (template: string): BlanksPlaceholderDefinition[] => {
   const regex = createPlaceholderRegex();
-  const placeholders: MatchPairsPlaceholderDefinition[] = [];
+  const placeholders: BlanksPlaceholderDefinition[] = [];
   let match: RegExpExecArray | null;
   let occurrenceIndex = 0;
 

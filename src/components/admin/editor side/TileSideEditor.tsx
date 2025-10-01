@@ -1,10 +1,10 @@
 import React from 'react';
 import { Plus, Trash2, Type, X, Image as ImageIcon, Eye, HelpCircle, Code, ArrowUpDown, Puzzle } from 'lucide-react';
-import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizTile, MatchPairsTile } from '../../../types/lessonEditor.ts';
+import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizTile, BlanksTile } from '../../../types/lessonEditor.ts';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
 import { SequencingEditor } from './SequencingEditor.tsx';
-import { extractPlaceholdersFromTemplate } from '../../../utils/matchPairs.ts';
+import { extractPlaceholdersFromTemplate } from '../../../utils/blanks.ts';
 
 interface TileSideEditorProps {
   tile: LessonTile | undefined;
@@ -92,21 +92,8 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
       case 'quiz': return HelpCircle;
       case 'programming': return Code;
       case 'sequencing': return ArrowUpDown;
-      case 'matchPairs': return Puzzle;
+      case 'blanks': return Puzzle;
       default: return Type;
-    }
-  };
-
-  const getTileTitle = () => {
-    switch (tile.type) {
-      case 'text': return 'Edytor Tekstu';
-      case 'image': return 'Edytor Obrazu';
-      case 'visualization': return 'Edytor Wizualizacji';
-      case 'quiz': return 'Edytor Quiz';
-      case 'programming': return 'Edytor Zadania programistycznego';
-      case 'sequencing': return 'Edytor sekwencji';
-      case 'matchPairs': return 'Edytor dopasowywania';
-      default: return 'Edytor Kafelka';
     }
   };
 
@@ -279,13 +266,13 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
         );
       }
 
-      case 'matchPairs': {
-        const matchPairsTile = tile as MatchPairsTile;
+      case 'blanks': {
+        const blanksTile = tile as BlanksTile;
 
-        const updateContent = (updates: Partial<MatchPairsTile['content']>) => {
+        const updateContent = (updates: Partial<BlanksTile['content']>) => {
           onUpdateTile(tile.id, {
             content: {
-              ...matchPairsTile.content,
+              ...blanksTile.content,
               ...updates
             },
             updated_at: new Date().toISOString()
@@ -305,7 +292,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
             correctOptionId: optionId
           }));
 
-          const distractors = matchPairsTile.content.options.filter(option => option.isAuto !== true);
+          const distractors = blanksTile.content.options.filter(option => option.isAuto !== true);
 
           updateContent({
             textTemplate: value,
@@ -315,7 +302,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
         };
 
         const handleDistractorTextChange = (optionId: string, value: string) => {
-          const options = matchPairsTile.content.options.map(option => {
+          const options = blanksTile.content.options.map(option => {
             if (option.id !== optionId) {
               return option;
             }
@@ -331,8 +318,8 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
         };
 
         const handleAddDistractor = () => {
-          const autoOptions = matchPairsTile.content.options.filter(option => option.isAuto === true);
-          const distractors = matchPairsTile.content.options.filter(option => option.isAuto !== true);
+          const autoOptions = blanksTile.content.options.filter(option => option.isAuto === true);
+          const distractors = blanksTile.content.options.filter(option => option.isAuto !== true);
           const newOptionId = `distractor-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
           const options = [
             ...autoOptions,
@@ -347,12 +334,12 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
         };
 
         const handleRemoveDistractor = (optionId: string) => {
-          const options = matchPairsTile.content.options.filter(option => option.id !== optionId || option.isAuto === true);
+          const options = blanksTile.content.options.filter(option => option.id !== optionId || option.isAuto === true);
           updateContent({ options });
         };
 
-        const autoOptions = matchPairsTile.content.options.filter(option => option.isAuto === true);
-        const distractorOptions = matchPairsTile.content.options.filter(option => option.isAuto !== true);
+        const autoOptions = blanksTile.content.options.filter(option => option.isAuto === true);
+        const distractorOptions = blanksTile.content.options.filter(option => option.isAuto !== true);
 
         return (
           <div className="space-y-6">
@@ -361,7 +348,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                 <label className="block text-sm font-medium text-gray-700 mb-3">Kolor akcentu</label>
                 <input
                   type="color"
-                  value={matchPairsTile.content.backgroundColor}
+                  value={blanksTile.content.backgroundColor}
                   onChange={(e) => updateContent({ backgroundColor: e.target.value })}
                   className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
                 />
@@ -374,7 +361,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                 Wstaw poprawne odpowiedzi w podw&oacute;jnych nawiasach klamrowych, np. <code className="bg-gray-100 px-1 py-0.5 rounded">{'{{Warszawa}}'}</code>.
               </p>
               <textarea
-                value={matchPairsTile.content.textTemplate}
+                value={blanksTile.content.textTemplate}
                 onChange={(e) => handleTemplateChange(e.target.value)}
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
@@ -629,8 +616,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
               {React.createElement(getTileIcon(), { className: "w-5 h-5 text-blue-600" })}
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">{getTileTitle()}</h3>
-              <p className="text-sm text-gray-600">Dostosuj właściwości kafelka</p>
+              <h3 className="text-lg font-semibold text-gray-900">Edytor Zadania</h3>
             </div>
           </div>
           <button

@@ -1,6 +1,6 @@
 import React from 'react';
-import { ImageTile } from '../../../../types/lessonEditor';
-import { BaseTileRendererProps } from '../shared';
+import { ImageTile } from '../../../../types/lessonEditor.ts';
+import { BaseTileRendererProps } from '../shared.ts';
 
 export interface ImageTileRendererProps extends BaseTileRendererProps<ImageTile> {
   onImageMouseDown: (e: React.MouseEvent, tile?: ImageTile) => void;

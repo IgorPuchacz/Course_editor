@@ -8,8 +8,8 @@ import FontFamily from '@tiptap/extension-font-family';
 import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
-import FontSize from '../../../extensions/FontSize';
-import TextAlignExtension from '../../../extensions/TextAlign';
+import FontSize from '../../../extensions/FontSize.ts';
+import TextAlignExtension from '../../../extensions/TextAlign.ts';
 
 export interface RichTextContent {
   text: string;

@@ -17,7 +17,7 @@ export interface GridPosition {
 
 export interface LessonTile {
   id: string;
-  type: 'text' | 'image' | 'visualization' | 'quiz' | 'programming' | 'sequencing' | 'matchPairs';
+  type: 'text' | 'image' | 'visualization' | 'quiz' | 'programming' | 'sequencing' | 'blanks';
   position: Position;
   size: Size;
   gridPosition: GridPosition;
@@ -128,8 +128,8 @@ export interface SequencingTile extends LessonTile {
   };
 }
 
-export interface MatchPairsTile extends LessonTile {
-  type: 'matchPairs';
+export interface BlanksTile extends LessonTile {
+  type: 'blanks';
   content: {
     instruction: string;
     richInstruction?: string;

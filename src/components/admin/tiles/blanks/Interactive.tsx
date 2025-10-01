@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { CheckCircle, XCircle, RefreshCw, Sparkles, Puzzle, RotateCcw } from 'lucide-react';
-import { MatchPairsTile } from '../../../../types/lessonEditor';
-import { createBlankId, createPlaceholderRegex } from '../../../../utils/matchPairs';
+import { BlanksTile } from '../../../../types/lessonEditor';
+import { createBlankId, createPlaceholderRegex } from '../../../../utils/blanks.ts';
 import { getReadableTextColor, surfaceColor } from '../../../../utils/colorUtils';
-import { TaskInstructionPanel } from '../../common/TaskInstructionPanel';
-import { RichTextEditor, RichTextEditorProps } from '../../common/RichTextEditor';
+import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
+import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
 
-interface MatchPairsInteractiveProps {
-  tile: MatchPairsTile;
+interface BlanksInteractiveProps {
+  tile: BlanksTile;
   isPreview?: boolean;
   isTestingMode?: boolean;
   onRequestTextEditing?: () => void;
@@ -69,7 +69,7 @@ const mapTextToNodes = (text: string): React.ReactNode =>
 const DEFAULT_SUCCESS_FEEDBACK = 'Brawo! Wszystkie odpowiedzi są poprawne.';
 const DEFAULT_FAILURE_FEEDBACK = 'Sprawdź jeszcze raz – część luk zawiera błędne odpowiedzi.';
 
-export const MatchPairsInteractive: React.FC<MatchPairsInteractiveProps> = ({
+export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
   tile,
   isPreview = false,
   isTestingMode = false,
@@ -460,4 +460,4 @@ export const MatchPairsInteractive: React.FC<MatchPairsInteractiveProps> = ({
   );
 };
 
-export default MatchPairsInteractive;
+export default BlanksInteractive;

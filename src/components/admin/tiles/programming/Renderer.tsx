@@ -1,9 +1,9 @@
 import React from 'react';
 import { Code2, Play } from 'lucide-react';
-import { ProgrammingTile } from '../../../../types/lessonEditor';
-import { TaskInstructionPanel } from '../../common/TaskInstructionPanel';
-import { RichTextEditor, createRichTextAdapter } from '../../common/RichTextEditor';
-import { BaseTileRendererProps, darkenColor, getReadableTextColor, surfaceColor } from '../shared';
+import { ProgrammingTile } from '../../../../types/lessonEditor.ts';
+import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
+import { RichTextEditor, createRichTextAdapter } from '../RichTextEditor.tsx';
+import { BaseTileRendererProps, darkenColor, getReadableTextColor, surfaceColor } from '../shared.ts';
 
 export const ProgrammingTileRenderer: React.FC<BaseTileRendererProps<ProgrammingTile>> = ({
   tile,

@@ -1,4 +1,4 @@
-import { LessonContent, LessonTile, TextTile, ProgrammingTile, SequencingTile, MatchPairsTile } from '../types/lessonEditor';
+import { LessonContent, LessonTile, TextTile, ProgrammingTile, SequencingTile, BlanksTile } from '../types/lessonEditor';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
 
@@ -406,7 +406,7 @@ export class LessonContentService {
   /**
    * Create a new match pairs (fill-in-the-blanks) tile
    */
-  static createMatchPairsTile(position: { x: number; y: number }, page = 1): MatchPairsTile {
+  static createBlanksTile(position: { x: number; y: number }, page = 1): BlanksTile {
     const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
 
@@ -436,7 +436,7 @@ export class LessonContentService {
 
     return {
       id,
-      type: 'matchPairs',
+      type: 'blanks',
       position: pixelPos,
       size: pixelSize,
       gridPosition: gridPos,

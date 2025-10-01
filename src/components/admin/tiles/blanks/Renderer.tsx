@@ -1,10 +1,10 @@
 import React from 'react';
-import { MatchPairsTile } from '../../../../types/lessonEditor';
-import { createRichTextAdapter, type RichTextEditorProps } from '../../common/RichTextEditor';
+import { BlanksTile } from '../../../../types/lessonEditor';
+import { createRichTextAdapter, type RichTextEditorProps } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared';
-import { MatchPairsInteractive } from './Interactive';
+import { BlanksInteractive } from './Interactive';
 
-export const MatchPairsTileRenderer: React.FC<BaseTileRendererProps<MatchPairsTile>> = ({
+export const BlanksTileRenderer: React.FC<BaseTileRendererProps<BlanksTile>> = ({
   tile,
   isSelected,
   isEditingText,
@@ -16,8 +16,8 @@ export const MatchPairsTileRenderer: React.FC<BaseTileRendererProps<MatchPairsTi
   backgroundColor,
   showBorder,
 }) => {
-  const matchPairsTile = tile;
-  const textColor = getReadableTextColor(matchPairsTile.content.backgroundColor || backgroundColor);
+  const blanksTile = tile;
+  const textColor = getReadableTextColor(blanksTile.content.backgroundColor || backgroundColor);
 
   const wrapperStyle: React.CSSProperties = {
     borderRadius: 'inherit',
@@ -25,12 +25,12 @@ export const MatchPairsTileRenderer: React.FC<BaseTileRendererProps<MatchPairsTi
     border: showBorder ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
   };
 
-  const renderMatchPairs = (
+  const renderBlanks = (
     instructionEditorProps?: RichTextEditorProps,
     isPreviewMode = false,
   ) => (
-    <MatchPairsInteractive
-      tile={matchPairsTile}
+    <BlanksInteractive
+      tile={blanksTile}
       isTestingMode={isTestingMode}
       instructionEditorProps={instructionEditorProps}
       isPreview={isPreviewMode}
@@ -40,7 +40,7 @@ export const MatchPairsTileRenderer: React.FC<BaseTileRendererProps<MatchPairsTi
 
   if (isEditingText && isSelected) {
     const instructionAdapter = createRichTextAdapter({
-      source: matchPairsTile.content,
+      source: blanksTile.content,
       fields: {
         text: 'instruction',
         richText: 'richInstruction',
@@ -49,14 +49,14 @@ export const MatchPairsTileRenderer: React.FC<BaseTileRendererProps<MatchPairsTi
         fontFamily: 'Inter, system-ui, sans-serif',
         fontSize: 16,
         verticalAlign: 'top',
-        backgroundColor: matchPairsTile.content.backgroundColor,
+        backgroundColor: blanksTile.content.backgroundColor,
         showBorder: true,
       },
     });
 
     return (
       <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
-        {renderMatchPairs(
+        {renderBlanks(
           {
             content: instructionAdapter.content,
             onChange: (updatedContent) => {
@@ -76,7 +76,7 @@ export const MatchPairsTileRenderer: React.FC<BaseTileRendererProps<MatchPairsTi
 
   return (
     <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
-      {renderMatchPairs()}
+      {renderBlanks()}
     </div>
   );
 };

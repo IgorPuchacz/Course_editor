@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Move, Trash2 } from 'lucide-react';
-import { LessonTile } from '../../../types/lessonEditor';
-import { GridUtils } from '../../../utils/gridUtils';
+import { LessonTile } from '../../../types/lessonEditor.ts';
+import { GridUtils } from '../../../utils/gridUtils.ts';
 
 const TILE_CORNER = 'rounded-xl';
 

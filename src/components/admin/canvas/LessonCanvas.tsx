@@ -1,10 +1,10 @@
 import React, { forwardRef } from 'react';
 import { Type } from 'lucide-react';
-import { LessonContent, LessonTile, EditorState } from '../../types/lessonEditor.ts';
-import { EditorAction } from '../../state/editorReducer.ts';
-import { TileRenderer } from './TileRenderer.tsx';
-import { GridUtils } from '../../utils/gridUtils.ts';
-import { useTileInteractions } from '../../hooks/useTileInteractions.ts';
+import { LessonContent, LessonTile, EditorState } from '../../../types/lessonEditor.ts';
+import { EditorAction } from '../../../state/editorReducer.ts';
+import { TileRenderer } from '../tiles/TileRenderer.tsx';
+import { GridUtils } from '../../../utils/gridUtils.ts';
+import { useTileInteractions } from '../../../hooks/useTileInteractions.ts';
 import { Editor } from '@tiptap/react';
 
 interface LessonCanvasProps {

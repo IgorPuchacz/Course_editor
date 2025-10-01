@@ -5,10 +5,10 @@ import { LessonContent, LessonTile, ProgrammingTile, TextTile } from '../types/l
 import { SequencingTile } from '../types/lessonEditor.ts';
 import { useLessonEditor } from '../hooks/useLessonEditor.ts';
 import { LessonContentService } from '../services/lessonContentService.ts';
-import { TilePalette } from '../components/admin/side editor/TilePalette.tsx';
-import { LessonCanvas } from '../components/admin/LessonCanvas.tsx';
-import { TileSideEditor } from '../components/admin/side editor/TileSideEditor.tsx';
-import { TopToolbar } from '../components/admin/top editor/TopToolbar.tsx';
+import { TilePalette } from '../components/admin/editor side/TilePalette.tsx';
+import { LessonCanvas } from '../components/admin/canvas/LessonCanvas.tsx';
+import { TileSideEditor } from '../components/admin/editor side/TileSideEditor.tsx';
+import { TopToolbar } from '../components/admin/editor top/TopToolbar.tsx';
 import { Editor } from '@tiptap/react';
 import { ToastContainer } from '../components/common/Toast.tsx';
 import { useToast } from '../hooks/useToast.ts';
@@ -16,7 +16,7 @@ import { ConfirmDialog } from '../components/common/ConfirmDialog.tsx';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.tsx';
 import { GridUtils } from '../utils/gridUtils.ts';
 import { logger } from '../utils/logger.ts';
-import { PageNavigator } from '../components/admin/PageNavigator.tsx';
+import { PageNavigator } from '../components/admin/editor top/PageNavigator.tsx';
 
 interface LessonEditorProps {
   lesson: Lesson;
@@ -253,8 +253,8 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       case 'sequencing':
         newTile = LessonContentService.createSequencingTile(position, currentPage);
         break;
-      case 'matchPairs':
-        newTile = LessonContentService.createMatchPairsTile(position, currentPage);
+      case 'blanks':
+        newTile = LessonContentService.createBlanksTile(position, currentPage);
         break;
       default:
         logger.warn(`Tile type ${tileType} not implemented yet`);
@@ -316,7 +316,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
         };
 
         // Special handling for text-based tiles to ensure content properties are merged
-        if ((tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing' || tile.type === 'matchPairs') && updates.content) {
+        if ((tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing' || tile.type === 'blanks') && updates.content) {
           updatedTile.content = {
             ...tile.content,
             ...updates.content

@@ -7,8 +7,8 @@ import {
   darkenColor,
   surfaceColor,
 } from '../../../../utils/colorUtils';
-import { TaskInstructionPanel } from '../../common/TaskInstructionPanel';
-import { RichTextEditor, RichTextEditorProps } from '../../common/RichTextEditor';
+import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
+import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
 
 interface SequencingInteractiveProps {
   tile: SequencingTile;
