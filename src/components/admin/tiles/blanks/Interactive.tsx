@@ -4,6 +4,7 @@ import { BlanksTile } from '../../../../types/lessonEditor';
 import { createBlankId, createPlaceholderRegex } from '../../../../utils/blanks.ts';
 import { getReadableTextColor, surfaceColor } from '../../../../utils/colorUtils';
 import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
+import { TaskTileSection } from '../TaskTileSection.tsx';
 import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
 
 interface BlanksInteractiveProps {
@@ -355,49 +356,48 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
         )}
 
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <div
-            className="lg:col-span-3 rounded-2xl border px-6 py-5 space-y-4 shadow-sm"
+          <TaskTileSection
+            className="lg:col-span-3 shadow-sm"
             style={{
               backgroundColor: surfaceColor(accentColor, textColor, 0.68, 0.42),
               borderColor: surfaceColor(accentColor, textColor, 0.52, 0.54),
               color: textColor
             }}
+            icon={<Puzzle className="w-4 h-4" />}
+            title="Tekst zadania"
+            headerClassName="px-6 py-5 border-b"
+            headerStyle={{ borderColor: surfaceColor(accentColor, textColor, 0.52, 0.54), color: mutedLabelColor }}
+            titleStyle={{ color: mutedLabelColor }}
+            contentClassName="flex-1 px-6 py-5 text-base leading-relaxed space-y-3"
           >
-            <div className="flex items-center gap-3 text-sm font-semibold" style={{ color: mutedLabelColor }}>
-              <Puzzle className="w-4 h-4" />
-              <span>Tekst zadania</span>
-            </div>
-            <div
-              className="text-base leading-relaxed space-y-3"
-            >
-              {segments.map((segment, index) => (
-                segment.type === 'text'
-                  ? <React.Fragment key={`text-${index}`}>{mapTextToNodes(segment.value)}</React.Fragment>
-                  : <React.Fragment key={`blank-${segment.id}-${index}`}>{renderBlank(segment.id)}</React.Fragment>
-              ))}
-            </div>
-          </div>
+            {segments.map((segment, index) => (
+              segment.type === 'text'
+                ? <React.Fragment key={`text-${index}`}>{mapTextToNodes(segment.value)}</React.Fragment>
+                : <React.Fragment key={`blank-${segment.id}-${index}`}>{renderBlank(segment.id)}</React.Fragment>
+            ))}
+          </TaskTileSection>
 
-          <div
-            className="lg:col-span-2 rounded-2xl border px-6 py-5 flex flex-col gap-4"
+          <TaskTileSection
+            className="lg:col-span-2"
             style={{
               backgroundColor: surfaceColor(accentColor, textColor, 0.6, 0.4),
               borderColor: surfaceColor(accentColor, textColor, 0.5, 0.52),
               color: textColor
             }}
-            onDragOver={handleDragOverBank}
-            onDrop={handleDropToBank}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 text-sm font-semibold" style={{ color: mutedLabelColor }}>
-                <RefreshCw className="w-4 h-4" />
-                <span>Pula odpowiedzi</span>
-              </div>
+            icon={<RefreshCw className="w-4 h-4" />}
+            title="Pula odpowiedzi"
+            headerClassName="px-6 py-5 border-b"
+            headerStyle={{ borderColor: surfaceColor(accentColor, textColor, 0.5, 0.52), color: mutedLabelColor }}
+            titleStyle={{ color: mutedLabelColor }}
+            rightContent={
               <span className="text-xs" style={{ color: mutedLabelColor }}>
                 {availableOptions.length} / {tile.content.options.length}
               </span>
-            </div>
-
+            }
+            contentClassName="flex-1 px-6 py-5"
+            onDragOver={handleDragOverBank}
+            onDrop={handleDropToBank}
+          >
             <div className="flex flex-wrap gap-3">
               {availableOptions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center text-sm text-center gap-2 py-8 w-full" style={{ color: mutedLabelColor }}>
@@ -428,7 +428,7 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
                 ))
               )}
             </div>
-          </div>
+          </TaskTileSection>
         </div>
 
         {isInteractionEnabled && (
