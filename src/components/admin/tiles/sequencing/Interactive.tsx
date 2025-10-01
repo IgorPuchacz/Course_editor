@@ -506,18 +506,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
           )}
         </TaskInstructionPanel>
 
-        {isTestingMode && (
-          <div className="text-[11px] uppercase tracking-[0.32em]" style={{ color: testingCaptionColor }}>
-            Tryb testowania
-          </div>
-        )}
-
-        {attempts > 0 && (
-          <div className="text-xs uppercase tracking-[0.32em]" style={{ color: testingCaptionColor }}>
-            Próba #{attempts}
-          </div>
-        )}
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0">
           <div
             className="flex flex-col rounded-2xl border transition-all duration-200"

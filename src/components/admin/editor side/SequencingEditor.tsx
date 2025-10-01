@@ -101,6 +101,18 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
 
   return (
     <div className="space-y-6">
+
+      {/* Background Color */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-3">Kolor tła kafelka</label>
+        <input
+            type="color"
+            value={tile.content.backgroundColor}
+            onChange={(e) => handleContentUpdate('backgroundColor', e.target.value)}
+            className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
+        />
+      </div>
+
       <div className="p-4 rounded-lg border border-gray-200 bg-white shadow-sm">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -195,17 +207,6 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
             ⚠️ Dodaj co najmniej 2 elementy, aby ćwiczenie było funkcjonalne
           </div>
         )}
-      </div>
-
-      {/* Background Color */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">Kolor tła kafelka</label>
-        <input
-          type="color"
-          value={tile.content.backgroundColor}
-          onChange={(e) => handleContentUpdate('backgroundColor', e.target.value)}
-          className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
-        />
       </div>
     </div>
   );

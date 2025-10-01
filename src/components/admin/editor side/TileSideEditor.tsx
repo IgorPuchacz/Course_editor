@@ -554,7 +554,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
             <div className="space-y-3">
                 {quizTile.content.answers.map((answer, index) => (
                   <div key={index} className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
                       <label className="flex items-center gap-3 text-sm text-gray-700">
                         <input
                             type={quizTile.content.multipleCorrect ? 'checkbox' : 'radio'}
@@ -563,8 +563,15 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                             onChange={(e) => handleAnswerCorrectToggle(index, e.target.checked)}
                             className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                         />
-                        <span>Poprawna</span>
                       </label>
+
+                      <input
+                          type="text"
+                          value={answer.text}
+                          onChange={(e) => handleAnswerTextChange(index, e.target.value)}
+                          className="flex-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          placeholder={`Treść odpowiedzi ${index + 1}`}
+                      />
 
                       <button
                         type="button"
@@ -577,18 +584,8 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                         }`}
                       >
                         <Trash2 className="w-4 h-4" />
-                        Usuń
                       </button>
                     </div>
-
-                    <input
-                      type="text"
-                      value={answer.text}
-                      onChange={(e) => handleAnswerTextChange(index, e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                      placeholder={`Treść odpowiedzi ${index + 1}`}
-                    />
-
                   </div>
                 ))}
               </div>
