@@ -258,15 +258,8 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   }
 
   return (
-    <div
-      className={`top-toolbar z-30 flex items-center justify-between px-4 lg:px-6 py-3 ${className}`}
-    >
-      <div className="text-sm text-gray-500">
-        Kafelki: {tilesCount} • Siatka: {gridColumns}×{gridRows}
-      </div>
-      <div className="font-medium text-gray-700">
-        {currentMode}
-      </div>
+    <div>
+      implement pagination here
     </div>
   );
 };

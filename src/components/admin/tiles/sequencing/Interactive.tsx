@@ -619,11 +619,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
             title="Twoja sekwencja"
             headerStyle={{ borderColor: sequenceHeaderBorder, color: subtleCaptionColor }}
             titleStyle={{ color: subtleCaptionColor }}
-            rightContent={
-              <span className="text-xs" style={{ color: subtleCaptionColor }}>
-                {placedItems.filter(Boolean).length} / {tile.content.items.length}
-              </span>
-            }
+            rightContent={undefined}
             contentClassName="flex-1 overflow-auto px-5 py-4 space-y-3"
           >
             {placedItems.map((item, index) => (
@@ -668,7 +664,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                   </div>
                 ) : (
                   <span className="flex-1 text-sm italic" style={{ color: subtleCaptionColor }}>
-                    Upuść element w tym miejscu
+                    Upuść element
                   </span>
                 )}
 
@@ -697,21 +693,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                 colors={validateButtonColors}
                 labels={validateButtonLabels}
               />
-
-              {isChecked && !isCorrect && (
-                <button
-                  onClick={resetSequence}
-                  className="px-4 py-2 rounded-xl font-medium border transition-colors flex items-center gap-2"
-                  style={{
-                    backgroundColor: secondaryButtonBackground,
-                    borderColor: secondaryButtonBorder,
-                    color: textColor
-                  }}
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  <span>Wymieszaj ponownie</span>
-                </button>
-              )}
             </div>
           </div>
         )}
