@@ -17,6 +17,7 @@ export type ValidateButtonLabels = Partial<Record<ValidateButtonState, React.Rea
 interface ValidateButtonProps {
   state: ValidateButtonState;
   onClick: () => void;
+  onRetry?: () => void;
   disabled?: boolean;
   className?: string;
   style?: React.CSSProperties;
@@ -69,6 +70,7 @@ const mergeColorConfig = (
 export const ValidateButton: React.FC<ValidateButtonProps> = ({
   state,
   onClick,
+  onRetry,
   disabled = false,
   className = '',
   style,
@@ -78,6 +80,17 @@ export const ValidateButton: React.FC<ValidateButtonProps> = ({
 }) => {
   const label = labels?.[state] ?? DEFAULT_LABELS[state];
   const { background, color, border } = mergeColorConfig(state, colors);
+
+  const handleClick = React.useCallback(() => {
+    if (disabled) return;
+
+    if (state === 'error' && onRetry) {
+      onRetry();
+      return;
+    }
+
+    onClick();
+  }, [disabled, state, onRetry, onClick]);
 
   const buttonStyle: React.CSSProperties = {
     backgroundColor: background,
@@ -91,7 +104,7 @@ export const ValidateButton: React.FC<ValidateButtonProps> = ({
   return (
     <button
       type={type}
-      onClick={onClick}
+      onClick={handleClick}
       disabled={disabled}
       className={`inline-flex h-11 min-w-[220px] w-full max-w-[360px] sm:w-[60%] items-center justify-center gap-2 rounded-xl border font-semibold text-sm transition-transform duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900/20 disabled:cursor-not-allowed disabled:opacity-60 hover:-translate-y-0.5 active:translate-y-0 ${className}`.trim()}
       style={buttonStyle}

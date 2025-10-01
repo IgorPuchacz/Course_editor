@@ -688,6 +688,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
             <div className="flex items-center gap-3">
               <ValidateButton
                 onClick={checkSequence}
+                onRetry={resetCheckState}
                 disabled={!sequenceComplete || (isChecked && isCorrect)}
                 state={validationState}
                 colors={validateButtonColors}
