@@ -4,6 +4,7 @@ import { BlanksTile } from '../../../../types/lessonEditor';
 import { createBlankId, createPlaceholderRegex } from '../../../../utils/blanks.ts';
 import { getReadableTextColor, surfaceColor } from '../../../../utils/colorUtils';
 import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
+import { TaskTileSection } from '../TaskTileSection.tsx';
 import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
 
 interface BlanksInteractiveProps {
@@ -95,6 +96,12 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
   const optionBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.52, 0.46), [accentColor, textColor]);
   const optionBorder = useMemo(() => surfaceColor(accentColor, textColor, 0.44, 0.56), [accentColor, textColor]);
   const testingCaptionColor = useMemo(() => surfaceColor(accentColor, textColor, 0.42, 0.4), [accentColor, textColor]);
+  const taskTextBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.68, 0.42), [accentColor, textColor]);
+  const taskTextBorder = useMemo(() => surfaceColor(accentColor, textColor, 0.52, 0.54), [accentColor, textColor]);
+  const taskTextHeaderBorder = useMemo(() => surfaceColor(accentColor, textColor, 0.58, 0.5), [accentColor, textColor]);
+  const optionsSectionBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.6, 0.4), [accentColor, textColor]);
+  const optionsSectionBorder = useMemo(() => surfaceColor(accentColor, textColor, 0.5, 0.52), [accentColor, textColor]);
+  const optionsSectionHeaderBorder = useMemo(() => surfaceColor(accentColor, textColor, 0.54, 0.5), [accentColor, textColor]);
   const evaluationSuccessBackground = '#dcfce7';
   const evaluationErrorBackground = '#fee2e2';
 
@@ -355,49 +362,37 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
         )}
 
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <div
-            className="lg:col-span-3 rounded-2xl border px-6 py-5 space-y-4 shadow-sm"
-            style={{
-              backgroundColor: surfaceColor(accentColor, textColor, 0.68, 0.42),
-              borderColor: surfaceColor(accentColor, textColor, 0.52, 0.54),
-              color: textColor
-            }}
+          <TaskTileSection
+            className="lg:col-span-3 shadow-sm"
+            backgroundColor={taskTextBackground}
+            borderColor={taskTextBorder}
+            headerBorderColor={taskTextHeaderBorder}
+            headerTextColor={mutedLabelColor}
+            icon={<Puzzle className="w-4 h-4" style={{ color: mutedLabelColor }} />}
+            title="Tekst zadania"
+            contentClassName="text-base leading-relaxed space-y-3"
+            style={{ color: textColor }}
           >
-            <div className="flex items-center gap-3 text-sm font-semibold" style={{ color: mutedLabelColor }}>
-              <Puzzle className="w-4 h-4" />
-              <span>Tekst zadania</span>
-            </div>
-            <div
-              className="text-base leading-relaxed space-y-3"
-            >
-              {segments.map((segment, index) => (
-                segment.type === 'text'
-                  ? <React.Fragment key={`text-${index}`}>{mapTextToNodes(segment.value)}</React.Fragment>
-                  : <React.Fragment key={`blank-${segment.id}-${index}`}>{renderBlank(segment.id)}</React.Fragment>
-              ))}
-            </div>
-          </div>
+            {segments.map((segment, index) => (
+              segment.type === 'text'
+                ? <React.Fragment key={`text-${index}`}>{mapTextToNodes(segment.value)}</React.Fragment>
+                : <React.Fragment key={`blank-${segment.id}-${index}`}>{renderBlank(segment.id)}</React.Fragment>
+            ))}
+          </TaskTileSection>
 
-          <div
-            className="lg:col-span-2 rounded-2xl border px-6 py-5 flex flex-col gap-4"
-            style={{
-              backgroundColor: surfaceColor(accentColor, textColor, 0.6, 0.4),
-              borderColor: surfaceColor(accentColor, textColor, 0.5, 0.52),
-              color: textColor
-            }}
-            onDragOver={handleDragOverBank}
-            onDrop={handleDropToBank}
+          <TaskTileSection
+            className="lg:col-span-2"
+            backgroundColor={optionsSectionBackground}
+            borderColor={optionsSectionBorder}
+            headerBorderColor={optionsSectionHeaderBorder}
+            headerTextColor={mutedLabelColor}
+            icon={<RefreshCw className="w-4 h-4" style={{ color: mutedLabelColor }} />}
+            title="Pula odpowiedzi"
+            headerRight={`${availableOptions.length} / ${tile.content.options.length}`}
+            contentClassName="flex-1 flex flex-col gap-4"
+            contentProps={{ onDragOver: handleDragOverBank, onDrop: handleDropToBank }}
+            style={{ color: textColor }}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 text-sm font-semibold" style={{ color: mutedLabelColor }}>
-                <RefreshCw className="w-4 h-4" />
-                <span>Pula odpowiedzi</span>
-              </div>
-              <span className="text-xs" style={{ color: mutedLabelColor }}>
-                {availableOptions.length} / {tile.content.options.length}
-              </span>
-            </div>
-
             <div className="flex flex-wrap gap-3">
               {availableOptions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center text-sm text-center gap-2 py-8 w-full" style={{ color: mutedLabelColor }}>
@@ -428,7 +423,7 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
                 ))
               )}
             </div>
-          </div>
+          </TaskTileSection>
         </div>
 
         {isInteractionEnabled && (

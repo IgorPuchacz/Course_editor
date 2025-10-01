@@ -8,6 +8,7 @@ import {
   surfaceColor,
 } from '../../../../utils/colorUtils';
 import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
+import { TaskTileSection } from '../TaskTileSection.tsx';
 import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
 
 interface SequencingInteractiveProps {
@@ -507,45 +508,93 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
         </TaskInstructionPanel>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0">
-          <div
-            className="flex flex-col rounded-2xl border transition-all duration-200"
+          <TaskTileSection
+            className="transition-all duration-200"
+            backgroundColor={isPoolHighlighted ? poolHighlightBackground : poolBackground}
+            borderColor={isPoolHighlighted ? poolHighlightBorder : poolBorder}
+            headerBorderColor={itemBorder}
+            headerTextColor={subtleCaptionColor}
+            icon={<Shuffle className="w-4 h-4" style={{ color: subtleCaptionColor }} />}
+            title="Pula elementów"
+            contentClassName="flex-1 overflow-auto space-y-3"
             style={{
-              backgroundColor: isPoolHighlighted ? poolHighlightBackground : poolBackground,
-              borderColor: isPoolHighlighted ? poolHighlightBorder : poolBorder,
               boxShadow: isPoolHighlighted ? '0 22px 44px rgba(15, 23, 42, 0.22)' : undefined
             }}
             onDragOver={handlePoolDragOver}
             onDragLeave={handlePoolDragLeave}
             onDrop={handleDropToPool}
           >
-            <div
-              className="flex items-center justify-between px-5 py-4 border-b"
-              style={{ borderColor: itemBorder, color: subtleCaptionColor }}
-            >
-              <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: subtleCaptionColor }}>
-                <Shuffle className="w-4 h-4" />
-                <span>Pula elementów</span>
+            {availableItems.length === 0 ? (
+              <div
+                className="flex flex-col items-center justify-center gap-2 text-center text-sm py-10"
+                style={{ color: subtleCaptionColor }}
+              >
+                <ArrowLeftRight className="w-5 h-5" />
+                <span>Przeciągnij elementy na prawą stronę</span>
               </div>
-            </div>
-
-            <div className="flex-1 overflow-auto px-5 py-4 space-y-3">
-              {availableItems.length === 0 ? (
+            ) : (
+              availableItems.map(item => (
                 <div
-                  className="flex flex-col items-center justify-center gap-2 text-center text-sm py-10"
-                  style={{ color: subtleCaptionColor }}
+                  key={item.id}
+                  draggable={canInteract}
+                  onDragStart={e => handleDragStart(e, item.id, 'pool')}
+                  onDragEnd={handleDragEnd}
+                  className={getItemClasses(item.id)}
+                  style={{ backgroundColor: itemBackground, borderColor: itemBorder, color: textColor }}
                 >
-                  <ArrowLeftRight className="w-5 h-5" />
-                  <span>Przeciągnij elementy na prawą stronę</span>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="flex h-8 w-8 items-center justify-center rounded-lg border"
+                      style={{ backgroundColor: gripBackground, borderColor: gripBorder, color: mutedLabelColor }}
+                    >
+                      <GripVertical className="h-4 w-4" />
+                    </div>
+                    <span className="text-sm font-medium" style={{ color: textColor }}>
+                      {item.text}
+                    </span>
+                  </div>
                 </div>
-              ) : (
-                availableItems.map(item => (
+              ))
+            )}
+          </TaskTileSection>
+
+          <TaskTileSection
+            backgroundColor={sequenceBackground}
+            borderColor={sequenceBorder}
+            headerBorderColor={sequenceHeaderBorder}
+            headerTextColor={subtleCaptionColor}
+            icon={<CheckCircle className="w-4 h-4" style={{ color: subtleCaptionColor }} />}
+            title="Twoja sekwencja"
+            headerRight={`${placedItems.filter(Boolean).length} / ${tile.content.items.length}`}
+            contentClassName="flex-1 overflow-auto space-y-3"
+          >
+            {placedItems.map((item, index) => (
+              <div
+                key={index}
+                className={getSlotClasses(Boolean(item))}
+                style={getSlotStyles(index, Boolean(item))}
+                onDragOver={e => handleSlotDragOver(e, index)}
+                onDragLeave={handleSlotDragLeave}
+                onDrop={e => handleDropToSlot(e, index)}
+              >
+                <div
+                  className="flex items-center justify-center w-8 h-8 rounded-lg border text-sm font-semibold"
+                  style={{
+                    backgroundColor: badgeBackground,
+                    borderColor: badgeBorder,
+                    color: badgeTextColor
+                  }}
+                >
+                  {index + 1}
+                </div>
+                {item ? (
                   <div
-                    key={item.id}
+                    className={`flex-1 flex items-center justify-between gap-4 cursor-grab active:cursor-grabbing ${
+                      dragState?.id === item.id ? 'opacity-60 scale-[0.98]' : ''
+                    }`}
                     draggable={canInteract}
-                    onDragStart={e => handleDragStart(e, item.id, 'pool')}
+                    onDragStart={e => handleDragStart(e, item.id, 'sequence', index)}
                     onDragEnd={handleDragEnd}
-                    className={getItemClasses(item.id)}
-                    style={{ backgroundColor: itemBackground, borderColor: itemBorder, color: textColor }}
                   >
                     <div className="flex items-center gap-3">
                       <div
@@ -554,94 +603,30 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
                       >
                         <GripVertical className="h-4 w-4" />
                       </div>
-                      <span className="text-sm font-medium" style={{ color: textColor }}>
+                      <span className="text-sm font-medium text-left break-words" style={{ color: textColor }}>
                         {item.text}
                       </span>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          </div>
+                ) : (
+                  <span className="flex-1 text-sm italic" style={{ color: subtleCaptionColor }}>
+                    Upuść element w tym miejscu
+                  </span>
+                )}
 
-          <div
-            className="flex flex-col rounded-2xl border"
-            style={{ backgroundColor: sequenceBackground, borderColor: sequenceBorder }}
-          >
-            <div
-              className="flex items-center justify-between px-5 py-4 border-b"
-              style={{ borderColor: sequenceHeaderBorder, color: subtleCaptionColor }}
-            >
-              <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: subtleCaptionColor }}>
-                <CheckCircle className="w-4 h-4" style={{ color: subtleCaptionColor }} />
-                <span>Twoja sekwencja</span>
-              </div>
-              <span className="text-xs" style={{ color: subtleCaptionColor }}>
-                {placedItems.filter(Boolean).length} / {tile.content.items.length}
-              </span>
-            </div>
+                {isChecked && isCorrect !== null && item && (() => {
+                  const originalItem = tile.content.items.find(original => original.id === item.id);
+                  const isInCorrectPosition = originalItem && originalItem.correctPosition === index;
 
-            <div className="flex-1 overflow-auto px-5 py-4 space-y-3">
-              {placedItems.map((item, index) => (
-                <div
-                  key={index}
-                  className={getSlotClasses(Boolean(item))}
-                  style={getSlotStyles(index, Boolean(item))}
-                  onDragOver={e => handleSlotDragOver(e, index)}
-                  onDragLeave={handleSlotDragLeave}
-                  onDrop={e => handleDropToSlot(e, index)}
-                >
-                  <div
-                    className="flex items-center justify-center w-8 h-8 rounded-lg border text-sm font-semibold"
-                    style={{
-                      backgroundColor: badgeBackground,
-                      borderColor: badgeBorder,
-                      color: badgeTextColor
-                    }}
-                  >
-                    {index + 1}
-                  </div>
-                  {item ? (
-                    <div
-                      className={`flex-1 flex items-center justify-between gap-4 cursor-grab active:cursor-grabbing ${
-                        dragState?.id === item.id ? 'opacity-60 scale-[0.98]' : ''
-                      }`}
-                      draggable={canInteract}
-                      onDragStart={e => handleDragStart(e, item.id, 'sequence', index)}
-                      onDragEnd={handleDragEnd}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border"
-                          style={{ backgroundColor: gripBackground, borderColor: gripBorder, color: mutedLabelColor }}
-                        >
-                          <GripVertical className="h-4 w-4" />
-                        </div>
-                        <span className="text-sm font-medium text-left break-words" style={{ color: textColor }}>
-                          {item.text}
-                        </span>
-                      </div>
-                    </div>
+                  return isInCorrectPosition ? (
+                    <CheckCircle className="w-5 h-5" style={{ color: successIconColor }} />
                   ) : (
-                    <span className="flex-1 text-sm italic" style={{ color: subtleCaptionColor }}>
-                      Upuść element w tym miejscu
-                    </span>
-                  )}
-
-                  {isChecked && isCorrect !== null && item && (() => {
-                    const originalItem = tile.content.items.find(original => original.id === item.id);
-                    const isInCorrectPosition = originalItem && originalItem.correctPosition === index;
-
-                    return isInCorrectPosition ? (
-                      <CheckCircle className="w-5 h-5" style={{ color: successIconColor }} />
-                    ) : (
-                      <XCircle className="w-5 h-5 text-rose-400" />
-                    );
-                  })()}
-                </div>
-              ))}
-            </div>
-          </div>
+                    <XCircle className="w-5 h-5 text-rose-400" />
+                  );
+                })()}
+              </div>
+            ))}
+          </TaskTileSection>
         </div>
 
         {isChecked && isCorrect !== null && (
