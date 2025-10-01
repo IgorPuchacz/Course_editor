@@ -10,6 +10,7 @@ import {
 import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
 import { TaskTileSection } from '../TaskTileSection.tsx';
 import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
+import { ValidateButton, ValidateButtonStatus } from '../ValidateButton.tsx';
 
 interface SequencingInteractiveProps {
   tile: SequencingTile;
@@ -46,7 +47,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   const [placedItems, setPlacedItems] = useState<(DraggedItem | null)[]>([]);
   const [isChecked, setIsChecked] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [attempts, setAttempts] = useState(0);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [isPoolHighlighted, setIsPoolHighlighted] = useState(false);
@@ -75,10 +75,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   );
   const mutedLabelColor = textColor === '#0f172a' ? '#475569' : '#dbeafe';
   const subtleCaptionColor = textColor === '#0f172a' ? '#64748b' : '#e2e8f0';
-  const testingCaptionColor = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.42, 0.4),
-    [accentColor, textColor]
-  );
   const poolBackground = useMemo(
     () => surfaceColor(accentColor, textColor, 0.6, 0.4),
     [accentColor, textColor]
@@ -165,16 +161,16 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
     [accentColor, textColor]
   );
   const successIconColor = textColor === '#0f172a' ? darkenColor(accentColor, 0.2) : lightenColor(accentColor, 0.32);
-  const successFeedbackBackground = surfaceColor(accentColor, textColor, 0.7, 0.34);
-  const successFeedbackBorder = surfaceColor(accentColor, textColor, 0.6, 0.44);
-  const failureFeedbackBackground = '#fee2e2';
-  const failureFeedbackBorder = '#fca5a5';
   const primaryButtonBackground = textColor === '#0f172a' ? darkenColor(accentColor, 0.25) : lightenColor(accentColor, 0.28);
   const primaryButtonTextColor = textColor === '#0f172a' ? '#f8fafc' : '#0f172a';
   const secondaryButtonBackground = surfaceColor(accentColor, textColor, 0.52, 0.5);
   const secondaryButtonBorder = surfaceColor(accentColor, textColor, 0.46, 0.58);
   const showBorder = tile.content.showBorder !== false;
   const isEmbedded = variant === 'embedded';
+
+  const validationStatus: ValidateButtonStatus = isChecked && isCorrect !== null
+    ? (isCorrect ? 'correct' : 'incorrect')
+    : 'idle';
 
   const correctOrderIds = useMemo(
     () =>
@@ -224,7 +220,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
     setPlacedItems(new Array(shuffledItems.length).fill(null));
     setIsChecked(false);
     setIsCorrect(null);
-    setAttempts(0);
   }, [buildInitialPool]);
 
   useEffect(() => {
@@ -383,7 +378,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
 
     setIsCorrect(isSequenceCorrect);
     setIsChecked(true);
-    setAttempts(prev => prev + 1);
   };
 
   const resetSequence = () => {
@@ -633,47 +627,17 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
           </TaskTileSection>
         </div>
 
-        {isChecked && isCorrect !== null && (
-          <div
-            className="rounded-2xl border px-6 py-4 flex items-center justify-between"
-            style={{
-              backgroundColor: isCorrect ? successFeedbackBackground : failureFeedbackBackground,
-              borderColor: isCorrect ? successFeedbackBorder : failureFeedbackBorder,
-              color: isCorrect ? textColor : '#7f1d1d'
-            }}
-          >
-            <div className="flex items-center gap-3 text-sm font-medium">
-              {isCorrect ? (
-                <CheckCircle className="w-5 h-5" style={{ color: successIconColor }} />
-              ) : (
-                <XCircle className="w-5 h-5 text-rose-300" />
-              )}
-              <span>{isCorrect ? tile.content.correctFeedback : tile.content.incorrectFeedback}</span>
-            </div>
-
-            {!isCorrect && (
-              <div className="text-xs" style={{ color: '#7f1d1d' }}>
-                Spróbuj ponownie, przenosząc elementy.
-              </div>
-            )}
-          </div>
-        )}
-
         {!isPreview && (
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <button
+              <ValidateButton
                 onClick={checkSequence}
                 disabled={!sequenceComplete || (isChecked && isCorrect)}
-                className="px-6 py-2 rounded-xl font-semibold shadow-lg transition-transform duration-200 disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
-                style={{
-                  backgroundColor: primaryButtonBackground,
-                  color: primaryButtonTextColor,
-                  boxShadow: '0 16px 32px rgba(15, 23, 42, 0.22)'
-                }}
-              >
-                {isChecked && isCorrect ? 'Sekwencja sprawdzona' : 'Sprawdź kolejność'}
-              </button>
+                accentColor={primaryButtonBackground}
+                textColor={primaryButtonTextColor}
+                status={validationStatus}
+                className="hover:-translate-y-0.5"
+              />
 
               {isChecked && !isCorrect && (
                 <button
