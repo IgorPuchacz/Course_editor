@@ -119,7 +119,9 @@ export const TileFrame: React.FC<TileFrameProps> = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {children({ isHovered })}
+      <div className={`relative h-full w-full ${TILE_CORNER} overflow-hidden`}>
+        {children({ isHovered })}
+      </div>
 
       {(isSelected || isHovered) && !isEditingText && !isImageEditing && (
         <div className="absolute -top-8 left-0 flex items-center space-x-1 bg-white rounded-md shadow-md border border-gray-200 px-2 py-1">

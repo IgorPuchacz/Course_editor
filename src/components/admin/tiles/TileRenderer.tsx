@@ -100,7 +100,7 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       onDelete={onDelete}
     >
       {() => (
-        <div className="w-full h-full overflow-hidden">
+        <div className="w-full h-full overflow-hidden" style={{ borderRadius: 'inherit' }}>
           {Renderer ? (
             <Renderer {...rendererProps} />
           ) : (
