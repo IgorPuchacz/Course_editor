@@ -9,10 +9,6 @@ import { LessonTile, ProgrammingTile, TextTile, SequencingTile } from '../../../
 
 
 interface TopToolbarProps {
-  tilesCount: number;
-  gridColumns: number;
-  gridRows: number;
-  currentMode: string;
   isTextEditing: boolean;
   onFinishTextEditing?: () => void;
   editor?: Editor | null;
@@ -28,10 +24,6 @@ interface TopToolbarProps {
 }
 
 export const TopToolbar: React.FC<TopToolbarProps> = ({
-  tilesCount,
-  gridColumns,
-  gridRows,
-  currentMode,
   isTextEditing,
   onFinishTextEditing,
   editor,
@@ -111,7 +103,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
     
     return 'p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 hover:shadow-sm border border-transparent rounded-lg transition-all duration-200 min-w-[36px] h-9 flex items-center justify-center';
   };
-  const toolbarClassName = `top-toolbar z-30 flex items-center justify-between px-4 lg:px-6 py-3 ${className}`;
+  const toolbarClassName = `top-toolbar z-30 flex items-center justify-between px-4 lg:px-6 py-3 min-h-[72px] ${className}`;
 
   if (isTextEditing) {
     return (
@@ -119,7 +111,10 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         className={toolbarClassName}
         onMouseDown={(e) => e.preventDefault()}
       >
-        <div className="flex items-center space-x-2 text-gray-600" onMouseDown={(e) => e.preventDefault()}>
+        <div
+          className="flex flex-1 items-center gap-2 text-gray-600"
+          onMouseDown={(e) => e.preventDefault()}
+        >
           {/* Font Family Selector */}
           <FontSelector
             selectedFont={currentFont}
@@ -255,20 +250,20 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             disabled={!editor?.can().redo()}
             title="Ponów (Ctrl+Y)"
           >
-            <Redo className="w-4 h-4" />
-          </button>
-        </div>
-        
-        <button
-          onClick={onFinishTextEditing}
-          onMouseDown={e => e.preventDefault()}
-          className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 border border-transparent hover:border-red-200"
-          title="Zakończ edycję tekstu"
-        >
-          <X className="w-5 h-5" />
+          <Redo className="w-4 h-4" />
         </button>
       </div>
-    );
+
+      <button
+        onClick={onFinishTextEditing}
+        onMouseDown={e => e.preventDefault()}
+        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 border border-transparent hover:border-red-200"
+        title="Zakończ edycję tekstu"
+      >
+        <X className="w-5 h-5" />
+      </button>
+    </div>
+  );
   }
 
   const hasPagination =
@@ -283,23 +278,10 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
 
   return (
     <div className={toolbarClassName}>
-      <div className="flex items-center gap-4 text-gray-600 overflow-hidden">
-        <div className="flex flex-col">
-          <span className="text-sm font-semibold text-gray-900">{currentMode}</span>
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <span>{tilesCount} kafelków</span>
-            <span className="hidden sm:inline-flex items-center gap-2">
-              <span className="w-px h-3 bg-gray-300" aria-hidden="true"></span>
-              <span>
-                Siatka {gridColumns}×{gridRows}
-              </span>
-            </span>
-          </div>
-        </div>
-      </div>
+      <div className="flex-1 basis-0" />
 
-      {hasPagination && (
-        <div className="flex flex-1 justify-end items-center gap-4">
+      <div className="flex flex-1 basis-0 justify-center min-w-0">
+        {hasPagination && (
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -338,7 +320,11 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
+        )}
+      </div>
 
+      <div className="flex flex-1 basis-0 justify-end">
+        {hasPagination && (
           <div className="flex items-center gap-3 text-sm text-gray-500">
             <span>
               Strona {currentPage} z {safeTotalPages}
@@ -367,8 +353,8 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
               </button>
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

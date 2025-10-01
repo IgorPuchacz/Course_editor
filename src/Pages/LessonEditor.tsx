@@ -16,7 +16,6 @@ import { ConfirmDialog } from '../components/common/ConfirmDialog.tsx';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.tsx';
 import { GridUtils } from '../utils/gridUtils.ts';
 import { logger } from '../utils/logger.ts';
-import { PageNavigator } from '../components/admin/editor top/PageNavigator.tsx';
 
 interface LessonEditorProps {
   lesson: Lesson;
@@ -711,10 +710,6 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
           >
             <TopToolbar
               key={`toolbar-${editorState.mode}-${editorState.selectedTileId}`}
-              tilesCount={pageTiles.length}
-              gridColumns={GridUtils.GRID_COLUMNS}
-              gridRows={pagedCanvasSettings.height}
-              currentMode={editorState.selectedTileId ? 'Tryb edycji' : 'Tryb dodawania'}
               isTextEditing={editorState.mode === 'textEditing'}
               onFinishTextEditing={handleFinishTextEditing}
               editor={activeEditor}
@@ -745,16 +740,6 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
                 showGrid={editorState.showGrid}
                 onEditorReady={setActiveEditor}
                 testingTileIds={testingTileIds}
-              />
-
-              <PageNavigator
-                currentPage={safePage}
-                totalPages={totalPages}
-                onSelectPage={handlePageChange}
-                onAddPage={handleAddPage}
-                showAddButton={false}
-                onDeletePage={handleDeletePage}
-                canDeletePage={totalPages > 1}
               />
             </div>
           </div>
