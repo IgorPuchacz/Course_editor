@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Bold, Italic, Underline, List, ListOrdered, Undo, Redo, Code, FileCode, X } from 'lucide-react';
+import { Bold, Italic, Underline, List, ListOrdered, Undo, Redo, Code, FileCode, X, ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { Editor } from '@tiptap/react';
 import { FontSizeSelector } from './FontSizeSelector.tsx';
 import { TextColorPicker } from './TextColorPicker.tsx';
@@ -9,28 +9,32 @@ import { LessonTile, ProgrammingTile, TextTile, SequencingTile } from '../../../
 
 
 interface TopToolbarProps {
-  tilesCount: number;
-  gridColumns: number;
-  gridRows: number;
-  currentMode: string;
   isTextEditing: boolean;
   onFinishTextEditing?: () => void;
   editor?: Editor | null;
   selectedTile?: TextTile | ProgrammingTile | SequencingTile | null;
   onUpdateTile?: (tileId: string, updates: Partial<LessonTile>) => void;
+  currentPage?: number;
+  totalPages?: number;
+  onSelectPage?: (page: number) => void;
+  onAddPage?: () => void;
+  onDeletePage?: () => void;
+  canDeletePage?: boolean;
   className?: string;
 }
 
 export const TopToolbar: React.FC<TopToolbarProps> = ({
-  tilesCount,
-  gridColumns,
-  gridRows,
-  currentMode,
   isTextEditing,
   onFinishTextEditing,
   editor,
   selectedTile,
   onUpdateTile,
+  currentPage,
+  totalPages,
+  onSelectPage,
+  onAddPage,
+  onDeletePage,
+  canDeletePage = true,
   className = ''
 }) => {
   const [currentFont, setCurrentFont] = useState('Inter, system-ui, sans-serif');
@@ -99,13 +103,18 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
     
     return 'p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 hover:shadow-sm border border-transparent rounded-lg transition-all duration-200 min-w-[36px] h-9 flex items-center justify-center';
   };
+  const toolbarClassName = `top-toolbar z-30 flex items-center justify-between px-4 lg:px-6 py-3 min-h-[72px] ${className}`;
+
   if (isTextEditing) {
     return (
       <div
-        className={`top-toolbar z-30 flex items-center justify-between px-4 lg:px-6 py-3 ${className}`}
+        className={toolbarClassName}
         onMouseDown={(e) => e.preventDefault()}
       >
-        <div className="flex items-center space-x-2 text-gray-600" onMouseDown={(e) => e.preventDefault()}>
+        <div
+          className="flex flex-1 items-center gap-2 text-gray-600"
+          onMouseDown={(e) => e.preventDefault()}
+        >
           {/* Font Family Selector */}
           <FontSelector
             selectedFont={currentFont}
@@ -241,25 +250,111 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
             disabled={!editor?.can().redo()}
             title="Ponów (Ctrl+Y)"
           >
-            <Redo className="w-4 h-4" />
-          </button>
-        </div>
-        
-        <button
-          onClick={onFinishTextEditing}
-          onMouseDown={e => e.preventDefault()}
-          className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 border border-transparent hover:border-red-200"
-          title="Zakończ edycję tekstu"
-        >
-          <X className="w-5 h-5" />
+          <Redo className="w-4 h-4" />
         </button>
       </div>
-    );
+
+      <button
+        onClick={onFinishTextEditing}
+        onMouseDown={e => e.preventDefault()}
+        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 border border-transparent hover:border-red-200"
+        title="Zakończ edycję tekstu"
+      >
+        <X className="w-5 h-5" />
+      </button>
+    </div>
+  );
   }
 
+  const hasPagination =
+    typeof currentPage === 'number' &&
+    typeof totalPages === 'number' &&
+    onSelectPage !== undefined;
+
+  const safeTotalPages = Math.max(totalPages ?? 1, 1);
+  const pages = Array.from({ length: safeTotalPages }, (_, index) => index + 1);
+  const canGoPrev = hasPagination ? currentPage! > 1 : false;
+  const canGoNext = hasPagination ? currentPage! < safeTotalPages : false;
+
   return (
-    <div>
-      implement pagination here
+    <div className={toolbarClassName}>
+      <div className="flex-1 basis-0" />
+
+      <div className="flex flex-1 basis-0 justify-center min-w-0">
+        {hasPagination && (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => canGoPrev && onSelectPage(currentPage! - 1)}
+              disabled={!canGoPrev}
+              className={getFormattingButtonClass(false, !canGoPrev)}
+              aria-label="Poprzednia strona"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-1 overflow-x-auto max-w-[240px] sm:max-w-[320px]" aria-label="Lista stron">
+              {pages.map((page) => {
+                const isActive = page === currentPage;
+                return (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => onSelectPage(page)}
+                    className={`${getFormattingButtonClass(isActive)} px-3`}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => canGoNext && onSelectPage(currentPage! + 1)}
+              disabled={!canGoNext}
+              className={getFormattingButtonClass(false, !canGoNext)}
+              aria-label="Następna strona"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-1 basis-0 justify-end">
+        {hasPagination && (
+          <div className="flex items-center gap-3 text-sm text-gray-500">
+            <span>
+              Strona {currentPage} z {safeTotalPages}
+            </span>
+            {onAddPage && (
+              <button
+                type="button"
+                onClick={onAddPage}
+                className="inline-flex items-center gap-2 px-3 h-9 rounded-lg bg-blue-600 text-white text-sm font-medium shadow-sm hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Nowa strona</span>
+                <span className="sm:hidden">Dodaj</span>
+              </button>
+            )}
+            {onDeletePage && (
+              <button
+                type="button"
+                onClick={onDeletePage}
+                disabled={!canDeletePage}
+                className="inline-flex items-center gap-2 px-3 h-9 rounded-lg border border-red-200 text-red-600 text-sm font-medium shadow-sm hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span className="hidden sm:inline">Usuń stronę</span>
+                <span className="sm:hidden">Usuń</span>
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

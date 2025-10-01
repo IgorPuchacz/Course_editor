@@ -16,7 +16,6 @@ import { ConfirmDialog } from '../components/common/ConfirmDialog.tsx';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.tsx';
 import { GridUtils } from '../utils/gridUtils.ts';
 import { logger } from '../utils/logger.ts';
-import { PageNavigator } from '../components/admin/editor top/PageNavigator.tsx';
 
 interface LessonEditorProps {
   lesson: Lesson;
@@ -711,29 +710,22 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
           >
             <TopToolbar
               key={`toolbar-${editorState.mode}-${editorState.selectedTileId}`}
-              tilesCount={pageTiles.length}
-              gridColumns={GridUtils.GRID_COLUMNS}
-              gridRows={pagedCanvasSettings.height}
-              currentMode={editorState.selectedTileId ? 'Tryb edycji' : 'Tryb dodawania'}
               isTextEditing={editorState.mode === 'textEditing'}
               onFinishTextEditing={handleFinishTextEditing}
               editor={activeEditor}
               selectedTile={selectedRichTextTile}
               onUpdateTile={handleUpdateTile}
+              currentPage={safePage}
+              totalPages={totalPages}
+              onSelectPage={handlePageChange}
+              onAddPage={handleAddPage}
+              onDeletePage={handleDeletePage}
+              canDeletePage={totalPages > 1}
             />
           </div>
           {/* Canvas */}
           <div className="flex-1 p-4 lg:p-6 overflow-auto overscroll-contain bg-gray-100">
             <div className="max-w-6xl mx-auto flex flex-col gap-4">
-              <PageNavigator
-                currentPage={safePage}
-                totalPages={totalPages}
-                onSelectPage={handlePageChange}
-                onAddPage={handleAddPage}
-                onDeletePage={handleDeletePage}
-                canDeletePage={totalPages > 1}
-              />
-
               <LessonCanvas
                 ref={canvasRef}
                 key={`canvas-page-${safePage}`}
@@ -748,16 +740,6 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
                 showGrid={editorState.showGrid}
                 onEditorReady={setActiveEditor}
                 testingTileIds={testingTileIds}
-              />
-
-              <PageNavigator
-                currentPage={safePage}
-                totalPages={totalPages}
-                onSelectPage={handlePageChange}
-                onAddPage={handleAddPage}
-                showAddButton={false}
-                onDeletePage={handleDeletePage}
-                canDeletePage={totalPages > 1}
               />
             </div>
           </div>
