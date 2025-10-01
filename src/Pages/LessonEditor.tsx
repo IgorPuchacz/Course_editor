@@ -720,20 +720,17 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
               editor={activeEditor}
               selectedTile={selectedRichTextTile}
               onUpdateTile={handleUpdateTile}
+              currentPage={safePage}
+              totalPages={totalPages}
+              onSelectPage={handlePageChange}
+              onAddPage={handleAddPage}
+              onDeletePage={handleDeletePage}
+              canDeletePage={totalPages > 1}
             />
           </div>
           {/* Canvas */}
           <div className="flex-1 p-4 lg:p-6 overflow-auto overscroll-contain bg-gray-100">
             <div className="max-w-6xl mx-auto flex flex-col gap-4">
-              <PageNavigator
-                currentPage={safePage}
-                totalPages={totalPages}
-                onSelectPage={handlePageChange}
-                onAddPage={handleAddPage}
-                onDeletePage={handleDeletePage}
-                canDeletePage={totalPages > 1}
-              />
-
               <LessonCanvas
                 ref={canvasRef}
                 key={`canvas-page-${safePage}`}
