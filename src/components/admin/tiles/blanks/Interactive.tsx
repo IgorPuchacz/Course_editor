@@ -295,6 +295,10 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
     setEvaluation(isCorrect ? 'success' : 'error');
   };
 
+  const handleRetry = useCallback(() => {
+    resetPlacements();
+  }, [resetPlacements]);
+
   const handleTileDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (isPreview || isTestingMode) return;
     event.preventDefault();
@@ -482,6 +486,7 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <ValidateButton
               onClick={handleCheck}
+              onRetry={handleRetry}
               disabled={!isComplete || evaluation === 'success'}
               state={validationState}
               colors={validateButtonColors}
