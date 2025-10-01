@@ -440,15 +440,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
     setIsChecked(true);
   };
 
-  const resetSequence = () => {
-    const shuffledItems = buildInitialPool();
-
-    setAvailableItems(shuffledItems);
-    setPlacedItems(new Array(shuffledItems.length).fill(null));
-    setIsChecked(false);
-    setIsCorrect(null);
-  };
-
   const getItemClasses = (itemId: string) => {
     let baseClasses =
       'flex items-center gap-4 px-4 py-3 rounded-xl border shadow-sm transition-transform duration-200 select-none cursor-grab active:cursor-grabbing';
@@ -688,7 +679,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
             <div className="flex items-center gap-3">
               <ValidateButton
                 onClick={checkSequence}
-                onRetry={resetCheckState}
+                onRetry={initializeExercise}
                 disabled={!sequenceComplete || (isChecked && isCorrect)}
                 state={validationState}
                 colors={validateButtonColors}

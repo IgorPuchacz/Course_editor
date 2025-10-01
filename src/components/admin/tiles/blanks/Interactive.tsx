@@ -295,9 +295,9 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
     setEvaluation(isCorrect ? 'success' : 'error');
   };
 
-  const handleRetry = () => {
-    setEvaluation('idle');
-  };
+  const handleRetry = useCallback(() => {
+    resetPlacements();
+  }, [resetPlacements]);
 
   const handleTileDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (isPreview || isTestingMode) return;
