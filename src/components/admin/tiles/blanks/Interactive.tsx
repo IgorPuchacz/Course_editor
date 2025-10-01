@@ -1,11 +1,16 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { CheckCircle, XCircle, RefreshCw, Sparkles, Puzzle, RotateCcw } from 'lucide-react';
+import { RefreshCw, Sparkles, Puzzle, RotateCcw } from 'lucide-react';
 import { BlanksTile } from '../../../../types/lessonEditor';
 import { createBlankId, createPlaceholderRegex } from '../../../../utils/blanks.ts';
-import { getReadableTextColor, surfaceColor } from '../../../../utils/colorUtils';
+import { getReadableTextColor, surfaceColor, lightenColor, darkenColor } from '../../../../utils/colorUtils';
 import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
 import { TaskTileSection } from '../TaskTileSection.tsx';
 import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
+import {
+  ValidateButton,
+  ValidateButtonColors,
+  ValidateButtonState
+} from '../../../common/ValidateButton.tsx';
 
 interface BlanksInteractiveProps {
   tile: BlanksTile;
@@ -19,7 +24,7 @@ type Segment =
   | { type: 'text'; value: string }
   | { type: 'blank'; id: string };
 
-type EvaluationState = 'idle' | 'success' | 'error';
+type EvaluationState = ValidateButtonState;
 
 interface DragPayload {
   optionId: string;
@@ -67,9 +72,6 @@ const mapTextToNodes = (text: string): React.ReactNode =>
     part === '\n' ? <br key={`br-${index}`} /> : <span key={`segment-${index}`}>{part}</span>
   );
 
-const DEFAULT_SUCCESS_FEEDBACK = 'Brawo! Wszystkie odpowiedzi są poprawne.';
-const DEFAULT_FAILURE_FEEDBACK = 'Sprawdź jeszcze raz – część luk zawiera błędne odpowiedzi.';
-
 export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
   tile,
   isPreview = false,
@@ -98,6 +100,67 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
   const testingCaptionColor = useMemo(() => surfaceColor(accentColor, textColor, 0.42, 0.4), [accentColor, textColor]);
   const evaluationSuccessBackground = '#dcfce7';
   const evaluationErrorBackground = '#fee2e2';
+  const evaluationSuccessBorder = '#bbf7d0';
+  const evaluationErrorBorder = '#fecaca';
+  const evaluationSuccessText = '#166534';
+  const evaluationErrorText = '#b91c1c';
+  const primaryButtonBackground = useMemo(
+    () => (textColor === '#0f172a' ? darkenColor(accentColor, 0.2) : lightenColor(accentColor, 0.24)),
+    [accentColor, textColor]
+  );
+  const primaryButtonTextColor = useMemo(() => (textColor === '#0f172a' ? '#f8fafc' : '#0f172a'), [textColor]);
+  const validateButtonColors = useMemo<ValidateButtonColors>(
+    () => ({
+      idle: {
+        background: primaryButtonBackground,
+        color: primaryButtonTextColor,
+        border: 'transparent'
+      },
+      success: {
+        background: evaluationSuccessBackground,
+        color: evaluationSuccessText,
+        border: evaluationSuccessBorder
+      },
+      error: {
+        background: evaluationErrorBackground,
+        color: evaluationErrorText,
+        border: evaluationErrorBorder
+      }
+    }),
+    [
+      primaryButtonBackground,
+      primaryButtonTextColor,
+      evaluationSuccessBackground,
+      evaluationSuccessBorder,
+      evaluationSuccessText,
+      evaluationErrorBackground,
+      evaluationErrorBorder,
+      evaluationErrorText
+    ]
+  );
+  const validateButtonLabels = useMemo(
+    () => ({
+      idle: (
+        <>
+          <Sparkles className="h-5 w-5" aria-hidden="true" />
+          <span>Sprawdź odpowiedzi</span>
+        </>
+      ),
+      success: (
+        <>
+          <span aria-hidden="true">✅</span>
+          <span>Dobrze!</span>
+        </>
+      ),
+      error: (
+        <>
+          <RotateCcw className="h-5 w-5" aria-hidden="true" />
+          <span>Spróbuj jeszcze raz</span>
+        </>
+      )
+    }),
+    []
+  );
 
   const segments = useMemo(() => parseTemplate(tile.content.textTemplate), [tile.content.textTemplate]);
 
@@ -124,6 +187,11 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
   }, [placements, tile.content.options]);
 
   const isInteractionEnabled = !isPreview;
+  const isComplete = useMemo(
+    () => tile.content.blanks.every(blank => placements[blank.id]),
+    [placements, tile.content.blanks]
+  );
+  const validationState: ValidateButtonState = evaluation;
 
   const handleDragStartFromBank = (event: React.DragEvent<HTMLButtonElement>, optionId: string) => {
     if (!isInteractionEnabled) return;
@@ -216,8 +284,8 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
   };
 
   const handleCheck = () => {
+    if (!isInteractionEnabled) return;
     setAttempts(prev => prev + 1);
-    const isComplete = tile.content.blanks.every(blank => placements[blank.id]);
     if (!isComplete) {
       setEvaluation('error');
       return;
@@ -225,27 +293,6 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
 
     const isCorrect = tile.content.blanks.every(blank => placements[blank.id] === blank.correctOptionId);
     setEvaluation(isCorrect ? 'success' : 'error');
-  };
-
-  const handleReset = () => {
-    resetPlacements();
-  };
-
-  const renderEvaluationMessage = () => {
-    if (evaluation === 'idle') return null;
-
-    const isSuccess = evaluation === 'success';
-    const backgroundColor = isSuccess ? evaluationSuccessBackground : evaluationErrorBackground;
-    const textColorClass = isSuccess ? 'text-emerald-700' : 'text-rose-700';
-    const Icon = isSuccess ? CheckCircle : XCircle;
-    const message = isSuccess ? DEFAULT_SUCCESS_FEEDBACK : DEFAULT_FAILURE_FEEDBACK;
-
-    return (
-      <div className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium ${textColorClass}`} style={{ backgroundColor }}>
-        <Icon className="w-5 h-5" />
-        <span>{message}</span>
-      </div>
-    );
   };
 
   const handleTileDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -433,28 +480,15 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
 
         {isInteractionEnabled && (
           <div className="flex flex-wrap items-center gap-3 pt-2">
-            <button
-              type="button"
+            <ValidateButton
               onClick={handleCheck}
-              className="px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors duration-200 bg-white/90 hover:bg-white"
-              style={{ color: accentColor }}
-            >
-              Sprawdź odpowiedzi
-            </button>
-            <button
-              type="button"
-              onClick={handleReset}
-              className="px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 text-slate-100/90 hover:text-white"
-              style={{ backgroundColor: 'transparent' }}
-            >
-              <RotateCcw className="w-4 h-4" />
-              Wyczyść wybór
-            </button>
-            {renderEvaluationMessage()}
+              disabled={!isComplete || evaluation === 'success'}
+              state={validationState}
+              colors={validateButtonColors}
+              labels={validateButtonLabels}
+            />
           </div>
         )}
-
-        {!isInteractionEnabled && renderEvaluationMessage()}
       </div>
     </div>
   );
