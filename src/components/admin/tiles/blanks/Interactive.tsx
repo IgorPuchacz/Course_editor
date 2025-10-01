@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { CheckCircle, XCircle, RefreshCw, Sparkles, Puzzle, RotateCcw } from 'lucide-react';
+import { RefreshCw, Sparkles, Puzzle, RotateCcw } from 'lucide-react';
 import { BlanksTile } from '../../../../types/lessonEditor';
 import { createBlankId, createPlaceholderRegex } from '../../../../utils/blanks.ts';
 import { getReadableTextColor, surfaceColor } from '../../../../utils/colorUtils';
 import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
 import { TaskTileSection } from '../TaskTileSection.tsx';
 import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
+import { ValidateButton, ValidateButtonStatus } from '../ValidateButton.tsx';
 
 interface BlanksInteractiveProps {
   tile: BlanksTile;
@@ -67,9 +68,6 @@ const mapTextToNodes = (text: string): React.ReactNode =>
     part === '\n' ? <br key={`br-${index}`} /> : <span key={`segment-${index}`}>{part}</span>
   );
 
-const DEFAULT_SUCCESS_FEEDBACK = 'Brawo! Wszystkie odpowiedzi są poprawne.';
-const DEFAULT_FAILURE_FEEDBACK = 'Sprawdź jeszcze raz – część luk zawiera błędne odpowiedzi.';
-
 export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
   tile,
   isPreview = false,
@@ -96,8 +94,15 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
   const optionBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.52, 0.46), [accentColor, textColor]);
   const optionBorder = useMemo(() => surfaceColor(accentColor, textColor, 0.44, 0.56), [accentColor, textColor]);
   const testingCaptionColor = useMemo(() => surfaceColor(accentColor, textColor, 0.42, 0.4), [accentColor, textColor]);
-  const evaluationSuccessBackground = '#dcfce7';
-  const evaluationErrorBackground = '#fee2e2';
+  const validateButtonBackground = useMemo(
+    () => surfaceColor(accentColor, textColor, 0.48, 0.52),
+    [accentColor, textColor]
+  );
+
+  const validateButtonStatusColors = useMemo(
+    () => ({ idle: { background: validateButtonBackground, text: textColor } }),
+    [validateButtonBackground, textColor]
+  );
 
   const segments = useMemo(() => parseTemplate(tile.content.textTemplate), [tile.content.textTemplate]);
 
@@ -115,6 +120,17 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
   useEffect(() => {
     resetPlacements();
   }, [resetPlacements]);
+
+  const allBlanksFilled = useMemo(
+    () => tile.content.blanks.every(blank => placements[blank.id]),
+    [placements, tile.content.blanks]
+  );
+
+  const validationStatus: ValidateButtonStatus = useMemo(() => {
+    if (evaluation === 'success') return 'success';
+    if (evaluation === 'error') return 'error';
+    return 'idle';
+  }, [evaluation]);
 
   const availableOptions = useMemo(() => {
     const usedIds = new Set(
@@ -216,36 +232,15 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
   };
 
   const handleCheck = () => {
+    if (!isInteractionEnabled) return;
+
     setAttempts(prev => prev + 1);
-    const isComplete = tile.content.blanks.every(blank => placements[blank.id]);
-    if (!isComplete) {
-      setEvaluation('error');
+    if (!allBlanksFilled) {
       return;
     }
 
     const isCorrect = tile.content.blanks.every(blank => placements[blank.id] === blank.correctOptionId);
     setEvaluation(isCorrect ? 'success' : 'error');
-  };
-
-  const handleReset = () => {
-    resetPlacements();
-  };
-
-  const renderEvaluationMessage = () => {
-    if (evaluation === 'idle') return null;
-
-    const isSuccess = evaluation === 'success';
-    const backgroundColor = isSuccess ? evaluationSuccessBackground : evaluationErrorBackground;
-    const textColorClass = isSuccess ? 'text-emerald-700' : 'text-rose-700';
-    const Icon = isSuccess ? CheckCircle : XCircle;
-    const message = isSuccess ? DEFAULT_SUCCESS_FEEDBACK : DEFAULT_FAILURE_FEEDBACK;
-
-    return (
-      <div className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium ${textColorClass}`} style={{ backgroundColor }}>
-        <Icon className="w-5 h-5" />
-        <span>{message}</span>
-      </div>
-    );
   };
 
   const handleTileDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -433,28 +428,21 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
 
         {isInteractionEnabled && (
           <div className="flex flex-wrap items-center gap-3 pt-2">
-            <button
-              type="button"
+            <ValidateButton
               onClick={handleCheck}
-              className="px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors duration-200 bg-white/90 hover:bg-white"
-              style={{ color: accentColor }}
-            >
-              Sprawdź odpowiedzi
-            </button>
-            <button
-              type="button"
-              onClick={handleReset}
-              className="px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 text-slate-100/90 hover:text-white"
-              style={{ backgroundColor: 'transparent' }}
-            >
-              <RotateCcw className="w-4 h-4" />
-              Wyczyść wybór
-            </button>
-            {renderEvaluationMessage()}
+              disabled={!allBlanksFilled || evaluation === 'success'}
+              status={validationStatus}
+              accentColor={validateButtonBackground}
+              idleTextColor={textColor}
+              statusColors={validateButtonStatusColors}
+            />
+            {!allBlanksFilled && (
+              <div className="text-xs" style={{ color: mutedLabelColor }}>
+                Uzupełnij wszystkie luki, aby sprawdzić odpowiedź.
+              </div>
+            )}
           </div>
         )}
-
-        {!isInteractionEnabled && renderEvaluationMessage()}
       </div>
     </div>
   );
