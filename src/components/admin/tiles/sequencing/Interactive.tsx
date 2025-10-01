@@ -208,9 +208,24 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   );
   const validateButtonLabels = useMemo(
     () => ({
-      idle: 'Sprawdź kolejność',
-      success: 'Sekwencja sprawdzona',
-      error: 'Spróbuj ponownie'
+      idle: (
+        <>
+          <Sparkles className="h-5 w-5" aria-hidden="true" />
+          <span>Sprawdź kolejność</span>
+        </>
+      ),
+      success: (
+        <>
+          <span aria-hidden="true">✅</span>
+          <span>Dobrze!</span>
+        </>
+      ),
+      error: (
+        <>
+          <RotateCcw className="h-5 w-5" aria-hidden="true" />
+          <span>Spróbuj jeszcze raz</span>
+        </>
+      )
     }),
     []
   );

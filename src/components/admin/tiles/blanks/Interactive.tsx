@@ -140,9 +140,24 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
   );
   const validateButtonLabels = useMemo(
     () => ({
-      idle: 'Sprawdź odpowiedzi',
-      success: 'Dobra robota!',
-      error: 'Spróbuj ponownie'
+      idle: (
+        <>
+          <Sparkles className="h-5 w-5" aria-hidden="true" />
+          <span>Sprawdź odpowiedzi</span>
+        </>
+      ),
+      success: (
+        <>
+          <span aria-hidden="true">✅</span>
+          <span>Dobrze!</span>
+        </>
+      ),
+      error: (
+        <>
+          <RotateCcw className="h-5 w-5" aria-hidden="true" />
+          <span>Spróbuj jeszcze raz</span>
+        </>
+      )
     }),
     []
   );

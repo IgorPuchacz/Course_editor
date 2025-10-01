@@ -12,7 +12,7 @@ export type ValidateButtonColors = Partial<
   Record<ValidateButtonState, Partial<ValidateButtonColorConfig>>
 >;
 
-export type ValidateButtonLabels = Partial<Record<ValidateButtonState, string>>;
+export type ValidateButtonLabels = Partial<Record<ValidateButtonState, React.ReactNode>>;
 
 interface ValidateButtonProps {
   state: ValidateButtonState;
@@ -25,7 +25,7 @@ interface ValidateButtonProps {
   type?: 'button' | 'submit' | 'reset';
 }
 
-const DEFAULT_LABELS: Record<ValidateButtonState, string> = {
+const DEFAULT_LABELS: Record<ValidateButtonState, React.ReactNode> = {
   idle: 'Check answer',
   success: 'Correct!',
   error: 'Try again'
@@ -84,6 +84,7 @@ export const ValidateButton: React.FC<ValidateButtonProps> = ({
     color,
     borderColor: border ?? 'transparent',
     boxShadow: '0 16px 32px rgba(15, 23, 42, 0.18)',
+    flexShrink: 0,
     ...style
   };
 
@@ -92,7 +93,7 @@ export const ValidateButton: React.FC<ValidateButtonProps> = ({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex h-11 w-[192px] items-center justify-center rounded-xl border font-semibold text-sm transition-transform duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900/20 disabled:cursor-not-allowed disabled:opacity-60 hover:-translate-y-0.5 active:translate-y-0 ${className}`.trim()}
+      className={`inline-flex h-11 min-w-[220px] w-full max-w-[360px] sm:w-[60%] items-center justify-center gap-2 rounded-xl border font-semibold text-sm transition-transform duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900/20 disabled:cursor-not-allowed disabled:opacity-60 hover:-translate-y-0.5 active:translate-y-0 ${className}`.trim()}
       style={buttonStyle}
       data-state={state}
     >
