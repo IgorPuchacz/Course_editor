@@ -1,0 +1,1 @@
+export { GeneralTileRenderer } from './Renderer';

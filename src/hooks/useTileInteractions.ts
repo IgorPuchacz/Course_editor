@@ -1,5 +1,13 @@
 import { useState, useEffect, RefObject } from 'react';
-import { LessonContent, LessonTile, GridPosition, EditorState, TextTile, ImageTile, SequencingTile } from '../types/lessonEditor';
+import {
+  LessonContent,
+  LessonTile,
+  GridPosition,
+  EditorState,
+  TextTile,
+  ImageTile,
+  SequencingTile
+} from '../types/lessonEditor';
 import { EditorAction } from '../state/editorReducer';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
@@ -33,7 +41,8 @@ export const useTileInteractions = ({
       tile.type === 'text' ||
       tile.type === 'programming' ||
       tile.type === 'sequencing' ||
-      tile.type === 'quiz'
+      tile.type === 'quiz' ||
+      tile.type === 'general'
     ) {
       dispatch({ type: 'startTextEditing', tileId: tile.id });
     } else if (tile.type === 'image') {

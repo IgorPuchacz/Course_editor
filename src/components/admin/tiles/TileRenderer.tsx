@@ -8,6 +8,7 @@ import { ImageTileRenderer } from './image';
 import { ProgrammingTileRenderer} from "./programming/Renderer.tsx";
 import { QuizTileRenderer } from './quiz';
 import { SequencingTileRenderer } from './sequencing';
+import { GeneralTileRenderer } from './general';
 import { TextTileRenderer} from "./text/Renderer.tsx";
 
 interface TileRendererProps {
@@ -35,6 +36,7 @@ const TILE_RENDERERS: Partial<Record<LessonTile['type'], React.ComponentType<any
   quiz: QuizTileRenderer,
   sequencing: SequencingTileRenderer,
   blanks: BlanksTileRenderer,
+  general: GeneralTileRenderer,
 };
 
 export const TileRenderer: React.FC<TileRendererProps> = ({
@@ -81,7 +83,9 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   };
 
   const handleDoubleClick =
-    tile.type === 'sequencing' || tile.type === 'blanks' ? undefined : onDoubleClick;
+    tile.type === 'sequencing' || tile.type === 'blanks' || tile.type === 'general'
+      ? undefined
+      : onDoubleClick;
 
 
   return (

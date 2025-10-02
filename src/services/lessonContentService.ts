@@ -5,6 +5,7 @@ import {
   ProgrammingTile,
   SequencingTile,
   BlanksTile,
+  GeneralTile,
   CanvasSettings,
   GridPosition
 } from '../types/lessonEditor';
@@ -230,6 +231,32 @@ export class LessonContentService {
           { id: 'auto-warszawa-1', text: 'Warszawa', isAuto: true },
           { id: 'auto-bialo-czerwona-flaga-2', text: 'biało-czerwona flaga', isAuto: true },
           { id: 'distractor-wisla', text: 'Wisła', isAuto: false }
+        ]
+      }
+    };
+  }
+
+  /**
+   * Create a new general matching pairs tile
+   */
+  static createGeneralTile(position: { x: number; y: number }, page = 1): GeneralTile {
+    const base = this.initializeTileBase('general', position, page, { colSpan: 4, rowSpan: 4 });
+
+    return {
+      ...base,
+      content: {
+        instruction: 'Przeczytaj polecenie i dopasuj elementy z lewej kolumny do właściwych odpowiedzi po prawej stronie.',
+        richInstruction:
+          '<p style="margin: 0;">Przeczytaj polecenie i dopasuj elementy z lewej kolumny do właściwych odpowiedzi po prawej stronie.</p>',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        verticalAlign: 'top',
+        backgroundColor: '#d4d4d4',
+        showBorder: true,
+        pairs: [
+          { id: 'pair-1', left: 'Francja', right: 'Paryż' },
+          { id: 'pair-2', left: 'Hiszpania', right: 'Madryt' },
+          { id: 'pair-3', left: 'Włochy', right: 'Rzym' }
         ]
       }
     };
