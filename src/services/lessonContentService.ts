@@ -5,6 +5,7 @@ import {
   ProgrammingTile,
   SequencingTile,
   BlanksTile,
+  OpenTile,
   CanvasSettings,
   GridPosition
 } from '../types/lessonEditor';
@@ -230,6 +231,39 @@ export class LessonContentService {
           { id: 'auto-warszawa-1', text: 'Warszawa', isAuto: true },
           { id: 'auto-bialo-czerwona-flaga-2', text: 'biało-czerwona flaga', isAuto: true },
           { id: 'distractor-wisla', text: 'Wisła', isAuto: false }
+        ]
+      }
+    };
+  }
+
+  /**
+   * Create a new open answer tile
+   */
+  static createOpenTile(position: { x: number; y: number }, page = 1): OpenTile {
+    const base = this.initializeTileBase('open', position, page, { colSpan: 4, rowSpan: 4 });
+
+    return {
+      ...base,
+      content: {
+        instruction: 'Odpowiedz na pytanie w formacie opisanym poniżej.',
+        richInstruction: '<p style="margin: 0;">Odpowiedz na pytanie w formacie opisanym poniżej.</p>',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        verticalAlign: 'top',
+        backgroundColor: '#d4d4d4',
+        showBorder: true,
+        expectedFormat: "['napis1', 'napis2', 'napis3']",
+        attachments: [
+          {
+            id: 'attachment-instrukcja',
+            name: 'instrukcja.pdf',
+            description: 'Zawiera szczegółowe wymagania do zadania.'
+          }
+        ],
+        pairs: [
+          { id: 'pair-1', prompt: 'Pole 1', response: 'napis1' },
+          { id: 'pair-2', prompt: 'Pole 2', response: 'napis2' },
+          { id: 'pair-3', prompt: 'Pole 3', response: 'napis3' }
         ]
       }
     };

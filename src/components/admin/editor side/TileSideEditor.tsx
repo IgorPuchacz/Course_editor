@@ -1,6 +1,27 @@
 import React from 'react';
-import { Plus, Trash2, Type, X, Image as ImageIcon, Eye, HelpCircle, Code, ArrowUpDown, Puzzle } from 'lucide-react';
-import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizTile, BlanksTile } from '../../../types/lessonEditor.ts';
+import {
+  Plus,
+  Trash2,
+  Type,
+  X,
+  Image as ImageIcon,
+  Eye,
+  HelpCircle,
+  Code,
+  ArrowUpDown,
+  Puzzle,
+  FileText
+} from 'lucide-react';
+import {
+  TextTile,
+  ImageTile,
+  LessonTile,
+  ProgrammingTile,
+  SequencingTile,
+  QuizTile,
+  BlanksTile,
+  OpenTile
+} from '../../../types/lessonEditor.ts';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
 import { SequencingEditor } from './SequencingEditor.tsx';
@@ -93,6 +114,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
       case 'programming': return Code;
       case 'sequencing': return ArrowUpDown;
       case 'blanks': return Puzzle;
+      case 'open': return FileText;
       default: return Type;
     }
   };
@@ -418,6 +440,265 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
 
                 )}
               </div>
+            </div>
+          </div>
+        );
+      }
+
+      case 'open': {
+        const openTile = tile as OpenTile;
+
+        const updateContent = (updates: Partial<OpenTile['content']>) => {
+          onUpdateTile(tile.id, {
+            content: {
+              ...openTile.content,
+              ...updates
+            },
+            updated_at: new Date().toISOString()
+          });
+        };
+
+        const handleAttachmentChange = (
+          attachmentId: string,
+          field: 'name' | 'description' | 'url',
+          value: string
+        ) => {
+          const attachments = (openTile.content.attachments ?? []).map(attachment =>
+            attachment.id === attachmentId
+              ? {
+                  ...attachment,
+                  [field]: value
+                }
+              : attachment
+          );
+
+          updateContent({ attachments });
+        };
+
+        const handleAddAttachment = () => {
+          const attachments = openTile.content.attachments ?? [];
+          const newAttachmentId = `attachment-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+          updateContent({
+            attachments: [
+              ...attachments,
+              {
+                id: newAttachmentId,
+                name: `Nowy plik ${attachments.length + 1}`,
+                description: '',
+                url: ''
+              }
+            ]
+          });
+        };
+
+        const handleRemoveAttachment = (attachmentId: string) => {
+          const attachments = (openTile.content.attachments ?? []).filter(
+            attachment => attachment.id !== attachmentId
+          );
+
+          updateContent({ attachments });
+        };
+
+        const handlePairChange = (
+          pairId: string,
+          field: 'prompt' | 'response',
+          value: string
+        ) => {
+          const pairs = (openTile.content.pairs ?? []).map(pair =>
+            pair.id === pairId
+              ? {
+                  ...pair,
+                  [field]: value
+                }
+              : pair
+          );
+
+          updateContent({ pairs });
+        };
+
+        const handleAddPair = () => {
+          const pairs = openTile.content.pairs ?? [];
+          const newPairId = `pair-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+          updateContent({
+            pairs: [
+              ...pairs,
+              {
+                id: newPairId,
+                prompt: `Element ${pairs.length + 1}`,
+                response: `Wartość ${pairs.length + 1}`
+              }
+            ]
+          });
+        };
+
+        const handleRemovePair = (pairId: string) => {
+          const pairs = (openTile.content.pairs ?? []).filter(pair => pair.id !== pairId);
+          updateContent({ pairs });
+        };
+
+        const attachments = openTile.content.attachments ?? [];
+        const pairs = openTile.content.pairs ?? [];
+
+        return (
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Kolor akcentu</label>
+              <input
+                type="color"
+                value={openTile.content.backgroundColor}
+                onChange={(e) => updateContent({ backgroundColor: e.target.value })}
+                className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Oczekiwany format odpowiedzi</label>
+              <p className="text-xs text-gray-600 mb-2">
+                Ten tekst zostanie wyświetlony edytorowi obok pola odpowiedzi, aby wiedział jakiego formatu oczekujesz.
+              </p>
+              <textarea
+                value={openTile.content.expectedFormat}
+                onChange={(e) => updateContent({ expectedFormat: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                rows={3}
+                placeholder="np. ['napis1', 'napis2', 'napis3']"
+              />
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold text-gray-900">Pliki do pobrania (opcjonalne)</h4>
+                <button
+                  type="button"
+                  onClick={handleAddAttachment}
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  Dodaj plik
+                </button>
+              </div>
+
+              {attachments.length === 0 ? (
+                <p className="text-sm text-gray-600">
+                  Dodaj pliki, które uczeń będzie mógł pobrać przed rozwiązaniem zadania.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {attachments.map(attachment => (
+                    <div
+                      key={attachment.id}
+                      className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3"
+                    >
+                      <div className="grid grid-cols-1 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Nazwa pliku</label>
+                          <input
+                            type="text"
+                            value={attachment.name}
+                            onChange={(e) => handleAttachmentChange(attachment.id, 'name', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            placeholder="np. instrukcja.pdf"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Opis (opcjonalny)</label>
+                          <textarea
+                            value={attachment.description || ''}
+                            onChange={(e) => handleAttachmentChange(attachment.id, 'description', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            rows={2}
+                            placeholder="Krótki opis zawartości pliku"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Adres URL (opcjonalny)</label>
+                          <input
+                            type="url"
+                            value={attachment.url || ''}
+                            onChange={(e) => handleAttachmentChange(attachment.id, 'url', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            placeholder="https://example.com/pliki/instrukcja.pdf"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveAttachment(attachment.id)}
+                          className="inline-flex items-center gap-1 text-rose-600 hover:bg-rose-50 px-3 py-2 rounded-lg text-sm"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Usuń
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold text-gray-900">Parowanie kontekstowe</h4>
+                <button
+                  type="button"
+                  onClick={handleAddPair}
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  Dodaj parę
+                </button>
+              </div>
+
+              {pairs.length === 0 ? (
+                <p className="text-sm text-gray-600">
+                  Dodaj pary informacji, które zostaną zaprezentowane w kafelku w przetasowanej kolejności.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {pairs.map(pair => (
+                    <div
+                      key={pair.id}
+                      className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3"
+                    >
+                      <div className="grid grid-cols-1 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Element</label>
+                          <input
+                            type="text"
+                            value={pair.prompt}
+                            onChange={(e) => handlePairChange(pair.id, 'prompt', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            placeholder="np. Nazwa pola"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Odpowiedź</label>
+                          <input
+                            type="text"
+                            value={pair.response}
+                            onChange={(e) => handlePairChange(pair.id, 'response', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            placeholder="np. wartość oczekiwana"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePair(pair.id)}
+                          className="inline-flex items-center gap-1 text-rose-600 hover:bg-rose-50 px-3 py-2 rounded-lg text-sm"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Usuń
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         );
