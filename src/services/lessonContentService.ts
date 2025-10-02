@@ -5,6 +5,7 @@ import {
   ProgrammingTile,
   SequencingTile,
   BlanksTile,
+  GeneralTile,
   CanvasSettings,
   GridPosition
 } from '../types/lessonEditor';
@@ -205,6 +206,32 @@ export class LessonContentService {
         ],
         correctFeedback: 'Świetnie! Prawidłowa kolejność.',
         incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.'
+      }
+    };
+  }
+
+  /**
+   * Create a new general matching tile
+   */
+  static createGeneralTile(position: { x: number; y: number }, page = 1): GeneralTile {
+    const base = this.initializeTileBase('general', position, page, { colSpan: 4, rowSpan: 4 });
+
+    return {
+      ...base,
+      content: {
+        instruction: 'Połącz elementy z lewej i prawej kolumny w pasujące pary.',
+        richInstruction:
+          '<p style="margin: 0;">Połącz elementy z lewej i prawej kolumny w pasujące pary.</p>',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        verticalAlign: 'top',
+        backgroundColor: '#d4d4d4',
+        showBorder: true,
+        pairs: [
+          { id: 'pair-1', left: 'Fotosynteza', right: 'Proces powstawania energii w roślinach' },
+          { id: 'pair-2', left: 'Chromosom', right: 'Nośnik informacji genetycznej' },
+          { id: 'pair-3', left: 'Komórka', right: 'Podstawowa jednostka budowy organizmów' }
+        ]
       }
     };
   }
