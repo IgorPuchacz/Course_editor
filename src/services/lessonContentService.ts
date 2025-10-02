@@ -5,6 +5,7 @@ import {
   ProgrammingTile,
   SequencingTile,
   BlanksTile,
+  OpenTile,
   CanvasSettings,
   GridPosition
 } from '../types/lessonEditor';
@@ -205,6 +206,39 @@ export class LessonContentService {
         ],
         correctFeedback: 'Świetnie! Prawidłowa kolejność.',
         incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.'
+      }
+    };
+  }
+
+  /**
+   * Create a new open task tile
+   */
+  static createOpenTile(position: { x: number; y: number }, page = 1): OpenTile {
+    const base = this.initializeTileBase('open', position, page, { colSpan: 4, rowSpan: 4 });
+
+    return {
+      ...base,
+      content: {
+        instruction: 'Przeczytaj materiały i przygotuj odpowiedź w wymaganym formacie.',
+        richInstruction:
+          '<p style="margin: 0;">Przeczytaj materiały i przygotuj odpowiedź w wymaganym formacie.</p>',
+        backgroundColor: '#d4d4d4',
+        showBorder: true,
+        expectedFormat: "['napis1', 'napis2', 'napis3']",
+        answerPlaceholder: 'Wpisz swoją odpowiedź tutaj... (pole nieaktywne w wersji edytora)',
+        attachments: [
+          {
+            id: 'attachment-instrukcja',
+            name: 'instrukcja.pdf',
+            description: 'Szczegółowe wytyczne do zadania',
+            url: '#'
+          }
+        ],
+        pairs: [
+          { id: 'open-pair-1', prompt: 'Przykładowy element 1', response: 'Powiązana wartość 1' },
+          { id: 'open-pair-2', prompt: 'Przykładowy element 2', response: 'Powiązana wartość 2' },
+          { id: 'open-pair-3', prompt: 'Przykładowy element 3', response: 'Powiązana wartość 3' }
+        ]
       }
     };
   }

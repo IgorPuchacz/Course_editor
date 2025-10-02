@@ -17,7 +17,7 @@ export interface GridPosition {
 
 export interface LessonTile {
   id: string;
-  type: 'text' | 'image' | 'visualization' | 'quiz' | 'programming' | 'sequencing' | 'blanks';
+  type: 'text' | 'image' | 'visualization' | 'quiz' | 'programming' | 'sequencing' | 'blanks' | 'open';
   position: Position;
   size: Size;
   gridPosition: GridPosition;
@@ -105,6 +105,29 @@ export interface ProgrammingTile extends LessonTile {
     language: string; // Programming language (default: 'python')
     startingCode?: string; // Code that appears at the beginning (non-editable for student)
     endingCode?: string; // Code that appears at the end (non-editable for student)
+  };
+}
+
+export interface OpenTile extends LessonTile {
+  type: 'open';
+  content: {
+    instruction: string;
+    richInstruction?: string;
+    backgroundColor: string;
+    showBorder: boolean;
+    expectedFormat: string;
+    answerPlaceholder?: string;
+    attachments: Array<{
+      id: string;
+      name: string;
+      description?: string;
+      url?: string;
+    }>;
+    pairs: Array<{
+      id: string;
+      prompt: string;
+      response: string;
+    }>;
   };
 }
 
