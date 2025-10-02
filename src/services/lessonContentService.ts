@@ -5,6 +5,7 @@ import {
   ProgrammingTile,
   SequencingTile,
   BlanksTile,
+  OpenTile,
   CanvasSettings,
   GridPosition
 } from '../types/lessonEditor';
@@ -205,6 +206,46 @@ export class LessonContentService {
         ],
         correctFeedback: 'Świetnie! Prawidłowa kolejność.',
         incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.'
+      }
+    };
+  }
+
+  /**
+   * Create a new open task tile
+   */
+  static createOpenTile(position: { x: number; y: number }, page = 1): OpenTile {
+    const base = this.initializeTileBase('open', position, page, { colSpan: 4, rowSpan: 4 });
+
+    return {
+      ...base,
+      content: {
+        instruction: 'Przeczytaj polecenie i przygotuj odpowiedź.',
+        richInstruction: '<p style="margin: 0;">Przeczytaj polecenie i przygotuj odpowiedź.</p>',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        verticalAlign: 'top',
+        backgroundColor: '#d4d4d4',
+        showBorder: true,
+        expectedFormat: "Oczekiwany format: ['element1', 'element2', 'element3']",
+        attachments: [
+          {
+            id: 'attachment-1',
+            name: 'instrukcja.pdf',
+            url: '#'
+          }
+        ],
+        pairs: [
+          {
+            id: 'pair-1',
+            prompt: 'Przykładowe wejście 1',
+            answer: 'Przykładowa odpowiedź 1'
+          },
+          {
+            id: 'pair-2',
+            prompt: 'Przykładowe wejście 2',
+            answer: 'Przykładowa odpowiedź 2'
+          }
+        ]
       }
     };
   }

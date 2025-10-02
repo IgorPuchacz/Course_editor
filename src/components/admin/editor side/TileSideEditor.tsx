@@ -1,9 +1,10 @@
 import React from 'react';
-import { Plus, Trash2, Type, X, Image as ImageIcon, Eye, HelpCircle, Code, ArrowUpDown, Puzzle } from 'lucide-react';
-import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizTile, BlanksTile } from '../../../types/lessonEditor.ts';
+import { Plus, Trash2, Type, X, Image as ImageIcon, Eye, HelpCircle, Code, ArrowUpDown, Puzzle, PenSquare } from 'lucide-react';
+import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizTile, BlanksTile, OpenTile } from '../../../types/lessonEditor.ts';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
 import { SequencingEditor } from './SequencingEditor.tsx';
+import { OpenEditor } from './OpenEditor.tsx';
 import { extractPlaceholdersFromTemplate } from '../../../utils/blanks.ts';
 
 interface TileSideEditorProps {
@@ -93,6 +94,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
       case 'programming': return Code;
       case 'sequencing': return ArrowUpDown;
       case 'blanks': return Puzzle;
+      case 'open': return PenSquare;
       default: return Type;
     }
   };
@@ -262,6 +264,16 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
             onUpdateTile={onUpdateTile}
             isTesting={isTesting}
             onToggleTesting={onToggleTesting}
+          />
+        );
+      }
+
+      case 'open': {
+        const openTile = tile as OpenTile;
+        return (
+          <OpenEditor
+            tile={openTile}
+            onUpdateTile={onUpdateTile}
           />
         );
       }
