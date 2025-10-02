@@ -2,7 +2,11 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { RefreshCw, Sparkles, Puzzle, RotateCcw } from 'lucide-react';
 import { BlanksTile } from '../../../../types/lessonEditor';
 import { createBlankId, createPlaceholderRegex } from '../../../../utils/blanks.ts';
-import { getReadableTextColor, surfaceColor, lightenColor, darkenColor } from '../../../../utils/colorUtils';
+import { getReadableTextColor, surfaceColor } from '../../../../utils/colorUtils';
+import {
+  createSurfacePalette,
+  createValidateButtonPalette
+} from '../../../../utils/surfacePalette.ts';
 import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
 import { TaskTileSection } from '../TaskTileSection.tsx';
 import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
@@ -87,56 +91,37 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
 
   const accentColor = tile.content.backgroundColor || '#0f172a';
   const textColor = useMemo(() => getReadableTextColor(accentColor), [accentColor]);
-  const panelBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.62, 0.45), [accentColor, textColor]);
-  const panelBorder = useMemo(() => surfaceColor(accentColor, textColor, 0.5, 0.55), [accentColor, textColor]);
-  const iconBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.54, 0.48), [accentColor, textColor]);
-  const mutedLabelColor = textColor === '#0f172a' ? '#475569' : '#d1d5db';
-  const blankBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.65, 0.38), [accentColor, textColor]);
-  const blankBorder = useMemo(() => surfaceColor(accentColor, textColor, 0.54, 0.52), [accentColor, textColor]);
-  const blankHoverBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.75, 0.32), [accentColor, textColor]);
-  const blankFilledBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.52, 0.46), [accentColor, textColor]);
-  const optionBackground = useMemo(() => surfaceColor(accentColor, textColor, 0.52, 0.46), [accentColor, textColor]);
-  const optionBorder = useMemo(() => surfaceColor(accentColor, textColor, 0.44, 0.56), [accentColor, textColor]);
-  const testingCaptionColor = useMemo(() => surfaceColor(accentColor, textColor, 0.42, 0.4), [accentColor, textColor]);
-  const evaluationSuccessBackground = '#dcfce7';
-  const evaluationErrorBackground = '#fee2e2';
-  const evaluationSuccessBorder = '#bbf7d0';
-  const evaluationErrorBorder = '#fecaca';
-  const evaluationSuccessText = '#166534';
-  const evaluationErrorText = '#b91c1c';
-  const primaryButtonBackground = useMemo(
-    () => (textColor === '#0f172a' ? darkenColor(accentColor, 0.2) : lightenColor(accentColor, 0.24)),
+  const {
+    panelBackground,
+    panelBorder,
+    iconBackground,
+    blankBackground,
+    blankBorder,
+    blankHoverBackground,
+    blankFilledBackground,
+    optionBackground,
+    optionBorder,
+    testingCaptionColor
+  } = useMemo(
+    () =>
+      createSurfacePalette(accentColor, textColor, {
+        panelBackground: { lighten: 0.62, darken: 0.45 },
+        panelBorder: { lighten: 0.5, darken: 0.55 },
+        iconBackground: { lighten: 0.54, darken: 0.48 },
+        blankBackground: { lighten: 0.65, darken: 0.38 },
+        blankBorder: { lighten: 0.54, darken: 0.52 },
+        blankHoverBackground: { lighten: 0.75, darken: 0.32 },
+        blankFilledBackground: { lighten: 0.52, darken: 0.46 },
+        optionBackground: { lighten: 0.52, darken: 0.46 },
+        optionBorder: { lighten: 0.44, darken: 0.56 },
+        testingCaptionColor: { lighten: 0.42, darken: 0.4 }
+      }),
     [accentColor, textColor]
   );
-  const primaryButtonTextColor = useMemo(() => (textColor === '#0f172a' ? '#f8fafc' : '#0f172a'), [textColor]);
+  const mutedLabelColor = textColor === '#0f172a' ? '#475569' : '#d1d5db';
   const validateButtonColors = useMemo<ValidateButtonColors>(
-    () => ({
-      idle: {
-        background: primaryButtonBackground,
-        color: primaryButtonTextColor,
-        border: 'transparent'
-      },
-      success: {
-        background: evaluationSuccessBackground,
-        color: evaluationSuccessText,
-        border: evaluationSuccessBorder
-      },
-      error: {
-        background: evaluationErrorBackground,
-        color: evaluationErrorText,
-        border: evaluationErrorBorder
-      }
-    }),
-    [
-      primaryButtonBackground,
-      primaryButtonTextColor,
-      evaluationSuccessBackground,
-      evaluationSuccessBorder,
-      evaluationSuccessText,
-      evaluationErrorBackground,
-      evaluationErrorBorder,
-      evaluationErrorText
-    ]
+    () => createValidateButtonPalette(accentColor, textColor),
+    [accentColor, textColor]
   );
   const validateButtonLabels = useMemo(
     () => ({

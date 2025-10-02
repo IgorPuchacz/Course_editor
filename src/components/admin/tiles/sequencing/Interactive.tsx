@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { CheckCircle, XCircle, RotateCcw, Sparkles, GripVertical, Shuffle, ArrowLeftRight } from 'lucide-react';
 import { SequencingTile } from '../../../../types/lessonEditor';
+import { getReadableTextColor, lightenColor, darkenColor } from '../../../../utils/colorUtils';
 import {
-  getReadableTextColor,
-  lightenColor,
-  darkenColor,
-  surfaceColor,
-} from '../../../../utils/colorUtils';
+  createSurfacePalette,
+  createValidateButtonPalette
+} from '../../../../utils/surfacePalette.ts';
 import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
 import { TaskTileSection } from '../TaskTileSection.tsx';
 import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
@@ -66,137 +65,96 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   const textColor = useMemo(() => getReadableTextColor(accentColor), [accentColor]);
   const gradientStart = useMemo(() => lightenColor(accentColor, 0.08), [accentColor]);
   const gradientEnd = useMemo(() => darkenColor(accentColor, 0.08), [accentColor]);
-  const frameBorderColor = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.52, 0.6),
-    [accentColor, textColor]
-  );
-  const panelBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.64, 0.45),
-    [accentColor, textColor]
-  );
-  const panelBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.5, 0.58),
-    [accentColor, textColor]
-  );
-  const iconBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.56, 0.5),
+  const {
+    frameBorderColor,
+    panelBackground,
+    panelBorder,
+    iconBackground,
+    poolBackground,
+    poolBorder,
+    poolHighlightBackground,
+    poolHighlightBorder,
+    itemBackground,
+    itemBorder,
+    gripBackground,
+    gripBorder,
+    sequenceBackground,
+    sequenceBorder,
+    sequenceHeaderBorder,
+    badgeBackground,
+    badgeBorder,
+    slotEmptyBackground,
+    slotEmptyBorder,
+    slotHoverBackground,
+    slotHoverBorder,
+    slotFilledBackground,
+    slotFilledBorder,
+    slotCorrectBackground,
+    slotCorrectBorder,
+    successFeedbackBackground,
+    successFeedbackBorder
+  } = useMemo(
+    () =>
+      createSurfacePalette(accentColor, textColor, {
+        frameBorderColor: { lighten: 0.52, darken: 0.6 },
+        panelBackground: { lighten: 0.64, darken: 0.45 },
+        panelBorder: { lighten: 0.5, darken: 0.58 },
+        iconBackground: { lighten: 0.56, darken: 0.5 },
+        poolBackground: { lighten: 0.6, darken: 0.4 },
+        poolBorder: { lighten: 0.5, darken: 0.56 },
+        poolHighlightBackground: { lighten: 0.7, darken: 0.3 },
+        poolHighlightBorder: { lighten: 0.6, darken: 0.45 },
+        itemBackground: { lighten: 0.52, darken: 0.46 },
+        itemBorder: { lighten: 0.42, darken: 0.58 },
+        gripBackground: { lighten: 0.48, darken: 0.52 },
+        gripBorder: { lighten: 0.42, darken: 0.6 },
+        sequenceBackground: { lighten: 0.58, darken: 0.42 },
+        sequenceBorder: { lighten: 0.48, darken: 0.6 },
+        sequenceHeaderBorder: { lighten: 0.44, darken: 0.64 },
+        badgeBackground: { lighten: 0.54, darken: 0.48 },
+        badgeBorder: { lighten: 0.46, darken: 0.58 },
+        slotEmptyBackground: { lighten: 0.58, darken: 0.42 },
+        slotEmptyBorder: { lighten: 0.5, darken: 0.58 },
+        slotHoverBackground: { lighten: 0.68, darken: 0.32 },
+        slotHoverBorder: { lighten: 0.58, darken: 0.5 },
+        slotFilledBackground: { lighten: 0.48, darken: 0.5 },
+        slotFilledBorder: { lighten: 0.42, darken: 0.6 },
+        slotCorrectBackground: { lighten: 0.72, darken: 0.26 },
+        slotCorrectBorder: { lighten: 0.62, darken: 0.36 },
+        successFeedbackBackground: { lighten: 0.7, darken: 0.34 },
+        successFeedbackBorder: { lighten: 0.6, darken: 0.44 }
+      }),
     [accentColor, textColor]
   );
   const mutedLabelColor = textColor === '#0f172a' ? '#475569' : '#dbeafe';
   const subtleCaptionColor = textColor === '#0f172a' ? '#64748b' : '#e2e8f0';
-  const poolBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.6, 0.4),
-    [accentColor, textColor]
-  );
-  const poolBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.5, 0.56),
-    [accentColor, textColor]
-  );
-  const poolHighlightBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.7, 0.3),
-    [accentColor, textColor]
-  );
-  const poolHighlightBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.6, 0.45),
-    [accentColor, textColor]
-  );
-  const itemBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.52, 0.46),
-    [accentColor, textColor]
-  );
-  const itemBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.42, 0.58),
-    [accentColor, textColor]
-  );
-  const gripBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.48, 0.52),
-    [accentColor, textColor]
-  );
-  const gripBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.42, 0.6),
-    [accentColor, textColor]
-  );
-  const sequenceBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.58, 0.42),
-    [accentColor, textColor]
-  );
-  const sequenceBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.48, 0.6),
-    [accentColor, textColor]
-  );
-  const sequenceHeaderBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.44, 0.64),
-    [accentColor, textColor]
-  );
-  const badgeBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.54, 0.48),
-    [accentColor, textColor]
-  );
-  const badgeBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.46, 0.58),
-    [accentColor, textColor]
-  );
   const badgeTextColor = textColor === '#0f172a' ? '#1f2937' : '#f8fafc';
-  const slotEmptyBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.58, 0.42),
-    [accentColor, textColor]
-  );
-  const slotEmptyBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.5, 0.58),
-    [accentColor, textColor]
-  );
-  const slotHoverBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.68, 0.32),
-    [accentColor, textColor]
-  );
-  const slotHoverBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.58, 0.5),
-    [accentColor, textColor]
-  );
-  const slotFilledBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.48, 0.5),
-    [accentColor, textColor]
-  );
-  const slotFilledBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.42, 0.6),
-    [accentColor, textColor]
-  );
-  const slotCorrectBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.72, 0.26),
-    [accentColor, textColor]
-  );
-  const slotCorrectBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.62, 0.36),
-    [accentColor, textColor]
-  );
   const successIconColor = textColor === '#0f172a' ? darkenColor(accentColor, 0.2) : lightenColor(accentColor, 0.32);
-  const successFeedbackBackground = surfaceColor(accentColor, textColor, 0.7, 0.34);
-  const successFeedbackBorder = surfaceColor(accentColor, textColor, 0.6, 0.44);
   const failureFeedbackBackground = '#fee2e2';
   const failureFeedbackBorder = '#fca5a5';
   const primaryButtonBackground = textColor === '#0f172a' ? darkenColor(accentColor, 0.25) : lightenColor(accentColor, 0.28);
   const primaryButtonTextColor = textColor === '#0f172a' ? '#f8fafc' : '#0f172a';
-  const secondaryButtonBackground = surfaceColor(accentColor, textColor, 0.52, 0.5);
-  const secondaryButtonBorder = surfaceColor(accentColor, textColor, 0.46, 0.58);
   const validateButtonColors = useMemo<ValidateButtonColors>(
-    () => ({
-      idle: {
-        background: primaryButtonBackground,
-        color: primaryButtonTextColor,
-        border: 'transparent'
-      },
-      success: {
-        background: successFeedbackBackground,
-        color: successIconColor,
-        border: successFeedbackBorder
-      },
-      error: {
-        background: failureFeedbackBackground,
-        color: '#7f1d1d',
-        border: failureFeedbackBorder
-      }
-    }),
+    () =>
+      createValidateButtonPalette(accentColor, textColor, {
+        idle: {
+          background: primaryButtonBackground,
+          color: primaryButtonTextColor
+        },
+        success: {
+          background: successFeedbackBackground,
+          color: successIconColor,
+          border: successFeedbackBorder
+        },
+        error: {
+          background: failureFeedbackBackground,
+          color: '#7f1d1d',
+          border: failureFeedbackBorder
+        }
+      }),
     [
+      accentColor,
+      textColor,
       primaryButtonBackground,
       primaryButtonTextColor,
       successFeedbackBackground,
