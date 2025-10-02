@@ -1,6 +1,22 @@
-import { LessonContent, LessonTile, TextTile, ProgrammingTile, SequencingTile, BlanksTile } from '../types/lessonEditor';
+import {
+  LessonContent,
+  LessonTile,
+  TextTile,
+  ProgrammingTile,
+  SequencingTile,
+  BlanksTile,
+  CanvasSettings,
+  GridPosition
+} from '../types/lessonEditor';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
+
+const DEFAULT_CANVAS_SETTINGS: CanvasSettings = {
+  width: GridUtils.GRID_COLUMNS,
+  height: 6,
+  gridSize: GridUtils.GRID_CELL_SIZE,
+  snapToGrid: true
+};
 
 export class LessonContentService {
   /**
@@ -13,12 +29,7 @@ export class LessonContentService {
         id: `content-${lessonId}`,
         lesson_id: lessonId,
         tiles: [],
-        canvas_settings: {
-          width: GridUtils.GRID_COLUMNS,
-          height: 6,
-          gridSize: GridUtils.GRID_CELL_SIZE,
-          snapToGrid: true
-        },
+        canvas_settings: { ...DEFAULT_CANVAS_SETTINGS },
         total_pages: 1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -66,42 +77,10 @@ export class LessonContentService {
    * Create a new text tile
    */
   static createTextTile(position: { x: number; y: number }, page = 1): TextTile {
-    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const now = new Date().toISOString();
-    
-    // Convert pixel position to grid position
-    const gridPos = GridUtils.pixelToGrid(position, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
-
-    // Default to 2x1 grid size for text tiles
-    gridPos.colSpan = 2;
-    gridPos.rowSpan = 1;
-
-    const pixelPos = GridUtils.gridToPixel(gridPos, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
-
-    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
+    const base = this.initializeTileBase('text', position, page, { colSpan: 2, rowSpan: 1 });
 
     return {
-      id,
-      type: 'text',
-      position: pixelPos,
-      size: pixelSize,
-      gridPosition: gridPos,
-      page,
+      ...base,
       content: {
         text: 'Nowy tekst',
         richText: '<p style="margin: 0;">Nowy tekst</p>',
@@ -110,10 +89,7 @@ export class LessonContentService {
         verticalAlign: 'top',
         backgroundColor: '#ffffff',
         showBorder: true,
-      },
-      created_at: now,
-      updated_at: now,
-      z_index: 1
+      }
     };
   }
 
@@ -121,41 +97,10 @@ export class LessonContentService {
    * Create a new image tile
    */
   static createImageTile(position: { x: number; y: number }, page = 1): LessonTile {
-    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const now = new Date().toISOString();
-    
-    const gridPos = GridUtils.pixelToGrid(position, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
-
-    // Default to 2x2 grid size for image tiles
-    gridPos.colSpan = 2;
-    gridPos.rowSpan = 2;
-
-    const pixelPos = GridUtils.gridToPixel(gridPos, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
-
-    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
+    const base = this.initializeTileBase('image', position, page, { colSpan: 2, rowSpan: 2 });
 
     return {
-      id,
-      type: 'image',
-      position: pixelPos,
-      size: pixelSize,
-      gridPosition: gridPos,
-      page,
+      ...base,
       content: {
         url: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400',
         alt: 'Przykładowy obraz',
@@ -163,10 +108,7 @@ export class LessonContentService {
         position: { x: 0, y: 0 },
         scale: 1,
         objectFit: 'contain'
-      },
-      created_at: now,
-      updated_at: now,
-      z_index: 1
+      }
     };
   }
 
@@ -174,41 +116,10 @@ export class LessonContentService {
    * Create a new visualization tile
    */
   static createVisualizationTile(position: { x: number; y: number }, page = 1): LessonTile {
-    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const now = new Date().toISOString();
-    
-    const gridPos = GridUtils.pixelToGrid(position, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
-
-    // Default to 3x3 grid size for visualization tiles
-    gridPos.colSpan = 3;
-    gridPos.rowSpan = 3;
-
-    const pixelPos = GridUtils.gridToPixel(gridPos, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
-
-    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
+    const base = this.initializeTileBase('visualization', position, page, { colSpan: 3, rowSpan: 3 });
 
     return {
-      id,
-      type: 'visualization',
-      position: pixelPos,
-      size: pixelSize,
-      gridPosition: gridPos,
-      page,
+      ...base,
       content: {
         title: 'Nowa wizualizacja',
         contentType: 'chart',
@@ -219,10 +130,7 @@ export class LessonContentService {
         },
         videoUrl: '',
         videoLoop: true
-      },
-      created_at: now,
-      updated_at: now,
-      z_index: 1
+      }
     };
   }
 
@@ -230,41 +138,10 @@ export class LessonContentService {
    * Create a new quiz tile
    */
   static createQuizTile(position: { x: number; y: number }, page = 1): LessonTile {
-    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const now = new Date().toISOString();
-    
-    const gridPos = GridUtils.pixelToGrid(position, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
-
-    // Default
-    gridPos.colSpan = 4;
-    gridPos.rowSpan = 3;
-
-    const pixelPos = GridUtils.gridToPixel(gridPos, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
-
-    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
+    const base = this.initializeTileBase('quiz', position, page, { colSpan: 4, rowSpan: 3 });
 
     return {
-      id,
-      type: 'quiz',
-      position: pixelPos,
-      size: pixelSize,
-      gridPosition: gridPos,
-      page,
+      ...base,
       content: {
         question: 'Przykładowe pytanie?',
         richQuestion: '<p>Przykładowe pytanie?</p>',
@@ -278,10 +155,7 @@ export class LessonContentService {
         showBorder: true,
         questionFontFamily: 'Inter',
         questionFontSize: 18
-      },
-      created_at: now,
-      updated_at: now,
-      z_index: 1
+      }
     };
   }
 
@@ -289,41 +163,10 @@ export class LessonContentService {
    * Create a new programming task tile
    */
   static createProgrammingTile(position: { x: number; y: number }, page = 1): ProgrammingTile {
-    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const now = new Date().toISOString();
-    
-    const gridPos = GridUtils.pixelToGrid(position, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
-
-    // Default to 4x3 grid size for programming tiles
-    gridPos.colSpan = 4;
-    gridPos.rowSpan = 3;
-
-    const pixelPos = GridUtils.gridToPixel(gridPos, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
-
-    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
+    const base = this.initializeTileBase('programming', position, page, { colSpan: 4, rowSpan: 3 });
 
     return {
-      id,
-      type: 'programming',
-      position: pixelPos,
-      size: pixelSize,
-      gridPosition: gridPos,
-      page,
+      ...base,
       content: {
         description: 'Opis zadania programistycznego',
         richDescription: '<p style="margin: 0;">Opis zadania programistycznego</p>',
@@ -335,10 +178,7 @@ export class LessonContentService {
         language: 'python',
         startingCode: '',
         endingCode: ''
-      },
-      created_at: now,
-      updated_at: now,
-      z_index: 1
+      }
     };
   }
 
@@ -346,41 +186,10 @@ export class LessonContentService {
    * Create a new sequencing tile
    */
   static createSequencingTile(position: { x: number; y: number }, page = 1): SequencingTile {
-    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const now = new Date().toISOString();
-    
-    const gridPos = GridUtils.pixelToGrid(position, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
-
-    // Default to 3x3 grid size for sequencing tiles
-    gridPos.colSpan = 4;
-    gridPos.rowSpan = 5;
-
-    const pixelPos = GridUtils.gridToPixel(gridPos, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
-
-    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
+    const base = this.initializeTileBase('sequencing', position, page, { colSpan: 4, rowSpan: 5 });
 
     return {
-      id,
-      type: 'sequencing',
-      position: pixelPos,
-      size: pixelSize,
-      gridPosition: gridPos,
-      page,
+      ...base,
       content: {
         question: 'Ułóż elementy w prawidłowej kolejności',
         richQuestion: '<p style="margin: 0;">Ułóż elementy w prawidłowej kolejności</p>',
@@ -396,10 +205,7 @@ export class LessonContentService {
         ],
         correctFeedback: 'Świetnie! Prawidłowa kolejność.',
         incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.'
-      },
-      created_at: now,
-      updated_at: now,
-      z_index: 1
+      }
     };
   }
 
@@ -407,40 +213,10 @@ export class LessonContentService {
    * Create a new match pairs (fill-in-the-blanks) tile
    */
   static createBlanksTile(position: { x: number; y: number }, page = 1): BlanksTile {
-    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const now = new Date().toISOString();
-
-    const gridPos = GridUtils.pixelToGrid(position, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
-
-    gridPos.colSpan = 5;
-    gridPos.rowSpan = 4;
-
-    const pixelPos = GridUtils.gridToPixel(gridPos, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
-
-    const pixelSize = GridUtils.gridSizeToPixel(gridPos, {
-      width: GridUtils.GRID_COLUMNS,
-      height: 6,
-      gridSize: GridUtils.GRID_CELL_SIZE,
-      snapToGrid: true
-    });
+    const base = this.initializeTileBase('blanks', position, page, { colSpan: 5, rowSpan: 4 });
 
     return {
-      id,
-      type: 'blanks',
-      position: pixelPos,
-      size: pixelSize,
-      gridPosition: gridPos,
-      page,
+      ...base,
       content: {
         instruction: 'Przeciągnij właściwe wyrażenia do luk w tekście.',
         richInstruction: '<p style="margin: 0;">Przeciągnij właściwe wyrażenia do luk w tekście.</p>',
@@ -455,10 +231,36 @@ export class LessonContentService {
           { id: 'auto-bialo-czerwona-flaga-2', text: 'biało-czerwona flaga', isAuto: true },
           { id: 'distractor-wisla', text: 'Wisła', isAuto: false }
         ]
-      },
+      }
+    };
+  }
+
+  private static initializeTileBase<TType extends LessonTile['type']>(
+    type: TType,
+    position: { x: number; y: number },
+    page: number,
+    spans: Pick<GridPosition, 'colSpan' | 'rowSpan'>
+  ): Omit<Extract<LessonTile, { type: TType }>, 'content'> {
+    const id = `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+
+    const gridPos = GridUtils.pixelToGrid(position, DEFAULT_CANVAS_SETTINGS);
+    gridPos.colSpan = spans.colSpan;
+    gridPos.rowSpan = spans.rowSpan;
+
+    const pixelPos = GridUtils.gridToPixel(gridPos, DEFAULT_CANVAS_SETTINGS);
+    const pixelSize = GridUtils.gridSizeToPixel(gridPos, DEFAULT_CANVAS_SETTINGS);
+
+    return {
+      id,
+      type,
+      position: pixelPos,
+      size: pixelSize,
+      gridPosition: gridPos,
+      page,
       created_at: now,
       updated_at: now,
       z_index: 1
-    };
+    } as Omit<Extract<LessonTile, { type: TType }>, 'content'>;
   }
 }
