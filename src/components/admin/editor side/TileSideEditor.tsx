@@ -1,6 +1,29 @@
 import React from 'react';
-import { Plus, Trash2, Type, X, Image as ImageIcon, Eye, HelpCircle, Code, ArrowUpDown, Puzzle } from 'lucide-react';
-import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizTile, BlanksTile } from '../../../types/lessonEditor.ts';
+import {
+  Plus,
+  Trash2,
+  Type,
+  X,
+  Image as ImageIcon,
+  Eye,
+  HelpCircle,
+  Code,
+  ArrowUpDown,
+  Puzzle,
+  NotebookPen,
+  Paperclip,
+  Shuffle
+} from 'lucide-react';
+import {
+  TextTile,
+  ImageTile,
+  LessonTile,
+  ProgrammingTile,
+  SequencingTile,
+  QuizTile,
+  BlanksTile,
+  OpenTile
+} from '../../../types/lessonEditor.ts';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
 import { SequencingEditor } from './SequencingEditor.tsx';
@@ -93,6 +116,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
       case 'programming': return Code;
       case 'sequencing': return ArrowUpDown;
       case 'blanks': return Puzzle;
+      case 'open': return NotebookPen;
       default: return Type;
     }
   };
@@ -418,6 +442,282 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
 
                 )}
               </div>
+            </div>
+          </div>
+        );
+      }
+
+      case 'open': {
+        const openTile = tile as OpenTile;
+
+        const updateContent = (updates: Partial<OpenTile['content']>) => {
+          onUpdateTile(tile.id, {
+            content: {
+              ...openTile.content,
+              ...updates
+            },
+            updated_at: new Date().toISOString()
+          });
+        };
+
+        const handleAttachmentFieldChange = (
+          attachmentId: string,
+          field: 'name' | 'description' | 'url',
+          value: string
+        ) => {
+          const attachments = openTile.content.attachments.map(attachment =>
+            attachment.id === attachmentId
+              ? { ...attachment, [field]: value }
+              : attachment
+          );
+
+          updateContent({ attachments });
+        };
+
+        const handleAddAttachment = () => {
+          const newAttachmentId = `attachment-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+          updateContent({
+            attachments: [
+              ...openTile.content.attachments,
+              {
+                id: newAttachmentId,
+                name: `Nowy plik ${openTile.content.attachments.length + 1}`,
+                description: '',
+                url: ''
+              }
+            ]
+          });
+        };
+
+        const handleRemoveAttachment = (attachmentId: string) => {
+          updateContent({
+            attachments: openTile.content.attachments.filter(attachment => attachment.id !== attachmentId)
+          });
+        };
+
+        const handlePairChange = (
+          pairId: string,
+          field: 'prompt' | 'response',
+          value: string
+        ) => {
+          const pairs = openTile.content.pairs.map(pair =>
+            pair.id === pairId
+              ? { ...pair, [field]: value }
+              : pair
+          );
+
+          updateContent({ pairs });
+        };
+
+        const handleAddPair = () => {
+          const newPairId = `pair-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+          updateContent({
+            pairs: [
+              ...openTile.content.pairs,
+              {
+                id: newPairId,
+                prompt: `Element ${openTile.content.pairs.length + 1}`,
+                response: 'Opis elementu'
+              }
+            ]
+          });
+        };
+
+        const handleRemovePair = (pairId: string) => {
+          updateContent({ pairs: openTile.content.pairs.filter(pair => pair.id !== pairId) });
+        };
+
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Kolor tła kafelka</label>
+                <input
+                  type="color"
+                  value={openTile.content.backgroundColor}
+                  onChange={(e) => updateContent({ backgroundColor: e.target.value })}
+                  className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
+                />
+              </div>
+
+              <label className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
+                <input
+                  type="checkbox"
+                  checked={openTile.content.showBorder}
+                  onChange={(e) => updateContent({ showBorder: e.target.checked })}
+                  className="w-5 h-5 text-blue-600"
+                />
+                <div>
+                  <span className="text-sm font-medium text-gray-900">Pokaż obramowanie kafelka</span>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Obramowanie pomaga odróżnić kafelek od tła lekcji.
+                  </p>
+                </div>
+              </label>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Oczekiwany format odpowiedzi</label>
+                <textarea
+                  value={openTile.content.expectedFormat}
+                  onChange={(e) => updateContent({ expectedFormat: e.target.value })}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono"
+                  placeholder="np. ['napis1', 'napis2', 'napis3']"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Tekst w polu odpowiedzi</label>
+                <input
+                  type="text"
+                  value={openTile.content.answerPlaceholder}
+                  onChange={(e) => updateContent({ answerPlaceholder: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  placeholder="Opis widoczny w wyłączonym polu odpowiedzi"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                  <Paperclip className="w-4 h-4" />
+                  Pliki do pobrania
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddAttachment}
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  Dodaj plik
+                </button>
+              </div>
+
+              {openTile.content.attachments.length === 0 ? (
+                <p className="text-sm text-gray-600">
+                  Dodaj materiały, które uczeń będzie mógł pobrać przed rozwiązaniem zadania.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {openTile.content.attachments.map(attachment => (
+                    <div key={attachment.id} className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                          <NotebookPen className="w-4 h-4 text-blue-600" />
+                          <span>{attachment.name}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveAttachment(attachment.id)}
+                          className="p-2 text-gray-400 hover:text-red-500 transition"
+                          aria-label="Usuń plik"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Nazwa wyświetlana</label>
+                          <input
+                            type="text"
+                            value={attachment.name}
+                            onChange={(e) => handleAttachmentFieldChange(attachment.id, 'name', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Opis</label>
+                          <input
+                            type="text"
+                            value={attachment.description || ''}
+                            onChange={(e) => handleAttachmentFieldChange(attachment.id, 'description', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            placeholder="Krótki opis pliku"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Adres URL</label>
+                          <input
+                            type="url"
+                            value={attachment.url || ''}
+                            onChange={(e) => handleAttachmentFieldChange(attachment.id, 'url', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            placeholder="https://..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                  <Shuffle className="w-4 h-4" />
+                  Pary kontekstowe
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddPair}
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  Dodaj parę
+                </button>
+              </div>
+
+              {openTile.content.pairs.length === 0 ? (
+                <p className="text-sm text-gray-600">
+                  Dodaj pary informacji, które pojawią się w kafelku jako wskazówki dla ucznia.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {openTile.content.pairs.map((pair, index) => (
+                    <div key={pair.id} className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-900">Para {index + 1}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePair(pair.id)}
+                          className="p-2 text-gray-400 hover:text-red-500 transition"
+                          aria-label="Usuń parę"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Lewy element</label>
+                          <input
+                            type="text"
+                            value={pair.prompt}
+                            onChange={(e) => handlePairChange(pair.id, 'prompt', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            placeholder="np. Nazwa pola"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Prawy element</label>
+                          <input
+                            type="text"
+                            value={pair.response}
+                            onChange={(e) => handlePairChange(pair.id, 'response', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            placeholder="np. Wartość oczekiwana"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         );

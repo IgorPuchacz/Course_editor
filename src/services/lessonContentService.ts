@@ -5,6 +5,7 @@ import {
   ProgrammingTile,
   SequencingTile,
   BlanksTile,
+  OpenTile,
   CanvasSettings,
   GridPosition
 } from '../types/lessonEditor';
@@ -205,6 +206,53 @@ export class LessonContentService {
         ],
         correctFeedback: 'Świetnie! Prawidłowa kolejność.',
         incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.'
+      }
+    };
+  }
+
+  /**
+   * Create a new open task tile
+   */
+  static createOpenTile(position: { x: number; y: number }, page = 1): OpenTile {
+    const base = this.initializeTileBase('open', position, page, { colSpan: 5, rowSpan: 5 });
+
+    return {
+      ...base,
+      content: {
+        instruction: 'Przeczytaj polecenie i przygotuj odpowiedź.',
+        richInstruction: '<p style="margin: 0;">Przeczytaj polecenie i przygotuj odpowiedź.</p>',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        backgroundColor: '#d4d4d4',
+        showBorder: true,
+        expectedFormat: "['napis1', 'napis2', 'napis3']",
+        answerPlaceholder: 'Odpowiedź ucznia pojawi się tutaj... (pole jest wyłączone w podglądzie)',
+        attachments: [
+          {
+            id: 'attachment-instrukcja',
+            name: 'instrukcja.pdf',
+            description: 'Opis zadania do pobrania',
+            url: '#'
+          },
+          {
+            id: 'attachment-dane',
+            name: 'dane.csv',
+            description: 'Przykładowe dane wejściowe',
+            url: '#'
+          }
+        ],
+        pairs: [
+          {
+            id: 'pair-1',
+            prompt: 'Przykładowe wejście',
+            response: "['napis1', 'napis2', 'napis3']"
+          },
+          {
+            id: 'pair-2',
+            prompt: 'Przykładowe wyjście',
+            response: "['wynik1', 'wynik2']"
+          }
+        ]
       }
     };
   }
