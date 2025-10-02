@@ -172,8 +172,6 @@ export const useLessonContentManager = ({
 
   const addTile = useCallback(
     (tileType: string, position: { x: number; y: number }) => {
-      if (!lessonContent) return;
-
       const factory = tileFactoryMap[tileType as LessonTile['type']];
       if (!factory) {
         logger.warn(`Tile type ${tileType} not implemented yet`);
@@ -183,91 +181,115 @@ export const useLessonContentManager = ({
 
       const newTile = factory(position, currentPage);
 
-      const pageTiles = getTilesForPage(lessonContent.tiles, currentPage);
-      const availableGridPos = GridUtils.findNextAvailablePosition(
-        newTile.gridPosition,
-        lessonContent.canvas_settings,
-        pageTiles
-      );
+      let addedTile = false;
 
-      const finalPixelPos = GridUtils.gridToPixel(availableGridPos, lessonContent.canvas_settings);
-      const finalPixelSize = GridUtils.gridSizeToPixel(availableGridPos, lessonContent.canvas_settings);
+      setLessonContent(prev => {
+        if (!prev) {
+          return prev;
+        }
 
-      newTile.gridPosition = availableGridPos;
-      newTile.position = finalPixelPos;
-      newTile.size = finalPixelSize;
+        const pageTiles = getTilesForPage(prev.tiles, currentPage);
+        const availableGridPos = GridUtils.findNextAvailablePosition(
+          newTile.gridPosition,
+          prev.canvas_settings,
+          pageTiles
+        );
 
-      const updatedTiles = [...lessonContent.tiles, newTile];
-      const totalPages = Math.max(lessonContent.total_pages, currentPage);
-      const maxHeight = computeMaxCanvasHeight(updatedTiles, totalPages);
+        const finalPixelPos = GridUtils.gridToPixel(availableGridPos, prev.canvas_settings);
+        const finalPixelSize = GridUtils.gridSizeToPixel(availableGridPos, prev.canvas_settings);
 
-      const updatedContent: LessonContent = {
-        ...lessonContent,
-        tiles: updatedTiles,
-        total_pages: totalPages,
-        canvas_settings: {
-          ...lessonContent.canvas_settings,
-          height: maxHeight
-        },
-        updated_at: new Date().toISOString()
-      };
+        newTile.gridPosition = availableGridPos;
+        newTile.position = finalPixelPos;
+        newTile.size = finalPixelSize;
 
-      setLessonContent(updatedContent);
+        const updatedTiles = [...prev.tiles, newTile];
+        const totalPages = Math.max(prev.total_pages, currentPage);
+        const maxHeight = computeMaxCanvasHeight(updatedTiles, totalPages);
+
+        const updatedContent: LessonContent = {
+          ...prev,
+          tiles: updatedTiles,
+          total_pages: totalPages,
+          canvas_settings: {
+            ...prev.canvas_settings,
+            height: maxHeight
+          },
+          updated_at: new Date().toISOString()
+        };
+
+        addedTile = true;
+
+        return updatedContent;
+      });
+
+      if (!addedTile) {
+        return;
+      }
+
       dispatch({ type: 'markUnsaved' });
       dispatch({ type: 'selectTile', tileId: newTile.id });
-
       logger.info(`Added new ${tileType} tile to lesson`);
     },
-    [lessonContent, currentPage, getTilesForPage, computeMaxCanvasHeight, dispatch, warning]
+    [currentPage, getTilesForPage, computeMaxCanvasHeight, dispatch, warning]
   );
 
   const updateTile = useCallback(
     (tileId: string, updates: Partial<LessonTile>) => {
-      if (!lessonContent) return;
+      let wasUpdated = false;
 
-      const updatedTiles = lessonContent.tiles.map(tile => {
-        if (tile.id !== tileId) {
-          return tile;
+      setLessonContent(prev => {
+        if (!prev) {
+          return prev;
         }
 
-        const updatedTile: LessonTile = {
-          ...tile,
-          ...updates,
-          updated_at: updates.updated_at || new Date().toISOString()
-        };
+        const updatedTiles = prev.tiles.map(tile => {
+          if (tile.id !== tileId) {
+            return tile;
+          }
 
-        if (
-          (tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing' || tile.type === 'blanks') &&
-          updates.content
-        ) {
-          updatedTile.content = {
-            ...tile.content,
-            ...updates.content
+          wasUpdated = true;
+          const updatedTile: LessonTile = {
+            ...tile,
+            ...updates,
+            updated_at: updates.updated_at || new Date().toISOString()
           };
-        }
 
-        return updatedTile;
+          if (
+            (tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing' || tile.type === 'blanks') &&
+            updates.content
+          ) {
+            updatedTile.content = {
+              ...tile.content,
+              ...updates.content
+            };
+          }
+
+          return updatedTile;
+        });
+
+        const pagesFromTiles = getMaxPageFromTiles(updatedTiles);
+        const totalPages = Math.max(prev.total_pages, pagesFromTiles);
+        const maxHeight = computeMaxCanvasHeight(updatedTiles, totalPages);
+
+        return {
+          ...prev,
+          tiles: updatedTiles,
+          total_pages: totalPages,
+          canvas_settings: {
+            ...prev.canvas_settings,
+            height: maxHeight
+          },
+          updated_at: new Date().toISOString()
+        };
       });
 
-      const pagesFromTiles = getMaxPageFromTiles(updatedTiles);
-      const totalPages = Math.max(lessonContent.total_pages, pagesFromTiles);
-      const maxHeight = computeMaxCanvasHeight(updatedTiles, totalPages);
+      if (!wasUpdated) {
+        return;
+      }
 
-      const newContent: LessonContent = {
-        ...lessonContent,
-        tiles: updatedTiles,
-        total_pages: totalPages,
-        canvas_settings: {
-          ...lessonContent.canvas_settings,
-          height: maxHeight
-        },
-        updated_at: new Date().toISOString()
-      };
-
-      setLessonContent(newContent);
       dispatch({ type: 'markUnsaved' });
     },
-    [lessonContent, computeMaxCanvasHeight, getMaxPageFromTiles, dispatch]
+    [computeMaxCanvasHeight, getMaxPageFromTiles, dispatch]
   );
 
   const toggleTestingTile = useCallback((tileId: string) => {
@@ -278,23 +300,37 @@ export const useLessonContentManager = ({
 
   const deleteTile = useCallback(
     (tileId: string) => {
-      if (!lessonContent) return;
+      let removedTileExists = false;
 
-      const tile = lessonContent.tiles.find(t => t.id === tileId);
-      if (!tile) return;
+      setLessonContent(prev => {
+        if (!prev) {
+          return prev;
+        }
 
-      const updatedTiles = lessonContent.tiles.filter(t => t.id !== tileId);
-      const maxHeight = computeMaxCanvasHeight(updatedTiles, lessonContent.total_pages);
+        const tile = prev.tiles.find(t => t.id === tileId);
+        if (!tile) {
+          return prev;
+        }
 
-      setLessonContent({
-        ...lessonContent,
-        tiles: updatedTiles,
-        canvas_settings: {
-          ...lessonContent.canvas_settings,
-          height: maxHeight
-        },
-        updated_at: new Date().toISOString()
+        removedTileExists = true;
+
+        const updatedTiles = prev.tiles.filter(t => t.id !== tileId);
+        const maxHeight = computeMaxCanvasHeight(updatedTiles, prev.total_pages);
+
+        return {
+          ...prev,
+          tiles: updatedTiles,
+          canvas_settings: {
+            ...prev.canvas_settings,
+            height: maxHeight
+          },
+          updated_at: new Date().toISOString()
+        };
       });
+
+      if (!removedTileExists) {
+        return;
+      }
 
       setTestingTileIds(prev => prev.filter(id => id !== tileId));
 
@@ -306,60 +342,87 @@ export const useLessonContentManager = ({
 
       success('Kafelek usunięty', 'Kafelek został pomyślnie usunięty');
     },
-    [lessonContent, computeMaxCanvasHeight, dispatch, editorState.selectedTileId, success]
+    [computeMaxCanvasHeight, dispatch, editorState.selectedTileId, success]
   );
 
   const addPage = useCallback(() => {
-    if (!lessonContent) return 0;
+    let newTotal = 0;
 
-    const newTotal = (lessonContent.total_pages ?? 1) + 1;
-    const maxHeight = computeMaxCanvasHeight(lessonContent.tiles, newTotal);
-    const updatedContent: LessonContent = {
-      ...lessonContent,
-      total_pages: newTotal,
-      canvas_settings: {
-        ...lessonContent.canvas_settings,
-        height: maxHeight
-      },
-      updated_at: new Date().toISOString()
-    };
+    setLessonContent(prev => {
+      if (!prev) {
+        return prev;
+      }
 
-    setLessonContent(updatedContent);
+      newTotal = (prev.total_pages ?? 1) + 1;
+      const maxHeight = computeMaxCanvasHeight(prev.tiles, newTotal);
+
+      return {
+        ...prev,
+        total_pages: newTotal,
+        canvas_settings: {
+          ...prev.canvas_settings,
+          height: maxHeight
+        },
+        updated_at: new Date().toISOString()
+      };
+    });
+
+    if (!newTotal) {
+      return 0;
+    }
+
     setCurrentPage(newTotal);
     dispatch({ type: 'selectTile', tileId: null });
     dispatch({ type: 'stopEditing' });
     dispatch({ type: 'markUnsaved' });
 
     return newTotal;
-  }, [lessonContent, computeMaxCanvasHeight, dispatch]);
+  }, [computeMaxCanvasHeight, dispatch]);
 
   const deletePage = useCallback(
     (pageToDelete: number) => {
-      if (!lessonContent) return 0;
-      if (lessonContent.total_pages <= 1) return lessonContent.total_pages;
+      let operationResult = { nextPage: 0, totalPages: 0 };
+      let filteredTiles: LessonTile[] = [];
+      let deleted = false;
 
-      const filteredTiles = lessonContent.tiles
-        .filter(tile => tile.page !== pageToDelete)
-        .map(tile => (tile.page > pageToDelete ? { ...tile, page: tile.page - 1 } : tile));
+      setLessonContent(prev => {
+        if (!prev) {
+          return prev;
+        }
 
-      const newTotalPages = Math.max(1, lessonContent.total_pages - 1);
-      const maxHeight = computeMaxCanvasHeight(filteredTiles, newTotalPages);
+        if (prev.total_pages <= 1) {
+          operationResult = { nextPage: prev.total_pages, totalPages: prev.total_pages };
+          return prev;
+        }
 
-      const updatedContent: LessonContent = {
-        ...lessonContent,
-        tiles: filteredTiles,
-        total_pages: newTotalPages,
-        canvas_settings: {
-          ...lessonContent.canvas_settings,
-          height: maxHeight
-        },
-        updated_at: new Date().toISOString()
-      };
+        deleted = true;
+        filteredTiles = prev.tiles
+          .filter(tile => tile.page !== pageToDelete)
+          .map(tile => (tile.page > pageToDelete ? { ...tile, page: tile.page - 1 } : tile));
 
-      setLessonContent(updatedContent);
+        const newTotalPages = Math.max(1, prev.total_pages - 1);
+        const maxHeight = computeMaxCanvasHeight(filteredTiles, newTotalPages);
 
-      const nextPage = Math.min(pageToDelete, newTotalPages);
-      setCurrentPage(nextPage);
+        const nextPage = Math.min(pageToDelete, newTotalPages);
+        operationResult = { nextPage, totalPages: newTotalPages };
+
+        return {
+          ...prev,
+          tiles: filteredTiles,
+          total_pages: newTotalPages,
+          canvas_settings: {
+            ...prev.canvas_settings,
+            height: maxHeight
+          },
+          updated_at: new Date().toISOString()
+        };
+      });
+
+      if (!deleted) {
+        return operationResult.totalPages;
+      }
+
+      setCurrentPage(operationResult.nextPage);
       setTestingTileIds(prev => prev.filter(id => filteredTiles.some(tile => tile.id === id)));
 
       dispatch({ type: 'selectTile', tileId: null });
@@ -368,9 +431,9 @@ export const useLessonContentManager = ({
 
       success('Strona usunięta', `Strona ${pageToDelete} została usunięta.`);
 
-      return nextPage;
+      return operationResult.nextPage;
     },
-    [lessonContent, computeMaxCanvasHeight, dispatch, success]
+    [computeMaxCanvasHeight, dispatch, success]
   );
 
   const changePage = useCallback(
@@ -392,17 +455,29 @@ export const useLessonContentManager = ({
   );
 
   const clearCanvas = useCallback(() => {
-    if (!lessonContent || lessonContent.tiles.length === 0) return false;
+    let hadTiles = false;
 
-    setLessonContent({
-      ...lessonContent,
-      tiles: [],
-      canvas_settings: {
-        ...lessonContent.canvas_settings,
-        height: computeMaxCanvasHeight([], lessonContent.total_pages)
-      },
-      updated_at: new Date().toISOString()
+    setLessonContent(prev => {
+      if (!prev || prev.tiles.length === 0) {
+        return prev;
+      }
+
+      hadTiles = true;
+
+      return {
+        ...prev,
+        tiles: [],
+        canvas_settings: {
+          ...prev.canvas_settings,
+          height: computeMaxCanvasHeight([], prev.total_pages)
+        },
+        updated_at: new Date().toISOString()
+      };
     });
+
+    if (!hadTiles) {
+      return false;
+    }
 
     setTestingTileIds([]);
     dispatch({ type: 'markUnsaved' });
@@ -411,7 +486,7 @@ export const useLessonContentManager = ({
 
     success('Płótno wyczyszczone', 'Wszystkie kafelki zostały usunięte');
     return true;
-  }, [lessonContent, computeMaxCanvasHeight, dispatch, success]);
+  }, [computeMaxCanvasHeight, dispatch, success]);
 
   const totalPages = useMemo(() => Math.max(1, lessonContent?.total_pages ?? 1), [lessonContent]);
 
