@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Save, RotateCcw, Grid, Edit } from 'lucide-react';
 import { Lesson, Course } from '../types/course.ts';
-import { LessonContent, LessonTile, ProgrammingTile, TextTile } from '../types/lessonEditor.ts';
-import { SequencingTile } from '../types/lessonEditor.ts';
 import { useLessonEditor } from '../hooks/useLessonEditor.ts';
-import { LessonContentService } from '../services/lessonContentService.ts';
 import { TilePalette } from '../components/admin/editor side/TilePalette.tsx';
 import { LessonCanvas } from '../components/admin/canvas/LessonCanvas.tsx';
 import { TileSideEditor } from '../components/admin/editor side/TileSideEditor.tsx';
@@ -14,8 +11,7 @@ import { ToastContainer } from '../components/common/Toast.tsx';
 import { useToast } from '../hooks/useToast.ts';
 import { ConfirmDialog } from '../components/common/ConfirmDialog.tsx';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.tsx';
-import { GridUtils } from '../utils/gridUtils.ts';
-import { logger } from '../utils/logger.ts';
+import { useLessonContentManager } from '../hooks/useLessonContentManager.ts';
 
 interface LessonEditorProps {
   lesson: Lesson;
@@ -23,51 +19,43 @@ interface LessonEditorProps {
   onBack: () => void;
 }
 
-const isRichTextTile = (tile: LessonTile | null): tile is TextTile | ProgrammingTile | SequencingTile => {
-  return !!tile && (tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing');
-};
-
 export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBack }) => {
   const { toasts, removeToast, success, error, warning } = useToast();
   const canvasRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
 
-  // Core state
-  const [lessonContent, setLessonContent] = useState<LessonContent | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(64);
   const [toolbarHeight, setToolbarHeight] = useState(0);
 
   const { editorState, dispatch } = useLessonEditor();
   const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
-  const [testingTileIds, setTestingTileIds] = useState<string[]>([]);
 
-  const normalizeTilePage = (tile: LessonTile): LessonTile => ({
-    ...tile,
-    page: tile.page ?? 1
+  const {
+    lessonContent,
+    isLoading,
+    isSaving,
+    totalPages,
+    safePage,
+    pagedContent,
+    selectedTile,
+    selectedRichTextTile,
+    testingTileIds,
+    addTile,
+    updateTile,
+    deleteTile,
+    toggleTestingTile,
+    addPage,
+    deletePage,
+    changePage,
+    clearCanvas,
+    saveLessonContent
+  } = useLessonContentManager({
+    lessonId: lesson.id,
+    editorState,
+    dispatch,
+    notifications: { success, error, warning }
   });
-
-  const getMaxPageFromTiles = (tiles: LessonTile[]): number => {
-    if (!tiles.length) return 1;
-    return Math.max(1, ...tiles.map(tile => tile.page ?? 1));
-  };
-
-  const computeMaxCanvasHeight = (tiles: LessonTile[], totalPages: number): number => {
-    const pages = Math.max(totalPages, getMaxPageFromTiles(tiles));
-    let maxHeight = 6;
-    for (let page = 1; page <= pages; page++) {
-      const pageTiles = tiles.filter(tile => (tile.page ?? 1) === page);
-      maxHeight = Math.max(maxHeight, GridUtils.calculateCanvasHeight(pageTiles));
-    }
-    return maxHeight;
-  };
-
-  const getTilesForPage = (tiles: LessonTile[], page: number): LessonTile[] => {
-    return tiles.filter(tile => (tile.page ?? 1) === page);
-  };
 
   // Confirmation dialog state
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -81,11 +69,6 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
     message: '',
     onConfirm: () => {}
   });
-
-  // Load lesson content on mount
-  useEffect(() => {
-    loadLessonContent();
-  }, [lesson.id]);
 
   useEffect(() => {
     const updateHeaderHeight = () => {
@@ -155,245 +138,6 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
     };
   }, []);
 
-  useEffect(() => {
-    if (!lessonContent) return;
-    const maxPage = Math.max(1, lessonContent.total_pages);
-    if (currentPage > maxPage) {
-      setCurrentPage(maxPage);
-    }
-  }, [lessonContent, currentPage]);
-
-  // Auto-save functionality
-  useEffect(() => {
-    if (editorState.hasUnsavedChanges && lessonContent) {
-      const autoSaveTimer = setTimeout(() => {
-        handleSave(false); // Silent auto-save
-      }, 5000);
-
-      return () => clearTimeout(autoSaveTimer);
-    }
-  }, [editorState.hasUnsavedChanges, lessonContent]);
-
-  const loadLessonContent = async () => {
-    try {
-      setIsLoading(true);
-      const content = await LessonContentService.getLessonContent(lesson.id);
-
-      if (content) {
-        const normalizedTiles = content.tiles.map(normalizeTilePage);
-        const totalPages = Math.max(content.total_pages ?? 1, getMaxPageFromTiles(normalizedTiles));
-        const normalizedContent: LessonContent = {
-          ...content,
-          tiles: normalizedTiles,
-          total_pages: totalPages,
-          canvas_settings: {
-            ...content.canvas_settings,
-            height: computeMaxCanvasHeight(normalizedTiles, totalPages)
-          }
-        };
-
-        setLessonContent(normalizedContent);
-        setCurrentPage(1);
-        logger.info(`Loaded lesson content with ${normalizedTiles.length} tiles across ${totalPages} pages`);
-      } else {
-        error('Błąd ładowania', 'Nie udało się załadować zawartości lekcji');
-      }
-    } catch (err) {
-      logger.error('Failed to load lesson content:', err);
-      error('Błąd ładowania', 'Wystąpił błąd podczas ładowania zawartości lekcji');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSave = async (showNotification = true) => {
-    if (!lessonContent) return;
-
-    try {
-      setIsSaving(true);
-      await LessonContentService.saveLessonContent(lessonContent);
-      
-      dispatch({ type: 'clearUnsaved' });
-      
-      if (showNotification) {
-        success('Zapisano', 'Zawartość lekcji została zapisana');
-      }
-      
-      logger.info('Lesson content saved successfully');
-    } catch (err) {
-      logger.error('Failed to save lesson content:', err);
-      error('Błąd zapisu', 'Nie udało się zapisać zawartości lekcji');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleAddTile = (tileType: string, position: { x: number; y: number }) => {
-    if (!lessonContent) return;
-
-    let newTile: LessonTile | null = null;
-
-    switch (tileType) {
-      case 'text':
-        newTile = LessonContentService.createTextTile(position, currentPage);
-        break;
-      case 'image':
-        newTile = LessonContentService.createImageTile(position, currentPage);
-        break;
-      case 'visualization':
-        newTile = LessonContentService.createVisualizationTile(position, currentPage);
-        break;
-      case 'quiz':
-        newTile = LessonContentService.createQuizTile(position, currentPage);
-        break;
-      case 'programming':
-        newTile = LessonContentService.createProgrammingTile(position, currentPage);
-        break;
-      case 'sequencing':
-        newTile = LessonContentService.createSequencingTile(position, currentPage);
-        break;
-      case 'blanks':
-        newTile = LessonContentService.createBlanksTile(position, currentPage);
-        break;
-      default:
-        logger.warn(`Tile type ${tileType} not implemented yet`);
-        warning('Funkcja niedostępna', `Typ kafelka "${tileType}" nie jest jeszcze dostępny`);
-        return;
-    }
-
-    if (!newTile) return;
-
-    // Find available position using grid system
-    const pageTiles = getTilesForPage(lessonContent.tiles, currentPage);
-    const availableGridPos = GridUtils.findNextAvailablePosition(
-      newTile.gridPosition,
-      lessonContent.canvas_settings,
-      pageTiles
-    );
-    
-    // Update tile with available position
-    const finalPixelPos = GridUtils.gridToPixel(availableGridPos, lessonContent.canvas_settings);
-    const finalPixelSize = GridUtils.gridSizeToPixel(availableGridPos, lessonContent.canvas_settings);
-    
-    newTile.gridPosition = availableGridPos;
-    newTile.position = finalPixelPos;
-    newTile.size = finalPixelSize;
-
-    const updatedTiles = [...lessonContent.tiles, newTile];
-    const totalPages = Math.max(lessonContent.total_pages, currentPage);
-    const maxHeight = computeMaxCanvasHeight(updatedTiles, totalPages);
-
-    const updatedContent = {
-      ...lessonContent,
-      tiles: updatedTiles,
-      total_pages: totalPages,
-      canvas_settings: {
-        ...lessonContent.canvas_settings,
-        height: maxHeight
-      },
-      updated_at: new Date().toISOString()
-    };
-
-    setLessonContent(updatedContent);
-    dispatch({ type: 'markUnsaved' });
-    dispatch({ type: 'selectTile', tileId: newTile.id });
-
-    logger.info(`Added new ${tileType} tile to lesson`);
-  };
-
-  const handleUpdateTile = (tileId: string, updates: Partial<LessonTile>) => {
-    if (!lessonContent) return;
-
-    console.log('Updating tile:', tileId, 'with updates:', updates);
-
-    const updatedTiles = lessonContent.tiles.map(tile => {
-      if (tile.id === tileId) {
-        const updatedTile = {
-          ...tile,
-          ...updates,
-          updated_at: updates.updated_at || new Date().toISOString()
-        };
-
-        // Special handling for text-based tiles to ensure content properties are merged
-        if ((tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing' || tile.type === 'blanks') && updates.content) {
-          updatedTile.content = {
-            ...tile.content,
-            ...updates.content
-          };
-        }
-
-        return updatedTile;
-      }
-      return tile;
-    });
-
-    console.log('Updated tiles:', updatedTiles.find(t => t.id === tileId));
-
-    const pagesFromTiles = getMaxPageFromTiles(updatedTiles);
-    const totalPages = Math.max(lessonContent.total_pages, pagesFromTiles);
-    const maxHeight = computeMaxCanvasHeight(updatedTiles, totalPages);
-
-    const newContent = {
-      ...lessonContent,
-      tiles: updatedTiles,
-      total_pages: totalPages,
-      canvas_settings: {
-        ...lessonContent.canvas_settings,
-        height: maxHeight
-      },
-      updated_at: new Date().toISOString()
-    };
-    
-    setLessonContent(newContent);
-
-    dispatch({ type: 'markUnsaved' });
-  };
-
-  const handleToggleTestingTile = (tileId: string) => {
-    setTestingTileIds(prev =>
-      prev.includes(tileId) ? prev.filter(id => id !== tileId) : [...prev, tileId]
-    );
-  };
-
-  const handleDeleteTile = (tileId: string) => {
-    if (!lessonContent) return;
-
-    const tile = lessonContent.tiles.find(t => t.id === tileId);
-    if (!tile) return;
-
-    setConfirmDialog({
-      isOpen: true,
-      title: 'Usuń kafelek',
-      message: `Czy na pewno chcesz usunąć ten kafelek? Ta operacja jest nieodwracalna.`,
-      onConfirm: () => {
-        const updatedTiles = lessonContent.tiles.filter(t => t.id !== tileId);
-
-        const maxHeight = computeMaxCanvasHeight(updatedTiles, lessonContent.total_pages);
-
-        setLessonContent({
-          ...lessonContent,
-          tiles: updatedTiles,
-          canvas_settings: {
-            ...lessonContent.canvas_settings,
-            height: maxHeight
-          },
-          updated_at: new Date().toISOString()
-        });
-
-        setTestingTileIds(prev => prev.filter(id => id !== tileId));
-
-        dispatch({ type: 'markUnsaved' });
-        if (editorState.selectedTileId === tileId) {
-          dispatch({ type: 'selectTile', tileId: null });
-          dispatch({ type: 'stopEditing' });
-        }
-
-        setConfirmDialog(prev => ({ ...prev, isOpen: false }));
-        success('Kafelek usunięty', 'Kafelek został pomyślnie usunięty');
-      }
-    });
-  };
-
   const handleSelectTile = (tileId: string | null) => {
     dispatch({ type: 'selectTile', tileId });
   };
@@ -407,90 +151,47 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
     dispatch({ type: 'toggleGrid' });
   };
 
+  const handleDeleteTile = (tileId: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Usuń kafelek',
+      message: `Czy na pewno chcesz usunąć ten kafelek? Ta operacja jest nieodwracalna.`,
+      onConfirm: () => {
+        deleteTile(tileId);
+        setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+      }
+    });
+  };
+
   const handleAddPage = () => {
-    if (!lessonContent) return;
-
-    const newTotal = (lessonContent.total_pages ?? 1) + 1;
-    const maxHeight = computeMaxCanvasHeight(lessonContent.tiles, newTotal);
-    const updatedContent: LessonContent = {
-      ...lessonContent,
-      total_pages: newTotal,
-      canvas_settings: {
-        ...lessonContent.canvas_settings,
-        height: maxHeight
-      },
-      updated_at: new Date().toISOString()
-    };
-
-    setLessonContent(updatedContent);
-    setCurrentPage(newTotal);
-    setActiveEditor(null);
-    dispatch({ type: 'selectTile', tileId: null });
-    dispatch({ type: 'stopEditing' });
-    dispatch({ type: 'markUnsaved' });
+    const newPage = addPage();
+    if (newPage > 0) {
+      setActiveEditor(null);
+    }
   };
 
   const handleDeletePage = () => {
-    if (!lessonContent) return;
-    if (lessonContent.total_pages <= 1) return;
+    if (!lessonContent || totalPages <= 1) return;
 
-    const pageToDelete = currentPage;
-    const contentSnapshot = lessonContent;
+    const pageToDelete = safePage;
 
     setConfirmDialog({
       isOpen: true,
       title: 'Usuń stronę',
       message: `Czy na pewno chcesz usunąć stronę ${pageToDelete}? Wszystkie kafelki na tej stronie zostaną usunięte, a układ kolejnych stron zostanie zaktualizowany.`,
       onConfirm: () => {
-        if (!contentSnapshot) return;
-
-        const filteredTiles = contentSnapshot.tiles
-          .filter(tile => tile.page !== pageToDelete)
-          .map(tile => (tile.page > pageToDelete ? { ...tile, page: tile.page - 1 } : tile));
-
-        const newTotalPages = Math.max(1, contentSnapshot.total_pages - 1);
-        const maxHeight = computeMaxCanvasHeight(filteredTiles, newTotalPages);
-
-        const updatedContent: LessonContent = {
-          ...contentSnapshot,
-          tiles: filteredTiles,
-          total_pages: newTotalPages,
-          canvas_settings: {
-            ...contentSnapshot.canvas_settings,
-            height: maxHeight
-          },
-          updated_at: new Date().toISOString()
-        };
-
-        setLessonContent(updatedContent);
-
-        const nextPage = Math.min(pageToDelete, newTotalPages);
-        setCurrentPage(nextPage);
+        deletePage(pageToDelete);
         setActiveEditor(null);
-        setTestingTileIds(prev => prev.filter(id => filteredTiles.some(tile => tile.id === id)));
-        dispatch({ type: 'selectTile', tileId: null });
-        dispatch({ type: 'stopEditing' });
-        dispatch({ type: 'markUnsaved' });
-
         setConfirmDialog(prev => ({ ...prev, isOpen: false }));
-        success('Strona usunięta', `Strona ${pageToDelete} została usunięta.`);
       }
     });
   };
 
   const handlePageChange = (page: number) => {
-    if (!lessonContent) return;
-
-    const maxPage = Math.max(1, lessonContent.total_pages);
-    const nextPage = Math.min(Math.max(1, page), maxPage);
-    if (nextPage === currentPage) {
-      return;
+    const pageChanged = changePage(page);
+    if (pageChanged) {
+      setActiveEditor(null);
     }
-
-    setCurrentPage(nextPage);
-    setActiveEditor(null);
-    dispatch({ type: 'selectTile', tileId: null });
-    dispatch({ type: 'stopEditing' });
   };
 
   const handleBackWithConfirmation = () => {
@@ -500,7 +201,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
         title: 'Niezapisane zmiany',
         message: 'Masz niezapisane zmiany. Czy chcesz je zapisać przed wyjściem?',
         onConfirm: async () => {
-          await handleSave();
+          await saveLessonContent();
           setConfirmDialog(prev => ({ ...prev, isOpen: false }));
           onBack();
         }
@@ -518,24 +219,11 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       title: 'Wyczyść płótno',
       message: 'Czy na pewno chcesz usunąć wszystkie kafelki z płótna? Ta operacja jest nieodwracalna.',
       onConfirm: () => {
-        setLessonContent({
-          ...lessonContent!,
-          tiles: [],
-          canvas_settings: {
-            ...lessonContent.canvas_settings,
-            height: computeMaxCanvasHeight([], lessonContent.total_pages)
-          },
-          updated_at: new Date().toISOString()
-        });
-
-        setTestingTileIds([]);
-
-        dispatch({ type: 'markUnsaved' });
-        dispatch({ type: 'selectTile', tileId: null });
-        dispatch({ type: 'stopEditing' });
-
+        const cleared = clearCanvas();
+        if (cleared) {
+          setActiveEditor(null);
+        }
         setConfirmDialog(prev => ({ ...prev, isOpen: false }));
-        success('Płótno wyczyszczone', 'Wszystkie kafelki zostały usunięte');
       }
     });
   };
@@ -566,23 +254,13 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
     );
   }
 
-  const totalPages = Math.max(1, lessonContent.total_pages);
-  const safePage = Math.min(Math.max(1, currentPage), totalPages);
-  const pageTiles = getTilesForPage(lessonContent.tiles, safePage);
-  const pagedCanvasSettings = {
-    ...lessonContent.canvas_settings,
-    height: GridUtils.calculateCanvasHeight(pageTiles)
-  };
-  const pagedContent: LessonContent = {
-    ...lessonContent,
-    tiles: pageTiles,
-    canvas_settings: pagedCanvasSettings,
-    total_pages: lessonContent.total_pages
-  };
-
-  const selectedTileGlobal = lessonContent.tiles.find(t => t.id === editorState.selectedTileId) || null;
-  const selectedTile = selectedTileGlobal && selectedTileGlobal.page === safePage ? selectedTileGlobal : undefined;
-  const selectedRichTextTile = isRichTextTile(selectedTile ?? null) ? selectedTile : null;
+  if (!pagedContent) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <LoadingSpinner size="lg" text="Ładowanie edytora lekcji..." />
+      </div>
+    );
+  }
 
   const toastOffset = headerHeight + toolbarHeight + 16;
 
@@ -653,7 +331,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
                 </button>
                 
                 <button
-                  onClick={() => handleSave(true)}
+                  onClick={() => saveLessonContent(true)}
                   disabled={isSaving || !editorState.hasUnsavedChanges}
                   className="bg-blue-600 text-white px-3 lg:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1 lg:space-x-2"
                 >
@@ -684,17 +362,17 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
             <div className="h-full">
               <TileSideEditor
                 tile={selectedTile}
-                onUpdateTile={handleUpdateTile}
+                onUpdateTile={updateTile}
                 onSelectTile={handleSelectTile}
                 isTesting={testingTileIds.includes(selectedTile.id)}
-                onToggleTesting={handleToggleTestingTile}
+                onToggleTesting={toggleTestingTile}
               />
             </div>
           ) : (
             // Tile Palette - when no tile is selected on the active page
             <div className="h-full">
               <TilePalette
-                onAddTile={handleAddTile}
+                onAddTile={addTile}
                 selectedTileId={editorState.selectedTileId}
               />
             </div>
@@ -714,7 +392,7 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
               onFinishTextEditing={handleFinishTextEditing}
               editor={activeEditor}
               selectedTile={selectedRichTextTile}
-              onUpdateTile={handleUpdateTile}
+              onUpdateTile={updateTile}
               currentPage={safePage}
               totalPages={totalPages}
               onSelectPage={handlePageChange}
@@ -731,11 +409,11 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
                 key={`canvas-page-${safePage}`}
                 content={pagedContent}
                 editorState={editorState}
-                onUpdateTile={handleUpdateTile}
+                onUpdateTile={updateTile}
                 onSelectTile={handleSelectTile}
-                onFinishTextEditing={handleFinishTextEditing}
                 onDeleteTile={handleDeleteTile}
-                onAddTile={handleAddTile}
+                onAddTile={addTile}
+                onFinishTextEditing={handleFinishTextEditing}
                 dispatch={dispatch}
                 showGrid={editorState.showGrid}
                 onEditorReady={setActiveEditor}
