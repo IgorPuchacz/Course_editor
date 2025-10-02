@@ -5,6 +5,7 @@ import {
   ProgrammingTile,
   SequencingTile,
   BlanksTile,
+  GeneralTile,
   CanvasSettings,
   GridPosition
 } from '../types/lessonEditor';
@@ -205,6 +206,27 @@ export class LessonContentService {
         ],
         correctFeedback: 'Świetnie! Prawidłowa kolejność.',
         incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.'
+      }
+    };
+  }
+
+  /**
+   * Create a new general matching tile
+   */
+  static createGeneralTile(position: { x: number; y: number }, page = 1): GeneralTile {
+    const base = this.initializeTileBase('general', position, page, { colSpan: 4, rowSpan: 4 });
+
+    return {
+      ...base,
+      content: {
+        instruction: 'Połącz elementy z lewej i prawej strony.',
+        richInstruction: '<p style="margin: 0;">Połącz elementy z lewej i prawej strony.</p>',
+        backgroundColor: '#d4d4d4',
+        pairs: [
+          { id: 'pair-1', left: 'Element A', right: 'Dopasowanie 1' },
+          { id: 'pair-2', left: 'Element B', right: 'Dopasowanie 2' },
+          { id: 'pair-3', left: 'Element C', right: 'Dopasowanie 3' }
+        ]
       }
     };
   }

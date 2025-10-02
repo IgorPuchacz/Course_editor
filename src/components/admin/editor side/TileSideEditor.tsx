@@ -1,6 +1,6 @@
 import React from 'react';
-import { Plus, Trash2, Type, X, Image as ImageIcon, Eye, HelpCircle, Code, ArrowUpDown, Puzzle } from 'lucide-react';
-import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizTile, BlanksTile } from '../../../types/lessonEditor.ts';
+import { Plus, Trash2, Type, X, Image as ImageIcon, Eye, HelpCircle, Code, ArrowUpDown, Puzzle, Link2 } from 'lucide-react';
+import { TextTile, ImageTile, LessonTile, ProgrammingTile, SequencingTile, QuizTile, BlanksTile, GeneralTile } from '../../../types/lessonEditor.ts';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
 import { SequencingEditor } from './SequencingEditor.tsx';
@@ -93,6 +93,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
       case 'programming': return Code;
       case 'sequencing': return ArrowUpDown;
       case 'blanks': return Puzzle;
+      case 'general': return Link2;
       default: return Type;
     }
   };
@@ -416,6 +417,125 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                       ))}
                     </div>
 
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      case 'general': {
+        const generalTile = tile as GeneralTile;
+
+        const updateContent = (updates: Partial<GeneralTile['content']>) => {
+          onUpdateTile(tile.id, {
+            content: {
+              ...generalTile.content,
+              ...updates
+            },
+            updated_at: new Date().toISOString()
+          });
+        };
+
+        const handlePairChange = (pairId: string, field: 'left' | 'right', value: string) => {
+          const pairs = generalTile.content.pairs.map(pair =>
+            pair.id === pairId ? { ...pair, [field]: value } : pair
+          );
+
+          updateContent({ pairs });
+        };
+
+        const handleAddPair = () => {
+          const newPair = {
+            id: `pair-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+            left: `Lewy element ${generalTile.content.pairs.length + 1}`,
+            right: `Prawy element ${generalTile.content.pairs.length + 1}`
+          };
+
+          updateContent({ pairs: [...generalTile.content.pairs, newPair] });
+        };
+
+        const handleRemovePair = (pairId: string) => {
+          updateContent({
+            pairs: generalTile.content.pairs.filter(pair => pair.id !== pairId)
+          });
+        };
+
+        return (
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Kolor tła kafelka</label>
+              <input
+                type="color"
+                value={generalTile.content.backgroundColor}
+                onChange={(e) => updateContent({ backgroundColor: e.target.value })}
+                className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-sm font-medium text-gray-700">
+                  Pary ({generalTile.content.pairs.length})
+                </label>
+                <button
+                  onClick={handleAddPair}
+                  type="button"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg shadow-sm hover:bg-blue-500 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Dodaj parę</span>
+                </button>
+              </div>
+
+              <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+                {generalTile.content.pairs.length === 0 ? (
+                  <div className="text-sm text-gray-500 bg-gray-50 border border-dashed border-gray-300 rounded-lg p-4 text-center">
+                    Dodaj co najmniej jedną parę, aby zbudować zadanie.
+                  </div>
+                ) : (
+                  generalTile.content.pairs.map((pair, index) => (
+                    <div
+                      key={pair.id}
+                      className="space-y-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                          Para {index + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePair(pair.id)}
+                          className="inline-flex items-center justify-center rounded-lg p-2 text-rose-500 hover:bg-rose-50 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Lewa kolumna</label>
+                          <input
+                            type="text"
+                            value={pair.left}
+                            onChange={(e) => handlePairChange(pair.id, 'left', e.target.value)}
+                            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                            placeholder="Tekst elementu"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Prawa kolumna</label>
+                          <input
+                            type="text"
+                            value={pair.right}
+                            onChange={(e) => handlePairChange(pair.id, 'right', e.target.value)}
+                            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                            placeholder="Tekst dopasowania"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))
                 )}
               </div>
             </div>

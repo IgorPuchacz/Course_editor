@@ -5,7 +5,8 @@ import {
   LessonTile,
   ProgrammingTile,
   SequencingTile,
-  TextTile
+  TextTile,
+  GeneralTile
 } from '../types/lessonEditor';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
@@ -21,15 +22,16 @@ const tileFactoryMap: Record<LessonTile['type'], TileFactory> = {
   quiz: (position, page) => LessonContentService.createQuizTile(position, page),
   programming: (position, page) => LessonContentService.createProgrammingTile(position, page),
   sequencing: (position, page) => LessonContentService.createSequencingTile(position, page),
-  blanks: (position, page) => LessonContentService.createBlanksTile(position, page)
+  blanks: (position, page) => LessonContentService.createBlanksTile(position, page),
+  general: (position, page) => LessonContentService.createGeneralTile(position, page)
 };
 
 const isRichTextTile = (
   tile: LessonTile | null
-): tile is TextTile | ProgrammingTile | SequencingTile | BlanksTile => {
+): tile is TextTile | ProgrammingTile | SequencingTile | BlanksTile | GeneralTile => {
   return (
     !!tile &&
-    (tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing' || tile.type === 'blanks')
+    (tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing' || tile.type === 'blanks' || tile.type === 'general')
   );
 };
 
@@ -254,7 +256,7 @@ export const useLessonContentManager = ({
           };
 
           if (
-            (tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing' || tile.type === 'blanks') &&
+            (tile.type === 'text' || tile.type === 'programming' || tile.type === 'sequencing' || tile.type === 'blanks' || tile.type === 'general') &&
             updates.content
           ) {
             updatedTile.content = {
