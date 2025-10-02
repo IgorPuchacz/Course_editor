@@ -13,6 +13,10 @@ dist-tests
 dist-ssr
 *.local
 
+# Prevent accidentally committed TypeScript build outputs
+src/**/*.js
+src/**/*.js.map
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
