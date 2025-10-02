@@ -12,17 +12,16 @@ import { logger } from '../utils/logger';
 import { EditorState, BlanksTile } from '../types/lessonEditor';
 import { EditorAction } from '../state/editorReducer';
 
-const tileFactoryMap: Record<
-  LessonTile['type'],
-  (position: { x: number; y: number }, page: number) => LessonTile
-> = {
-  text: LessonContentService.createTextTile,
-  image: LessonContentService.createImageTile,
-  visualization: LessonContentService.createVisualizationTile,
-  quiz: LessonContentService.createQuizTile,
-  programming: LessonContentService.createProgrammingTile,
-  sequencing: LessonContentService.createSequencingTile,
-  blanks: LessonContentService.createBlanksTile
+type TileFactory = (position: { x: number; y: number }, page: number) => LessonTile;
+
+const tileFactoryMap: Record<LessonTile['type'], TileFactory> = {
+  text: (position, page) => LessonContentService.createTextTile(position, page),
+  image: (position, page) => LessonContentService.createImageTile(position, page),
+  visualization: (position, page) => LessonContentService.createVisualizationTile(position, page),
+  quiz: (position, page) => LessonContentService.createQuizTile(position, page),
+  programming: (position, page) => LessonContentService.createProgrammingTile(position, page),
+  sequencing: (position, page) => LessonContentService.createSequencingTile(position, page),
+  blanks: (position, page) => LessonContentService.createBlanksTile(position, page)
 };
 
 const isRichTextTile = (
