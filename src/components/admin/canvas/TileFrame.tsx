@@ -124,7 +124,12 @@ export const TileFrame: React.FC<TileFrameProps> = ({
       </div>
 
       {(isSelected || isHovered) && !isEditingText && !isImageEditing && (
-        <div className="absolute -top-8 left-0 flex items-center space-x-1 bg-white rounded-md shadow-md border border-gray-200 px-2 py-1">
+        <div
+          className="absolute -top-8 left-0 flex items-center space-x-1 bg-white rounded-md shadow-md border border-gray-200 px-2 py-1"
+          onMouseDown={(event) => {
+            event.stopPropagation();
+          }}
+        >
           <Move className="w-3 h-3 text-gray-500" />
           <span className="text-xs text-gray-600 capitalize">{tile.type}</span>
           <button
@@ -132,7 +137,10 @@ export const TileFrame: React.FC<TileFrameProps> = ({
               event.stopPropagation();
               onDelete(tile.id);
             }}
-            className="ml-2 p-1 text-red-500 hover:text-red-700 transition-colors"
+            onMouseDown={(event) => {
+              event.stopPropagation();
+            }}
+            className="ml-2 inline-flex items-center justify-center p-1.5 text-red-500 bg-red-50 rounded-full border border-transparent hover:text-red-700 hover:bg-red-100 hover:border-red-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1 transition-colors"
             title="Usuń kafelek"
           >
             <Trash2 className="w-3 h-3" />
