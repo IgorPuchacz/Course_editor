@@ -391,9 +391,9 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
           </div>
         )}
 
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-5 gap-6">
           <TaskTileSection
-            className="lg:col-span-3 shadow-sm"
+            className="lg:col-span-3 shadow-sm min-h-0"
             style={{
               backgroundColor: surfaceColor(accentColor, textColor, 0.68, 0.42),
               borderColor: surfaceColor(accentColor, textColor, 0.52, 0.54),
@@ -404,7 +404,7 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
             headerClassName="px-6 py-5 border-b"
             headerStyle={{ borderColor: surfaceColor(accentColor, textColor, 0.52, 0.54), color: mutedLabelColor }}
             titleStyle={{ color: mutedLabelColor }}
-            contentClassName="flex-1 px-6 py-5 text-base leading-relaxed space-y-3"
+            contentClassName="flex-1 overflow-auto px-6 py-5 text-base leading-relaxed space-y-3"
           >
             {segments.map((segment, index) => (
               segment.type === 'text'
@@ -414,7 +414,7 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
           </TaskTileSection>
 
           <TaskTileSection
-            className="lg:col-span-2"
+            className="lg:col-span-2 min-h-0"
             style={{
               backgroundColor: surfaceColor(accentColor, textColor, 0.6, 0.4),
               borderColor: surfaceColor(accentColor, textColor, 0.5, 0.52),
@@ -430,7 +430,7 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
                 {availableOptions.length} / {tile.content.options.length}
               </span>
             }
-            contentClassName="flex-1 px-6 py-5"
+            contentClassName="flex-1 overflow-auto px-6 py-5"
             onDragOver={handleDragOverBank}
             onDrop={handleDropToBank}
           >
