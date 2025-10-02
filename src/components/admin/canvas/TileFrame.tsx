@@ -130,7 +130,6 @@ export const TileFrame: React.FC<TileFrameProps> = ({
             event.stopPropagation();
           }}
         >
-          <Move className="w-3 h-3 text-gray-500" />
           <span className="text-xs text-gray-600 capitalize">{tile.type}</span>
           <button
             onClick={(event) => {
