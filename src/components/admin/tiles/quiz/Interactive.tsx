@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Circle, HelpCircle, RotateCcw, XCircle } from 'lucide-react';
 import { QuizTile } from '../../../../types/lessonEditor';
-import { getReadableTextColor, surfaceColor } from '../../../../utils/colorUtils';
+import { getReadableTextColor } from '../../../../utils/colorUtils';
+import { createSurfacePalette } from '../../../../utils/surfacePalette.ts';
 import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
 import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
 
@@ -42,32 +43,25 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
     }
   }, [isInteractionEnabled]);
 
-  const panelBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.66, 0.42),
-    [accentColor, textColor]
-  );
-  const panelBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.54, 0.52),
-    [accentColor, textColor]
-  );
-  const iconBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.58, 0.48),
-    [accentColor, textColor]
-  );
-  const answerBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.7, 0.38),
-    [accentColor, textColor]
-  );
-  const answerBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.58, 0.48),
-    [accentColor, textColor]
-  );
-  const answerSelectedBackground = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.46, 0.56),
-    [accentColor, textColor]
-  );
-  const answerSelectedBorder = useMemo(
-    () => surfaceColor(accentColor, textColor, 0.38, 0.62),
+  const {
+    panelBackground,
+    panelBorder,
+    iconBackground,
+    answerBackground,
+    answerBorder,
+    answerSelectedBackground,
+    answerSelectedBorder
+  } = useMemo(
+    () =>
+      createSurfacePalette(accentColor, textColor, {
+        panelBackground: { lighten: 0.66, darken: 0.42 },
+        panelBorder: { lighten: 0.54, darken: 0.52 },
+        iconBackground: { lighten: 0.58, darken: 0.48 },
+        answerBackground: { lighten: 0.7, darken: 0.38 },
+        answerBorder: { lighten: 0.58, darken: 0.48 },
+        answerSelectedBackground: { lighten: 0.46, darken: 0.56 },
+        answerSelectedBorder: { lighten: 0.38, darken: 0.62 }
+      }),
     [accentColor, textColor]
   );
 
