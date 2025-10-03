@@ -10,7 +10,8 @@ import {
   Code,
   ArrowUpDown,
   Puzzle,
-  FileText
+  FileText,
+  Link2
 } from 'lucide-react';
 import {
   TextTile,
@@ -20,7 +21,8 @@ import {
   SequencingTile,
   QuizTile,
   BlanksTile,
-  OpenTile
+  OpenTile,
+  GeneralTile
 } from '../../../types/lessonEditor.ts';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
@@ -115,6 +117,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
       case 'sequencing': return ArrowUpDown;
       case 'blanks': return Puzzle;
       case 'open': return FileText;
+      case 'general': return Link2;
       default: return Type;
     }
   };
@@ -452,12 +455,12 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
           onUpdateTile(tile.id, {
             content: {
               ...openTile.content,
-              ...updates
+               ...updates
             },
             updated_at: new Date().toISOString()
           });
         };
-
+        
         const handleAttachmentChange = (
           attachmentId: string,
           field: 'name' | 'description' | 'url',
@@ -500,7 +503,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
         };
 
         const attachments = openTile.content.attachments ?? [];
-
+        
         return (
           <div className="space-y-6">
             <div>
@@ -512,7 +515,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                 className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
               />
             </div>
-
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Oczekiwany format odpowiedzi</label>
               <p className="text-xs text-gray-600 mb-2">
@@ -594,12 +597,12 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                           Usuń
                         </button>
                       </div>
-                    </div>
+                      </div>
                   ))}
                 </div>
               )}
             </div>
-
+            
             <div className="space-y-3">
               <label className="block text-sm font-medium text-gray-700">Poprawna odpowiedź</label>
               <p className="text-xs text-gray-600">
@@ -642,6 +645,129 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                     : 'Uwzględniaj białe znaki'}
                 </button>
               </div>
+            </div>
+            </div>
+        );
+      }
+        
+      case 'general': {
+        const generalTile = tile as GeneralTile;
+
+        const updateContent = (updates: Partial<GeneralTile['content']>) => {
+          onUpdateTile(tile.id, {
+            content: {
+              ...generalTile.content,
+              ...updates
+            },
+            updated_at: new Date().toISOString()
+          });
+        };
+
+        const handlePairChange = (pairId: string, field: 'left' | 'right', value: string) => {
+          const pairs = generalTile.content.pairs.map(pair =>
+            pair.id === pairId ? { ...pair, [field]: value } : pair
+          );
+          updateContent({ pairs });
+        };
+
+        const handleAddPair = () => {
+          const newPairId = `pair-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+          const pairs = [
+            ...generalTile.content.pairs,
+            {
+              id: newPairId,
+              left: `Lewy element ${generalTile.content.pairs.length + 1}`,
+              right: `Prawy element ${generalTile.content.pairs.length + 1}`
+            }
+          ];
+          updateContent({ pairs });
+        };
+
+        const handleRemovePair = (pairId: string) => {
+          const pairs = generalTile.content.pairs.filter(pair => pair.id !== pairId);
+          updateContent({ pairs });
+        };
+
+        return (
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Kolor akcentu</label>
+              <input
+                type="color"
+                value={generalTile.content.backgroundColor}
+                onChange={(e) => updateContent({ backgroundColor: e.target.value })}
+                className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
+              />
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold text-gray-900">Pary do dopasowania</h4>
+                <button
+                  type="button"
+                  onClick={handleAddPair}
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  Dodaj parę
+                </button>
+              </div>
+
+              {generalTile.content.pairs.length === 0 ? (
+                <p className="text-sm text-gray-600">
+                  Dodaj co najmniej jedną parę elementów, które uczniowie będą musieli połączyć.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {generalTile.content.pairs.map((pair, index) => (
+                    <div
+                      key={pair.id}
+                      className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-4"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                          Para {index + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePair(pair.id)}
+                          className="inline-flex items-center justify-center text-rose-600 hover:bg-rose-50 p-2 rounded-lg"
+                          aria-label={`Usuń parę ${index + 1}`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                            Element z lewej kolumny
+                          </label>
+                          <input
+                            type="text"
+                            value={pair.left}
+                            onChange={(e) => handlePairChange(pair.id, 'left', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            placeholder="Treść z lewej kolumny"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                            Dopasowanie w prawej kolumnie
+                          </label>
+                          <input
+                            type="text"
+                            value={pair.right}
+                            onChange={(e) => handlePairChange(pair.id, 'right', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            placeholder="Treść z prawej kolumny"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         );

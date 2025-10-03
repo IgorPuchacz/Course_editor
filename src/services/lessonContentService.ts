@@ -6,6 +6,7 @@ import {
   SequencingTile,
   BlanksTile,
   OpenTile,
+  GeneralTile,
   CanvasSettings,
   GridPosition
 } from '../types/lessonEditor';
@@ -206,6 +207,31 @@ export class LessonContentService {
         ],
         correctFeedback: 'Świetnie! Prawidłowa kolejność.',
         incorrectFeedback: 'Spróbuj ponownie. Sprawdź kolejność elementów.'
+      }
+    };
+  }
+
+  /**
+   * Create a new general matching tile
+   */
+  static createGeneralTile(position: { x: number; y: number }, page = 1): GeneralTile {
+    const base = this.initializeTileBase('general', position, page, { colSpan: 4, rowSpan: 4 });
+
+    return {
+      ...base,
+      content: {
+        instruction: 'Dopasuj pasujące do siebie elementy z obu kolumn.',
+        richInstruction:
+          '<p style="margin: 0;">Dopasuj pasujące do siebie elementy z obu kolumn.</p>',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontSize: 16,
+        verticalAlign: 'top',
+        backgroundColor: '#d4d4d4',
+        pairs: [
+          { id: 'pair-1', left: 'Element A', right: 'Odpowiednik A' },
+          { id: 'pair-2', left: 'Element B', right: 'Odpowiednik B' },
+          { id: 'pair-3', left: 'Element C', right: 'Odpowiednik C' }
+        ]
       }
     };
   }

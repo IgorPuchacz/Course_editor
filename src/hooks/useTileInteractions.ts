@@ -34,7 +34,8 @@ export const useTileInteractions = ({
       tile.type === 'programming' ||
       tile.type === 'sequencing' ||
       tile.type === 'quiz' ||
-      tile.type === 'open'
+      tile.type === 'open' ||
+      tile.type === 'general'
     ) {
       dispatch({ type: 'startTextEditing', tileId: tile.id });
     } else if (tile.type === 'image') {
