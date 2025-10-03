@@ -487,7 +487,6 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
               {
                 id: newAttachmentId,
                 name: `Nowy plik ${attachments.length + 1}`,
-                description: '',
                 url: ''
               }
             ]
@@ -549,11 +548,11 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                   {attachments.map(attachment => (
                     <div
                       key={attachment.id}
-                      className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3"
+                      className="border border-gray-200 rounded-xl p-4 bg-gray-50"
                     >
-                      <div className="grid grid-cols-1 gap-3">
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Nazwa pliku</label>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] sm:items-end">
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-medium text-gray-600">Nazwa pliku</label>
                           <input
                             type="text"
                             value={attachment.name}
@@ -562,38 +561,27 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                             placeholder="np. instrukcja.pdf"
                           />
                         </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Opis (opcjonalny)</label>
-                          <textarea
-                            value={attachment.description || ''}
-                            onChange={(e) => handleAttachmentChange(attachment.id, 'description', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                            rows={2}
-                            placeholder="Krótki opis zawartości pliku"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Adres URL (opcjonalny)</label>
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-medium text-gray-600">Adres URL</label>
                           <input
                             type="url"
-                            value={attachment.url || ''}
+                            required
+                            value={attachment.url ?? ''}
                             onChange={(e) => handleAttachmentChange(attachment.id, 'url', e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                             placeholder="https://example.com/pliki/instrukcja.pdf"
                           />
                         </div>
-                      </div>
-
-                      <div className="flex justify-end">
                         <button
                           type="button"
                           onClick={() => handleRemoveAttachment(attachment.id)}
-                          className="inline-flex items-center gap-1 text-rose-600 hover:bg-rose-50 px-3 py-2 rounded-lg text-sm"
+                          className="inline-flex h-10 w-10 items-center justify-center self-start rounded-lg text-rose-600 transition hover:bg-rose-50 sm:self-end"
+                          aria-label="Usuń plik"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-                      </div>
+                    </div>
                   ))}
                 </div>
               )}

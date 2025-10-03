@@ -286,7 +286,8 @@ export class LessonContentService {
           {
             id: 'attachment-instrukcja',
             name: 'instrukcja.pdf',
-            description: 'Zawiera szczegółowe wymagania do zadania.'
+            description: 'Zawiera szczegółowe wymagania do zadania.',
+            url: 'https://example.com/materialy/instrukcja.pdf'
           }
         ]
       }
