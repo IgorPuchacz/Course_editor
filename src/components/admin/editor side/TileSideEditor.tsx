@@ -22,7 +22,7 @@ import {
   QuizTile,
   BlanksTile,
   OpenTile,
-  GeneralTile
+  PairingTile
 } from '../../../types/lessonEditor.ts';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
@@ -117,7 +117,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
       case 'sequencing': return ArrowUpDown;
       case 'blanks': return Puzzle;
       case 'open': return FileText;
-      case 'general': return Link2;
+      case 'pairing': return Link2;
       default: return Type;
     }
   };
@@ -518,9 +518,6 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Oczekiwany format odpowiedzi</label>
-              <p className="text-xs text-gray-600 mb-2">
-                Ten tekst zostanie wyświetlony edytorowi obok pola odpowiedzi, aby wiedział jakiego formatu oczekujesz.
-              </p>
               <textarea
                 value={openTile.content.expectedFormat}
                 onChange={(e) => updateContent({ expectedFormat: e.target.value })}
@@ -532,20 +529,20 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold text-gray-900">Pliki do pobrania (opcjonalne)</h4>
+                <h4 className="text-sm font-semibold text-gray-900">Pliki do pobrania</h4>
                 <button
                   type="button"
                   onClick={handleAddAttachment}
                   className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition"
                 >
                   <Plus className="w-4 h-4" />
-                  Dodaj plik
+                  Dodaj
                 </button>
               </div>
 
               {attachments.length === 0 ? (
                 <p className="text-sm text-gray-600">
-                  Dodaj pliki, które uczeń będzie mógł pobrać przed rozwiązaniem zadania.
+                  Jeżeli to potrzebne, dodaj pliki, które uczeń będzie potrzebował do rozwiązania zadania.
                 </p>
               ) : (
                 <div className="space-y-3">
@@ -594,7 +591,6 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                           className="inline-flex items-center gap-1 text-rose-600 hover:bg-rose-50 px-3 py-2 rounded-lg text-sm"
                         >
                           <Trash2 className="w-4 h-4" />
-                          Usuń
                         </button>
                       </div>
                       </div>
@@ -605,9 +601,6 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
             
             <div className="space-y-3">
               <label className="block text-sm font-medium text-gray-700">Poprawna odpowiedź</label>
-              <p className="text-xs text-gray-600">
-                Ten tekst zostanie użyty do walidacji. Zadbaj, by format odpowiedzi zgadzał się z instrukcją.
-              </p>
               <textarea
                 value={openTile.content.correctAnswer ?? ''}
                 onChange={(e) => updateContent({ correctAnswer: e.target.value })}
@@ -650,13 +643,13 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
         );
       }
         
-      case 'general': {
-        const generalTile = tile as GeneralTile;
+      case 'pairing': {
+        const pairingTile = tile as PairingTile;
 
-        const updateContent = (updates: Partial<GeneralTile['content']>) => {
+        const updateContent = (updates: Partial<PairingTile['content']>) => {
           onUpdateTile(tile.id, {
             content: {
-              ...generalTile.content,
+              ...pairingTile.content,
               ...updates
             },
             updated_at: new Date().toISOString()
@@ -664,7 +657,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
         };
 
         const handlePairChange = (pairId: string, field: 'left' | 'right', value: string) => {
-          const pairs = generalTile.content.pairs.map(pair =>
+          const pairs = pairingTile.content.pairs.map(pair =>
             pair.id === pairId ? { ...pair, [field]: value } : pair
           );
           updateContent({ pairs });
@@ -673,18 +666,18 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
         const handleAddPair = () => {
           const newPairId = `pair-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
           const pairs = [
-            ...generalTile.content.pairs,
+            ...pairingTile.content.pairs,
             {
               id: newPairId,
-              left: `Lewy element ${generalTile.content.pairs.length + 1}`,
-              right: `Prawy element ${generalTile.content.pairs.length + 1}`
+              left: `Lewy element ${pairingTile.content.pairs.length + 1}`,
+              right: `Prawy element ${pairingTile.content.pairs.length + 1}`
             }
           ];
           updateContent({ pairs });
         };
 
         const handleRemovePair = (pairId: string) => {
-          const pairs = generalTile.content.pairs.filter(pair => pair.id !== pairId);
+          const pairs = pairingTile.content.pairs.filter(pair => pair.id !== pairId);
           updateContent({ pairs });
         };
 
@@ -694,7 +687,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-3">Kolor akcentu</label>
               <input
                 type="color"
-                value={generalTile.content.backgroundColor}
+                value={pairingTile.content.backgroundColor}
                 onChange={(e) => updateContent({ backgroundColor: e.target.value })}
                 className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
               />
@@ -713,13 +706,13 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                 </button>
               </div>
 
-              {generalTile.content.pairs.length === 0 ? (
+              {pairingTile.content.pairs.length === 0 ? (
                 <p className="text-sm text-gray-600">
                   Dodaj co najmniej jedną parę elementów, które uczniowie będą musieli połączyć.
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {generalTile.content.pairs.map((pair, index) => (
+                  {pairingTile.content.pairs.map((pair, index) => (
                     <div
                       key={pair.id}
                       className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-4"

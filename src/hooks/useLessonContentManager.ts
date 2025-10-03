@@ -7,7 +7,7 @@ import {
   SequencingTile,
   TextTile,
   OpenTile,
-  GeneralTile
+  PairingTile
 } from '../types/lessonEditor';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
@@ -25,12 +25,12 @@ const tileFactoryMap: Record<LessonTile['type'], TileFactory> = {
   sequencing: (position, page) => LessonContentService.createSequencingTile(position, page),
   blanks: (position, page) => LessonContentService.createBlanksTile(position, page),
   open: (position, page) => LessonContentService.createOpenTile(position, page),
-  general: (position, page) => LessonContentService.createGeneralTile(position, page)
+  pairing: (position, page) => LessonContentService.createPairingTile(position, page)
 };
 
 const isRichTextTile = (
   tile: LessonTile | null
-): tile is TextTile | ProgrammingTile | SequencingTile | BlanksTile | OpenTile | GeneralTile => {
+): tile is TextTile | ProgrammingTile | SequencingTile | BlanksTile | OpenTile | PairingTile => {
   return (
     !!tile &&
     (
@@ -39,7 +39,7 @@ const isRichTextTile = (
       tile.type === 'sequencing' ||
       tile.type === 'blanks' ||
       tile.type === 'open' ||
-      tile.type === 'general'
+      tile.type === 'pairing'
     )
   );
 };
@@ -271,7 +271,7 @@ export const useLessonContentManager = ({
               tile.type === 'sequencing' ||
               tile.type === 'blanks' ||
               tile.type === 'open' ||
-              tile.type === 'general'
+              tile.type === 'pairing'
             ) &&
             updates.content
           ) {

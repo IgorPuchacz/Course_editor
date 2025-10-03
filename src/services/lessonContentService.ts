@@ -6,7 +6,7 @@ import {
   SequencingTile,
   BlanksTile,
   OpenTile,
-  GeneralTile,
+  PairingTile,
   CanvasSettings,
   GridPosition
 } from '../types/lessonEditor';
@@ -212,10 +212,10 @@ export class LessonContentService {
   }
 
   /**
-   * Create a new general matching tile
+   * Create a new pairing tile
    */
-  static createGeneralTile(position: { x: number; y: number }, page = 1): GeneralTile {
-    const base = this.initializeTileBase('general', position, page, { colSpan: 4, rowSpan: 4 });
+  static createPairingTile(position: { x: number; y: number }, page = 1): PairingTile {
+    const base = this.initializeTileBase('pairing', position, page, { colSpan: 4, rowSpan: 4 });
 
     return {
       ...base,

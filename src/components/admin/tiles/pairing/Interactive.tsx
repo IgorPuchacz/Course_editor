@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Link2, Shuffle, Sparkles } from 'lucide-react';
-import { GeneralTile } from '../../../../types/lessonEditor';
+import { PairingTile } from '../../../../types/lessonEditor';
 import { getReadableTextColor } from '../../../../utils/colorUtils';
 import {
   createSurfacePalette,
@@ -11,8 +11,8 @@ import { TaskTileSection } from '../TaskTileSection.tsx';
 import { RichTextEditor, type RichTextEditorProps } from '../RichTextEditor.tsx';
 import { ValidateButton, type ValidateButtonColors } from '../../../common/ValidateButton.tsx';
 
-interface GeneralInteractiveProps {
-  tile: GeneralTile;
+interface PairingInteractiveProps {
+  tile: PairingTile;
   isPreview?: boolean;
   isTestingMode?: boolean;
   onRequestTextEditing?: () => void;
@@ -47,7 +47,7 @@ const ensureDifferentOrder = (originalIds: string[], items: ShuffledItem[]): Shu
   return [...rest, first];
 };
 
-export const GeneralInteractive: React.FC<GeneralInteractiveProps> = ({
+export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
   tile,
   isPreview = false,
   isTestingMode = false,

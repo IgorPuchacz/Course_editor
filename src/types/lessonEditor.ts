@@ -26,7 +26,7 @@ export interface LessonTile {
     | 'sequencing'
     | 'blanks'
     | 'open'
-    | 'general';
+    | 'pairing';
   position: Position;
   size: Size;
   gridPosition: GridPosition;
@@ -179,8 +179,8 @@ export interface OpenTile extends LessonTile {
   };
 }
   
-export interface GeneralTile extends LessonTile {
-  type: 'general';
+export interface PairingTile extends LessonTile {
+  type: 'pairing';
   content: {
     instruction: string;
     richInstruction?: string;

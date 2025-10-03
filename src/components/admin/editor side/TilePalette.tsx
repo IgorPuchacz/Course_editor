@@ -50,7 +50,7 @@ const TILE_TYPES: TilePaletteItem[] = [
     icon: 'FileText'
   },
   {
-    type: 'general',
+    type: 'pairing',
     title: 'Dopasuj pary',
     icon: 'Link2'
   }

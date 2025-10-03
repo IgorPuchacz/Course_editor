@@ -1,10 +1,10 @@
 import React from 'react';
-import { GeneralTile } from '../../../../types/lessonEditor';
+import { PairingTile } from '../../../../types/lessonEditor';
 import { createRichTextAdapter, type RichTextEditorProps } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared';
-import { GeneralInteractive } from './Interactive';
+import { PairingInteractive } from './Interactive';
 
-export const GeneralTileRenderer: React.FC<BaseTileRendererProps<GeneralTile>> = ({
+export const PairingTileRenderer: React.FC<BaseTileRendererProps<PairingTile>> = ({
   tile,
   isSelected,
   isEditingText,
@@ -16,8 +16,8 @@ export const GeneralTileRenderer: React.FC<BaseTileRendererProps<GeneralTile>> =
   backgroundColor,
   showBorder,
 }) => {
-  const generalTile = tile;
-  const textColor = getReadableTextColor(generalTile.content.backgroundColor || backgroundColor);
+  const pairingTile = tile;
+  const textColor = getReadableTextColor(pairingTile.content.backgroundColor || backgroundColor);
 
   const wrapperStyle: React.CSSProperties = {
     borderRadius: 'inherit',
@@ -25,12 +25,12 @@ export const GeneralTileRenderer: React.FC<BaseTileRendererProps<GeneralTile>> =
     border: showBorder ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
   };
 
-  const renderGeneralContent = (
+  const renderPairingContent = (
     instructionEditorProps?: RichTextEditorProps,
     isPreviewMode = false,
   ) => (
-    <GeneralInteractive
-      tile={generalTile}
+    <PairingInteractive
+      tile={pairingTile}
       isTestingMode={isTestingMode}
       instructionEditorProps={instructionEditorProps}
       isPreview={isPreviewMode}
@@ -40,7 +40,7 @@ export const GeneralTileRenderer: React.FC<BaseTileRendererProps<GeneralTile>> =
 
   if (isEditingText && isSelected) {
     const instructionAdapter = createRichTextAdapter({
-      source: generalTile.content,
+      source: pairingTile.content,
       fields: {
         text: 'instruction',
         richText: 'richInstruction',
@@ -49,14 +49,14 @@ export const GeneralTileRenderer: React.FC<BaseTileRendererProps<GeneralTile>> =
         verticalAlign: 'verticalAlign',
       },
       defaults: {
-        backgroundColor: generalTile.content.backgroundColor,
+        backgroundColor: pairingTile.content.backgroundColor,
         showBorder: true,
       },
     });
 
     return (
       <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
-        {renderGeneralContent(
+        {renderPairingContent(
           {
             content: instructionAdapter.content,
             onChange: (updatedContent) => {
@@ -76,7 +76,7 @@ export const GeneralTileRenderer: React.FC<BaseTileRendererProps<GeneralTile>> =
 
   return (
     <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
-      {renderGeneralContent()}
+      {renderPairingContent()}
     </div>
   );
 };
