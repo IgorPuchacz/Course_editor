@@ -79,7 +79,7 @@ export class LessonContentService {
    * Create a new text tile
    */
   static createTextTile(position: { x: number; y: number }, page = 1): TextTile {
-    const base = this.initializeTileBase('text', position, page, { colSpan: 2, rowSpan: 1 });
+    const base = this.initializeTileBase('text', position, page, { colSpan: 4, rowSpan: 2 });
 
     return {
       ...base,
@@ -99,7 +99,7 @@ export class LessonContentService {
    * Create a new image tile
    */
   static createImageTile(position: { x: number; y: number }, page = 1): LessonTile {
-    const base = this.initializeTileBase('image', position, page, { colSpan: 2, rowSpan: 2 });
+    const base = this.initializeTileBase('image', position, page, { colSpan: 4, rowSpan: 4 });
 
     return {
       ...base,
@@ -118,7 +118,7 @@ export class LessonContentService {
    * Create a new visualization tile
    */
   static createVisualizationTile(position: { x: number; y: number }, page = 1): LessonTile {
-    const base = this.initializeTileBase('visualization', position, page, { colSpan: 3, rowSpan: 3 });
+    const base = this.initializeTileBase('visualization', position, page, { colSpan: 6, rowSpan: 6 });
 
     return {
       ...base,
@@ -140,7 +140,7 @@ export class LessonContentService {
    * Create a new quiz tile
    */
   static createQuizTile(position: { x: number; y: number }, page = 1): LessonTile {
-    const base = this.initializeTileBase('quiz', position, page, { colSpan: 4, rowSpan: 3 });
+    const base = this.initializeTileBase('quiz', position, page, { colSpan: 8, rowSpan: 6 });
 
     return {
       ...base,
@@ -165,7 +165,7 @@ export class LessonContentService {
    * Create a new programming task tile
    */
   static createProgrammingTile(position: { x: number; y: number }, page = 1): ProgrammingTile {
-    const base = this.initializeTileBase('programming', position, page, { colSpan: 4, rowSpan: 3 });
+    const base = this.initializeTileBase('programming', position, page, { colSpan: 8, rowSpan: 6 });
 
     return {
       ...base,
@@ -188,7 +188,7 @@ export class LessonContentService {
    * Create a new sequencing tile
    */
   static createSequencingTile(position: { x: number; y: number }, page = 1): SequencingTile {
-    const base = this.initializeTileBase('sequencing', position, page, { colSpan: 4, rowSpan: 5 });
+    const base = this.initializeTileBase('sequencing', position, page, { colSpan: 8, rowSpan: 10 });
 
     return {
       ...base,
@@ -215,7 +215,7 @@ export class LessonContentService {
    * Create a new pairing tile
    */
   static createPairingTile(position: { x: number; y: number }, page = 1): PairingTile {
-    const base = this.initializeTileBase('pairing', position, page, { colSpan: 4, rowSpan: 4 });
+    const base = this.initializeTileBase('pairing', position, page, { colSpan: 8, rowSpan: 9 });
 
     return {
       ...base,
@@ -240,7 +240,7 @@ export class LessonContentService {
    * Create a new match pairs (fill-in-the-blanks) tile
    */
   static createBlanksTile(position: { x: number; y: number }, page = 1): BlanksTile {
-    const base = this.initializeTileBase('blanks', position, page, { colSpan: 5, rowSpan: 4 });
+    const base = this.initializeTileBase('blanks', position, page, { colSpan: 10, rowSpan: 8 });
 
     return {
       ...base,
@@ -266,7 +266,7 @@ export class LessonContentService {
    * Create a new open answer tile
    */
   static createOpenTile(position: { x: number; y: number }, page = 1): OpenTile {
-    const base = this.initializeTileBase('open', position, page, { colSpan: 4, rowSpan: 4 });
+    const base = this.initializeTileBase('open', position, page, { colSpan: 8, rowSpan: 9 });
 
     return {
       ...base,
@@ -286,7 +286,6 @@ export class LessonContentService {
           {
             id: 'attachment-instrukcja',
             name: 'instrukcja.pdf',
-            description: 'Zawiera szczegółowe wymagania do zadania.',
             url: 'https://example.com/materialy/instrukcja.pdf'
           }
         ]

@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { FileText, Paperclip, Download, PenSquare } from 'lucide-react';
+import { FileText, Paperclip, Download, PencilLine } from 'lucide-react';
 import { OpenTile } from '../../../../types/lessonEditor';
 import { getReadableTextColor, surfaceColor } from '../../../../utils/colorUtils';
 import { createValidateButtonPalette } from '../../../../utils/surfacePalette.ts';
@@ -118,50 +118,36 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
               <p className="text-sm" style={{ color: captionColor }}>
                 Nie dodano żadnych plików. Dodaj je w panelu edycji, jeśli zadanie tego wymaga.
               </p>
-            ) : (
-              <ul className="flex flex-col gap-2">
+              ) : (
+              <div
+                className="rounded-xl border p-3"
+                style={{ backgroundColor: itemBackground, borderColor: itemBorder, color: textColor }}
+              >
+
+              <ul className="divide-y" style={{ borderColor: itemBorder }}>
                 {attachments.map((attachment, index) => (
-                  <li
-                    key={attachment.id}
-                    className="flex items-start gap-3 rounded-xl px-3 py-2"
-                    style={{
-                      backgroundColor: itemBackground,
-                      border: `1px solid ${itemBorder}`,
-                      color: textColor,
-                    }}
-                  >
-                    <span className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border"
-                      style={{
-                        borderColor: itemBorder,
-                        backgroundColor: sectionBackground,
-                        color: textColor,
-                      }}
+                  <li key={attachment.id} className="flex items-center gap-2 py-2">
+                    <span className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border"
+                    style={{ borderColor: itemBorder, backgroundColor: sectionBackground, color: textColor }}
                     >
-                      <Download className="w-4 h-4" />
+                    <Download className="w-4 h-4" />
                     </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold truncate" style={{ color: textColor }}>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate" style={{ color: textColor }}>
                         {attachment.name || `Plik ${index + 1}`}
-                      </p>
-                      {attachment.description ? (
-                        <p className="text-xs" style={{ color: captionColor }}>
-                          {attachment.description}
                         </p>
-                      ) : null}
-                      <p className="text-xs break-all" style={{ color: captionColor }}>
-                        {attachment.url ?? ''}
-                      </p>
-                    </div>
+                      </div>
                   </li>
-                ))}
-              </ul>
+                  ))}
+                </ul>
+              </div>
             )}
           </TaskTileSection>
 
           <TaskTileSection
-            icon={<PenSquare className="w-4 h-4" />}
+            icon={<PencilLine className="w-4 h-4" />}
             title="Twoja odpowiedź"
-            className="shadow-sm min-h-0"
+            className="shadow-sm min-h-0 flex flex-col flex-1"
             style={{
               backgroundColor: sectionBackground,
               borderColor: sectionBorder,
@@ -170,10 +156,10 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
             headerClassName="px-5 py-4 border-b"
             headerStyle={{ borderColor: sectionBorder, color: mutedLabelColor }}
             titleStyle={{ color: mutedLabelColor }}
-            contentClassName="flex-1 overflow-auto px-5 py-4"
+            contentClassName="flex flex-col flex-1 overflow-hidden px-5 py-4"
           >
             <textarea
-              className="w-full min-h-[120px] resize-none rounded-xl px-4 py-3 text-sm"
+              className="w-full flex-1 min-h-0 resize-none rounded-xl px-4 py-3 text-sm"
               style={{
                 backgroundColor: inputBackground,
                 borderColor: inputBorder,

@@ -127,7 +127,6 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
     () => ({
       idle: (
         <>
-          <Sparkles className="h-5 w-5" aria-hidden="true" />
           <span>Sprawdź odpowiedzi</span>
         </>
       ),

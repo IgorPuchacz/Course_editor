@@ -173,7 +173,6 @@ export interface OpenTile extends LessonTile {
     attachments: Array<{
       id: string;
       name: string;
-      description?: string;
       url: string;
         }>;
   };

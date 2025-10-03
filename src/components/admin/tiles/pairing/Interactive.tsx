@@ -93,7 +93,6 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
     () => ({
       idle: (
         <>
-          <Shuffle className="h-5 w-5" aria-hidden="true" />
           <span>Sprawdź dopasowania</span>
         </>
       )
@@ -184,9 +183,6 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
           ) : (
             <div className="h-full flex flex-col gap-5 lg:flex-row min-h-0">
               <div className="flex-1 min-h-0 flex flex-col">
-                <span className="text-xs uppercase tracking-[0.32em]" style={{ color: columnCaptionColor }}>
-                  Lewa kolumna
-                </span>
                 <div className="mt-3 flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
                   {tile.content.pairs.map((pair, index) => (
                     <div
@@ -209,9 +205,6 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
               </div>
 
               <div className="flex-1 min-h-0 flex flex-col">
-                <span className="text-xs uppercase tracking-[0.32em]" style={{ color: columnCaptionColor }}>
-                  Prawa kolumna
-                </span>
                 <div className="mt-3 flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
                   {shuffledRightItems.map((item, index) => (
                     <div
@@ -240,9 +233,10 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
           <div className="flex items-center justify-center pt-1">
             <ValidateButton
               state="idle"
+              disabled
               onClick={() => {}}
               colors={validateButtonColors}
-              labels={validateButtonLabels}
+              labels={{ idle: 'Sprawdź odpowiedź', success: 'Dobrze!', error: 'Spróbuj ponownie' }}
             />
           </div>
         )}
