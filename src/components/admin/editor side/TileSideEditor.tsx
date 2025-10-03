@@ -499,45 +499,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
           updateContent({ attachments });
         };
 
-        const handlePairChange = (
-          pairId: string,
-          field: 'prompt' | 'response',
-          value: string
-        ) => {
-          const pairs = (openTile.content.pairs ?? []).map(pair =>
-            pair.id === pairId
-              ? {
-                  ...pair,
-                  [field]: value
-                }
-              : pair
-          );
-
-          updateContent({ pairs });
-        };
-
-        const handleAddPair = () => {
-          const pairs = openTile.content.pairs ?? [];
-          const newPairId = `pair-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-          updateContent({
-            pairs: [
-              ...pairs,
-              {
-                id: newPairId,
-                prompt: `Element ${pairs.length + 1}`,
-                response: `Wartość ${pairs.length + 1}`
-              }
-            ]
-          });
-        };
-
-        const handleRemovePair = (pairId: string) => {
-          const pairs = (openTile.content.pairs ?? []).filter(pair => pair.id !== pairId);
-          updateContent({ pairs });
-        };
-
         const attachments = openTile.content.attachments ?? [];
-        const pairs = openTile.content.pairs ?? [];
 
         return (
           <div className="space-y-6">
@@ -638,67 +600,48 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
               )}
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold text-gray-900">Parowanie kontekstowe</h4>
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-gray-700">Poprawna odpowiedź</label>
+              <p className="text-xs text-gray-600">
+                Ten tekst zostanie użyty do walidacji. Zadbaj, by format odpowiedzi zgadzał się z instrukcją.
+              </p>
+              <textarea
+                value={openTile.content.correctAnswer ?? ''}
+                onChange={(e) => updateContent({ correctAnswer: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                rows={4}
+                placeholder="np. ['napis1', 'napis2', 'napis3']"
+              />
+
+              <div className="flex flex-wrap gap-3">
                 <button
                   type="button"
-                  onClick={handleAddPair}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition"
+                  onClick={() => updateContent({ ignoreCase: !openTile.content.ignoreCase })}
+                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition ${
+                    openTile.content.ignoreCase
+                      ? 'border-blue-500 bg-blue-50 text-blue-600 shadow-sm'
+                      : 'border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
                 >
-                  <Plus className="w-4 h-4" />
-                  Dodaj parę
+                  {(openTile.content.ignoreCase ?? false)
+                    ? 'Ignoruj wielkość liter'
+                    : 'Rozróżniaj wielkość liter'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => updateContent({ ignoreWhitespace: !openTile.content.ignoreWhitespace })}
+                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition ${
+                    openTile.content.ignoreWhitespace
+                      ? 'border-blue-500 bg-blue-50 text-blue-600 shadow-sm'
+                      : 'border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {(openTile.content.ignoreWhitespace ?? false)
+                    ? 'Ignoruj białe znaki'
+                    : 'Uwzględniaj białe znaki'}
                 </button>
               </div>
-
-              {pairs.length === 0 ? (
-                <p className="text-sm text-gray-600">
-                  Dodaj pary informacji, które zostaną zaprezentowane w kafelku w przetasowanej kolejności.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {pairs.map(pair => (
-                    <div
-                      key={pair.id}
-                      className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3"
-                    >
-                      <div className="grid grid-cols-1 gap-3">
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Element</label>
-                          <input
-                            type="text"
-                            value={pair.prompt}
-                            onChange={(e) => handlePairChange(pair.id, 'prompt', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                            placeholder="np. Nazwa pola"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Odpowiedź</label>
-                          <input
-                            type="text"
-                            value={pair.response}
-                            onChange={(e) => handlePairChange(pair.id, 'response', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                            placeholder="np. wartość oczekiwana"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex justify-end">
-                        <button
-                          type="button"
-                          onClick={() => handleRemovePair(pair.id)}
-                          className="inline-flex items-center gap-1 text-rose-600 hover:bg-rose-50 px-3 py-2 rounded-lg text-sm"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Usuń
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         );

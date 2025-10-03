@@ -253,17 +253,15 @@ export class LessonContentService {
         backgroundColor: '#d4d4d4',
         showBorder: true,
         expectedFormat: "['napis1', 'napis2', 'napis3']",
+        correctAnswer: "['napis1', 'napis2', 'napis3']",
+        ignoreCase: true,
+        ignoreWhitespace: true,
         attachments: [
           {
             id: 'attachment-instrukcja',
             name: 'instrukcja.pdf',
             description: 'Zawiera szczegółowe wymagania do zadania.'
           }
-        ],
-        pairs: [
-          { id: 'pair-1', prompt: 'Pole 1', response: 'napis1' },
-          { id: 'pair-2', prompt: 'Pole 2', response: 'napis2' },
-          { id: 'pair-3', prompt: 'Pole 3', response: 'napis3' }
         ]
       }
     };

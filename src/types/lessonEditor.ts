@@ -166,16 +166,14 @@ export interface OpenTile extends LessonTile {
     backgroundColor: string;
     showBorder: boolean;
     expectedFormat: string;
+    correctAnswer: string;
+    ignoreCase: boolean;
+    ignoreWhitespace: boolean;
     attachments: Array<{
       id: string;
       name: string;
       description?: string;
       url?: string;
-    }>;
-    pairs: Array<{
-      id: string;
-      prompt: string;
-      response: string;
     }>;
   };
 }

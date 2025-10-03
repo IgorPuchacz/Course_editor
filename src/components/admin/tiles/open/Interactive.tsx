@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { FileText, Paperclip, Download, PenSquare, Shuffle } from 'lucide-react';
+import { FileText, Paperclip, Download, PenSquare, CheckCircle2, Info } from 'lucide-react';
 import { OpenTile } from '../../../../types/lessonEditor';
 import { getReadableTextColor, surfaceColor } from '../../../../utils/colorUtils';
 import { createValidateButtonPalette } from '../../../../utils/surfacePalette.ts';
@@ -15,27 +15,6 @@ interface OpenInteractiveProps {
   onRequestTextEditing?: () => void;
   instructionEditorProps?: RichTextEditorProps;
 }
-
-interface ShuffledResponse {
-  id: string;
-  text: string;
-}
-
-const deterministicShuffle = <T,>(items: T[], seed: string): T[] => {
-  const result = [...items];
-  let hash = 0;
-  for (let index = 0; index < seed.length; index += 1) {
-    hash = (hash * 31 + seed.charCodeAt(index)) >>> 0;
-  }
-
-  for (let i = result.length - 1; i > 0; i -= 1) {
-    hash = (hash * 1664525 + 1013904223) >>> 0;
-    const j = hash % (i + 1);
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-
-  return result;
-};
 
 export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
   tile,
@@ -59,12 +38,8 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
   const panelBorder = surfaceColor(accentColor, textColor, 0.5, 0.55);
 
   const attachments = useMemo(() => tile.content.attachments ?? [], [tile.content.attachments]);
-  const pairs = useMemo(() => tile.content.pairs ?? [], [tile.content.pairs]);
-
-  const shuffledResponses = useMemo<ShuffledResponse[]>(() => {
-    const responses = pairs.map(pair => ({ id: pair.id, text: pair.response }));
-    return deterministicShuffle(responses, `${tile.id}-${tile.updated_at}`);
-  }, [pairs, tile.id, tile.updated_at]);
+  const expectedFormat = tile.content.expectedFormat?.trim();
+  const correctAnswer = tile.content.correctAnswer?.trim();
 
   const validateButtonColors = useMemo<ValidateButtonColors>(
     () => createValidateButtonPalette(accentColor, textColor),
@@ -196,8 +171,26 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
           headerClassName="px-5 py-4 border-b"
           headerStyle={{ borderColor: sectionBorder, color: mutedLabelColor }}
           titleStyle={{ color: mutedLabelColor }}
-          contentClassName="flex flex-col gap-3 px-5 py-4"
+          contentClassName="flex flex-col gap-4 px-5 py-4"
         >
+          {expectedFormat ? (
+            <div
+              className="rounded-xl border px-4 py-3 text-xs sm:text-sm leading-relaxed"
+              style={{
+                backgroundColor: itemBackground,
+                borderColor: itemBorder,
+                color: textColor,
+              }}
+            >
+              <span className="font-semibold block mb-1" style={{ color: mutedLabelColor }}>
+                Oczekiwany format:
+              </span>
+              <code className="break-words whitespace-pre-wrap" style={{ color: textColor }}>
+                {tile.content.expectedFormat}
+              </code>
+            </div>
+          ) : null}
+
           <textarea
             className="w-full min-h-[120px] resize-none rounded-xl px-4 py-3 text-sm"
             style={{
@@ -214,8 +207,8 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
         </TaskTileSection>
 
         <TaskTileSection
-          icon={<Shuffle className="w-4 h-4" />}
-          title="Przykładowe pary"
+          icon={<CheckCircle2 className="w-4 h-4" />}
+          title="Walidacja odpowiedzi"
           className="shadow-sm"
           style={{
             backgroundColor: sectionBackground,
@@ -225,50 +218,51 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
           headerClassName="px-5 py-4 border-b"
           headerStyle={{ borderColor: sectionBorder, color: mutedLabelColor }}
           titleStyle={{ color: mutedLabelColor }}
-          contentClassName="px-5 py-4"
+          contentClassName="flex flex-col gap-4 px-5 py-4"
         >
-          {pairs.length === 0 ? (
-            <p className="text-sm" style={{ color: captionColor }}>
-              Dodaj pary w panelu edycji, aby pokazać uczniowi przykładowe elementy i odpowiedzi.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <h4 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: captionColor }}>
-                  Elementy
-                </h4>
-                {pairs.map(pair => (
-                  <div
-                    key={`prompt-${pair.id}`}
-                    className="rounded-xl border px-4 py-3 text-sm"
-                    style={{
-                      backgroundColor: itemBackground,
-                      borderColor: itemBorder,
-                    }}
-                  >
-                    {pair.prompt}
-                  </div>
-                ))}
-              </div>
-              <div className="space-y-2">
-                <h4 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: captionColor }}>
-                  Odpowiedzi (przetasowane)
-                </h4>
-                {shuffledResponses.map(response => (
-                  <div
-                    key={`response-${response.id}`}
-                    className="rounded-xl border px-4 py-3 text-sm"
-                    style={{
-                      backgroundColor: itemBackground,
-                      borderColor: itemBorder,
-                    }}
-                  >
-                    {response.text}
-                  </div>
-                ))}
-              </div>
+          {correctAnswer ? (
+            <div
+              className="rounded-xl border px-4 py-3 text-xs sm:text-sm leading-relaxed"
+              style={{
+                backgroundColor: itemBackground,
+                borderColor: itemBorder,
+                color: textColor,
+              }}
+            >
+              <span className="font-semibold block mb-1" style={{ color: mutedLabelColor }}>
+                Oczekiwana odpowiedź:
+              </span>
+              <code className="break-words whitespace-pre-wrap" style={{ color: textColor }}>
+                {tile.content.correctAnswer}
+              </code>
             </div>
+          ) : (
+            <p className="text-sm" style={{ color: captionColor }}>
+              Dodaj poprawną odpowiedź w panelu bocznym, aby łatwiej sprawdzać rozwiązania uczniów.
+            </p>
           )}
+
+          <div
+            className="flex flex-col gap-3"
+            style={{ color: captionColor }}
+          >
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <Info className="w-4 h-4" style={{ color: mutedLabelColor }} />
+              <span>
+                {tile.content.ignoreCase
+                  ? 'Porównanie ignoruje wielkość liter.'
+                  : 'Porównanie rozróżnia wielkość liter.'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <Info className="w-4 h-4" style={{ color: mutedLabelColor }} />
+              <span>
+                {tile.content.ignoreWhitespace
+                  ? 'Porównanie ignoruje białe znaki.'
+                  : 'Porównanie uwzględnia białe znaki.'}
+              </span>
+            </div>
+          </div>
         </TaskTileSection>
 
         <div className="flex flex-col items-center gap-2 pt-2">
