@@ -1,5 +1,6 @@
 import React from 'react';
-import { Type, Image, Puzzle, Eye, HelpCircle, Plus, Code, ArrowUpDown, Link2 } from 'lucide-react';
+
+import { Type, Image, Puzzle, Eye, HelpCircle, Plus, Code, ArrowUpDown, Link2, FileText } from 'lucide-react';
 import { TilePaletteItem } from '../../../types/lessonEditor.ts';
 
 interface TilePaletteProps {
@@ -44,6 +45,11 @@ const TILE_TYPES: TilePaletteItem[] = [
     icon: 'Puzzle'
   },
   {
+    type: 'open',
+    title: 'Odpowiedź otwarta',
+    icon: 'FileText'
+  },
+  {
     type: 'general',
     title: 'Dopasuj pary',
     icon: 'Link2'
@@ -59,6 +65,7 @@ const getIcon = (iconName: string) => {
     case 'HelpCircle': return HelpCircle;
     case 'Code': return Code;
     case 'ArrowUpDown': return ArrowUpDown;
+    case 'FileText': return FileText;
     case 'Link2': return Link2;
     default: return Type;
   }

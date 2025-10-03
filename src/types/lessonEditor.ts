@@ -25,6 +25,7 @@ export interface LessonTile {
     | 'programming'
     | 'sequencing'
     | 'blanks'
+    | 'open'
     | 'general';
   position: Position;
   size: Size;
@@ -155,6 +156,29 @@ export interface BlanksTile extends LessonTile {
   };
 }
 
+export interface OpenTile extends LessonTile {
+  type: 'open';
+  content: {
+    instruction: string;
+    richInstruction?: string;
+    fontFamily: string;
+    fontSize: number;
+    verticalAlign: 'top' | 'center' | 'bottom';
+    backgroundColor: string;
+    showBorder: boolean;
+    expectedFormat: string;
+    correctAnswer: string;
+    ignoreCase: boolean;
+    ignoreWhitespace: boolean;
+    attachments: Array<{
+      id: string;
+      name: string;
+      description?: string;
+      url?: string;
+        }>;
+  };
+}
+  
 export interface GeneralTile extends LessonTile {
   type: 'general';
   content: {

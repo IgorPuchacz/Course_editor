@@ -8,6 +8,7 @@ import { ImageTileRenderer } from './image';
 import { ProgrammingTileRenderer} from "./programming/Renderer.tsx";
 import { QuizTileRenderer } from './quiz';
 import { SequencingTileRenderer } from './sequencing';
+import { OpenTileRenderer } from './open';
 import { TextTileRenderer} from "./text/Renderer.tsx";
 import { GeneralTileRenderer } from './general';
 
@@ -36,6 +37,7 @@ const TILE_RENDERERS: Partial<Record<LessonTile['type'], React.ComponentType<any
   quiz: QuizTileRenderer,
   sequencing: SequencingTileRenderer,
   blanks: BlanksTileRenderer,
+  open: OpenTileRenderer,
   general: GeneralTileRenderer,
 };
 
