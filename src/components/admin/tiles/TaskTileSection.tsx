@@ -3,7 +3,6 @@ import React from 'react';
 export interface TaskTileSectionProps extends React.HTMLAttributes<HTMLDivElement> {
   title: React.ReactNode;
   icon?: React.ReactNode;
-  rightContent?: React.ReactNode;
   headerClassName?: string;
   headerStyle?: React.CSSProperties;
   titleClassName?: string;
@@ -15,7 +14,6 @@ export interface TaskTileSectionProps extends React.HTMLAttributes<HTMLDivElemen
 export const TaskTileSection: React.FC<TaskTileSectionProps> = ({
   title,
   icon,
-  rightContent,
   className = '',
   headerClassName,
   headerStyle,
@@ -30,7 +28,6 @@ export const TaskTileSection: React.FC<TaskTileSectionProps> = ({
 
   const headerBaseClasses = [
     'flex items-center',
-    rightContent ? 'justify-between' : 'justify-start',
     headerClassName ?? 'px-5 py-4 border-b'
   ]
     .filter(Boolean)
@@ -49,7 +46,6 @@ export const TaskTileSection: React.FC<TaskTileSectionProps> = ({
           {icon && <span className="flex items-center justify-center">{icon}</span>}
           {typeof title === 'string' ? <span>{title}</span> : title}
         </div>
-        {rightContent ? <div>{rightContent}</div> : null}
       </div>
       <div className={contentClasses} style={contentStyle}>
         {children}

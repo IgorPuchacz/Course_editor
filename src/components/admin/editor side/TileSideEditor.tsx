@@ -486,8 +486,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
               ...attachments,
               {
                 id: newAttachmentId,
-                name: `Nowy plik ${attachments.length + 1}`,
-                description: '',
+                name: '',
                 url: ''
               }
             ]
@@ -515,7 +514,67 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                 className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
               />
             </div>
-            
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold text-gray-900">Pliki do pobrania</h4>
+                <button
+                    type="button"
+                    onClick={handleAddAttachment}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  Dodaj
+                </button>
+              </div>
+
+              {attachments.length === 0 ? (
+                  <p className="text-sm text-gray-600">
+                    Jeżeli to potrzebne, dodaj pliki, które uczeń będzie potrzebował do rozwiązania zadania.
+                  </p>
+              ) : (
+                  <div className="space-y-3">
+                    {attachments.map(attachment => (
+                        <div
+                            key={attachment.id}
+                            className="border border-gray-200 rounded-xl p-4 bg-gray-50"
+                        >
+                          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3">
+                            <div className="flex flex-col gap-1">
+                              <input
+                                  type="text"
+                                  value={attachment.name}
+                                  onChange={(e) => handleAttachmentChange(attachment.id, 'name', e.target.value)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                  placeholder="np. instrukcja.pdf"
+                              />
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveAttachment(attachment.id)}
+                                className="inline-flex h-10 w-10 items-center justify-center self-start rounded-lg text-rose-600 transition hover:bg-rose-50"
+                                aria-label="Usuń plik"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+
+                            <div className="flex flex-col gap-1 col-span-2">
+                              <input
+                                  type="url"
+                                  required
+                                  value={attachment.url ?? ''}
+                                  onChange={(e) => handleAttachmentChange(attachment.id, 'url', e.target.value)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                  placeholder="https://example.com/pliki/instrukcja.pdf"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                    ))}
+                  </div>
+              )}
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Oczekiwany format odpowiedzi</label>
               <textarea
@@ -525,78 +584,6 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                 rows={3}
                 placeholder="np. ['napis1', 'napis2', 'napis3']"
               />
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold text-gray-900">Pliki do pobrania</h4>
-                <button
-                  type="button"
-                  onClick={handleAddAttachment}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition"
-                >
-                  <Plus className="w-4 h-4" />
-                  Dodaj
-                </button>
-              </div>
-
-              {attachments.length === 0 ? (
-                <p className="text-sm text-gray-600">
-                  Jeżeli to potrzebne, dodaj pliki, które uczeń będzie potrzebował do rozwiązania zadania.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {attachments.map(attachment => (
-                    <div
-                      key={attachment.id}
-                      className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3"
-                    >
-                      <div className="grid grid-cols-1 gap-3">
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Nazwa pliku</label>
-                          <input
-                            type="text"
-                            value={attachment.name}
-                            onChange={(e) => handleAttachmentChange(attachment.id, 'name', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                            placeholder="np. instrukcja.pdf"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Opis (opcjonalny)</label>
-                          <textarea
-                            value={attachment.description || ''}
-                            onChange={(e) => handleAttachmentChange(attachment.id, 'description', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                            rows={2}
-                            placeholder="Krótki opis zawartości pliku"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Adres URL (opcjonalny)</label>
-                          <input
-                            type="url"
-                            value={attachment.url || ''}
-                            onChange={(e) => handleAttachmentChange(attachment.id, 'url', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                            placeholder="https://example.com/pliki/instrukcja.pdf"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex justify-end">
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveAttachment(attachment.id)}
-                          className="inline-flex items-center gap-1 text-rose-600 hover:bg-rose-50 px-3 py-2 rounded-lg text-sm"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                      </div>
-                  ))}
-                </div>
-              )}
             </div>
             
             <div className="space-y-3">
@@ -702,7 +689,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                   className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition"
                 >
                   <Plus className="w-4 h-4" />
-                  Dodaj parę
+                  Dodaj
                 </button>
               </div>
 
@@ -717,25 +704,8 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                       key={pair.id}
                       className="border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-4"
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                          Para {index + 1}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemovePair(pair.id)}
-                          className="inline-flex items-center justify-center text-rose-600 hover:bg-rose-50 p-2 rounded-lg"
-                          aria-label={`Usuń parę ${index + 1}`}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <div className="space-y-2">
-                          <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-                            Element z lewej kolumny
-                          </label>
+                      <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3">
+                        <div className="flex flex-col gap-1">
                           <input
                             type="text"
                             value={pair.left}
@@ -744,10 +714,17 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
                             placeholder="Treść z lewej kolumny"
                           />
                         </div>
-                        <div className="space-y-2">
-                          <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-                            Dopasowanie w prawej kolumnie
-                          </label>
+
+                        <button
+                            type="button"
+                            onClick={() => handleRemovePair(pair.id)}
+                            className="inline-flex items-center justify-center text-rose-600 hover:bg-rose-50 p-2 rounded-lg"
+                            aria-label={`Usuń parę ${index + 1}`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+
+                        <div className="flex flex-col gap-1 col-span-2">
                           <input
                             type="text"
                             value={pair.right}

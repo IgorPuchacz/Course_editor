@@ -1,8 +1,8 @@
 import { Position, Size, GridPosition, CanvasSettings } from '../types/lessonEditor';
 
 export class GridUtils {
-  static readonly GRID_COLUMNS = 6;
-  static readonly GRID_CELL_SIZE = 120;
+  static readonly GRID_COLUMNS = 14;
+  static readonly GRID_CELL_SIZE = 60;
   static readonly GRID_GAP = 8;
 
   /**
@@ -149,13 +149,13 @@ export class GridUtils {
    * Calculate required canvas height based on tiles
    */
   static calculateCanvasHeight(tiles: any[]): number {
-    if (tiles.length === 0) return 6; // Minimum height
+    if (tiles.length === 0) return 12; // Minimum height
     
     const maxRow = Math.max(...tiles.map(tile => 
       tile.gridPosition.row + tile.gridPosition.rowSpan
     ));
     
-    return Math.max(6, maxRow + 2); // Add some padding
+    return Math.max(12, maxRow + 2); // Add some padding
   }
 
   /**
