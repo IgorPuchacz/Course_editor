@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { FileText, Paperclip, Download, PenSquare, CheckCircle2, Info } from 'lucide-react';
+import { FileText, Paperclip, Download, PenSquare } from 'lucide-react';
 import { OpenTile } from '../../../../types/lessonEditor';
 import { getReadableTextColor, surfaceColor } from '../../../../utils/colorUtils';
 import { createValidateButtonPalette } from '../../../../utils/surfacePalette.ts';
@@ -38,8 +38,6 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
   const panelBorder = surfaceColor(accentColor, textColor, 0.5, 0.55);
 
   const attachments = useMemo(() => tile.content.attachments ?? [], [tile.content.attachments]);
-  const expectedFormat = tile.content.expectedFormat?.trim();
-  const correctAnswer = tile.content.correctAnswer?.trim();
 
   const validateButtonColors = useMemo<ValidateButtonColors>(
     () => createValidateButtonPalette(accentColor, textColor),
@@ -61,7 +59,7 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
   return (
     <div className="relative w-full h-full" onDoubleClick={handleTileDoubleClick}>
       <div
-        className="w-full h-full flex flex-col gap-6 transition-all duration-300 p-6 rounded-[inherit]"
+        className="w-full h-full flex flex-col gap-6 transition-all duration-300 p-6 rounded-[inherit] overflow-hidden"
         style={{ color: textColor }}
       >
         <TaskInstructionPanel
@@ -101,90 +99,105 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
           </div>
         )}
 
-        <TaskTileSection
-          icon={<Paperclip className="w-4 h-4" />}
-          title="Materiały do zadania"
-          className="shadow-sm"
-          style={{
-            backgroundColor: sectionBackground,
-            borderColor: sectionBorder,
-            color: textColor,
-          }}
-          headerClassName="px-5 py-4 border-b"
-          headerStyle={{ borderColor: sectionBorder, color: mutedLabelColor }}
-          titleStyle={{ color: mutedLabelColor }}
-          contentClassName="flex flex-col gap-3 px-5 py-4"
-        >
-          {attachments.length === 0 ? (
-            <p className="text-sm" style={{ color: captionColor }}>
-              Nie dodano żadnych plików. Dodaj je w panelu edycji, jeśli zadanie tego wymaga.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {attachments.map(attachment => (
-                <div
-                  key={attachment.id}
-                  className="flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between"
-                  style={{
-                    backgroundColor: itemBackground,
-                    borderColor: itemBorder,
-                  }}
-                >
-                  <div>
-                    <p className="text-sm font-semibold" style={{ color: textColor }}>
-                      {attachment.name}
-                    </p>
-                    {attachment.description ? (
-                      <p className="text-xs" style={{ color: captionColor }}>
-                        {attachment.description}
-                      </p>
-                    ) : null}
-                  </div>
-                  <button
-                    type="button"
-                    disabled
-                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium opacity-70 cursor-not-allowed"
-                    style={{
-                      borderColor: itemBorder,
-                      color: textColor,
-                      backgroundColor: 'transparent',
-                    }}
-                  >
-                    <Download className="w-4 h-4" />
-                    Pobierz (podgląd)
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </TaskTileSection>
-
-        <TaskTileSection
-          icon={<PenSquare className="w-4 h-4" />}
-          title="Twoja odpowiedź"
-          className="shadow-sm"
-          style={{
-            backgroundColor: sectionBackground,
-            borderColor: sectionBorder,
-            color: textColor,
-          }}
-          headerClassName="px-5 py-4 border-b"
-          headerStyle={{ borderColor: sectionBorder, color: mutedLabelColor }}
-          titleStyle={{ color: mutedLabelColor }}
-          contentClassName="flex flex-col gap-4 px-5 py-4"
-        >
-
-          <textarea
-            className="w-full min-h-[120px] resize-none rounded-xl px-4 py-3 text-sm"
+        <div className="flex-1 min-h-0 flex flex-col gap-6 overflow-hidden">
+          <TaskTileSection
+            icon={<Paperclip className="w-4 h-4" />}
+            title="Materiały do zadania"
+            className="shadow-sm flex-1 min-h-0"
             style={{
-              backgroundColor: inputBackground,
-              borderColor: inputBorder,
+              backgroundColor: sectionBackground,
+              borderColor: sectionBorder,
               color: textColor,
             }}
-            placeholder={answerPlaceholder}
-            disabled
-          />
-        </TaskTileSection>
+            headerClassName="px-5 py-4 border-b"
+            headerStyle={{ borderColor: sectionBorder, color: mutedLabelColor }}
+            titleStyle={{ color: mutedLabelColor }}
+            contentClassName="flex-1 min-h-0 px-5 py-4 overflow-y-auto"
+          >
+            {attachments.length === 0 ? (
+              <p className="text-sm" style={{ color: captionColor }}>
+                Nie dodano żadnych plików. Dodaj je w panelu edycji, jeśli zadanie tego wymaga.
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {attachments.map(attachment => (
+                  <li
+                    key={attachment.id}
+                    className="flex items-start justify-between gap-3 rounded-lg border px-3 py-2"
+                    style={{
+                      backgroundColor: itemBackground,
+                      borderColor: itemBorder,
+                    }}
+                  >
+                    <div className="flex items-start gap-3 min-w-0">
+                      <span
+                        className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border"
+                        style={{
+                          backgroundColor: iconBackground,
+                          borderColor: itemBorder,
+                          color: textColor,
+                        }}
+                      >
+                        <Paperclip className="w-4 h-4" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold truncate" style={{ color: textColor }}>
+                          {attachment.name}
+                        </p>
+                        {attachment.description ? (
+                          <p className="text-xs mt-1 line-clamp-2" style={{ color: captionColor }}>
+                            {attachment.description}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      disabled
+                      className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-medium opacity-70 cursor-not-allowed"
+                      style={{
+                        borderColor: itemBorder,
+                        color: textColor,
+                        backgroundColor: 'transparent',
+                      }}
+                    >
+                      <Download className="w-4 h-4" />
+                      Pobierz
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </TaskTileSection>
+
+          <TaskTileSection
+            icon={<PenSquare className="w-4 h-4" />}
+            title="Twoja odpowiedź"
+            className="shadow-sm flex-1 min-h-0"
+            style={{
+              backgroundColor: sectionBackground,
+              borderColor: sectionBorder,
+              color: textColor,
+            }}
+            headerClassName="px-5 py-4 border-b"
+            headerStyle={{ borderColor: sectionBorder, color: mutedLabelColor }}
+            titleStyle={{ color: mutedLabelColor }}
+            contentClassName="flex-1 min-h-0 px-5 py-4"
+          >
+            <div className="flex h-full flex-col">
+              <textarea
+                className="w-full flex-1 min-h-[96px] resize-none rounded-xl px-4 py-3 text-sm"
+                style={{
+                  backgroundColor: inputBackground,
+                  borderColor: inputBorder,
+                  color: textColor,
+                }}
+                placeholder={answerPlaceholder}
+                disabled
+              />
+            </div>
+          </TaskTileSection>
+        </div>
 
         <div className="flex flex-col items-center gap-2 pt-2">
           <ValidateButton
