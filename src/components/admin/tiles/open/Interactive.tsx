@@ -173,23 +173,6 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
           titleStyle={{ color: mutedLabelColor }}
           contentClassName="flex flex-col gap-4 px-5 py-4"
         >
-          {expectedFormat ? (
-            <div
-              className="rounded-xl border px-4 py-3 text-xs sm:text-sm leading-relaxed"
-              style={{
-                backgroundColor: itemBackground,
-                borderColor: itemBorder,
-                color: textColor,
-              }}
-            >
-              <span className="font-semibold block mb-1" style={{ color: mutedLabelColor }}>
-                Oczekiwany format:
-              </span>
-              <code className="break-words whitespace-pre-wrap" style={{ color: textColor }}>
-                {tile.content.expectedFormat}
-              </code>
-            </div>
-          ) : null}
 
           <textarea
             className="w-full min-h-[120px] resize-none rounded-xl px-4 py-3 text-sm"
@@ -201,68 +184,6 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
             placeholder={answerPlaceholder}
             disabled
           />
-          <p className="text-xs" style={{ color: captionColor }}>
-            Pole odpowiedzi jest zablokowane w edytorze. Uczniowie zobaczą aktywne pole w wersji uczniowskiej.
-          </p>
-        </TaskTileSection>
-
-        <TaskTileSection
-          icon={<CheckCircle2 className="w-4 h-4" />}
-          title="Walidacja odpowiedzi"
-          className="shadow-sm"
-          style={{
-            backgroundColor: sectionBackground,
-            borderColor: sectionBorder,
-            color: textColor,
-          }}
-          headerClassName="px-5 py-4 border-b"
-          headerStyle={{ borderColor: sectionBorder, color: mutedLabelColor }}
-          titleStyle={{ color: mutedLabelColor }}
-          contentClassName="flex flex-col gap-4 px-5 py-4"
-        >
-          {correctAnswer ? (
-            <div
-              className="rounded-xl border px-4 py-3 text-xs sm:text-sm leading-relaxed"
-              style={{
-                backgroundColor: itemBackground,
-                borderColor: itemBorder,
-                color: textColor,
-              }}
-            >
-              <span className="font-semibold block mb-1" style={{ color: mutedLabelColor }}>
-                Oczekiwana odpowiedź:
-              </span>
-              <code className="break-words whitespace-pre-wrap" style={{ color: textColor }}>
-                {tile.content.correctAnswer}
-              </code>
-            </div>
-          ) : (
-            <p className="text-sm" style={{ color: captionColor }}>
-              Dodaj poprawną odpowiedź w panelu bocznym, aby łatwiej sprawdzać rozwiązania uczniów.
-            </p>
-          )}
-
-          <div
-            className="flex flex-col gap-3"
-            style={{ color: captionColor }}
-          >
-            <div className="flex items-center gap-2 text-xs sm:text-sm">
-              <Info className="w-4 h-4" style={{ color: mutedLabelColor }} />
-              <span>
-                {tile.content.ignoreCase
-                  ? 'Porównanie ignoruje wielkość liter.'
-                  : 'Porównanie rozróżnia wielkość liter.'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-xs sm:text-sm">
-              <Info className="w-4 h-4" style={{ color: mutedLabelColor }} />
-              <span>
-                {tile.content.ignoreWhitespace
-                  ? 'Porównanie ignoruje białe znaki.'
-                  : 'Porównanie uwzględnia białe znaki.'}
-              </span>
-            </div>
-          </div>
         </TaskTileSection>
 
         <div className="flex flex-col items-center gap-2 pt-2">
@@ -273,9 +194,6 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
             colors={validateButtonColors}
             labels={{ idle: 'Sprawdź odpowiedź', success: 'Dobrze!', error: 'Spróbuj ponownie' }}
           />
-          <p className="text-xs text-center" style={{ color: captionColor }}>
-            Podgląd przycisku walidacji — interakcja będzie dostępna w wersji uczniowskiej.
-          </p>
         </div>
       </div>
     </div>

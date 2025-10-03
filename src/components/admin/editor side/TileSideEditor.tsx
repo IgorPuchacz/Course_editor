@@ -463,7 +463,7 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
         
         const handleAttachmentChange = (
           attachmentId: string,
-          field: 'name' | 'description' | 'url',
+          field: 'name' | 'url',
           value: string
         ) => {
           const attachments = (openTile.content.attachments ?? []).map(attachment =>
