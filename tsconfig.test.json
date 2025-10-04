@@ -7,16 +7,20 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "outDir": "dist-tests",
-    "rootDir": "src",
+    "rootDir": ".",
     "baseUrl": ".",
     "paths": {
       "tiles-core": ["packages/tiles-core/src"],
-      "tiles-core/*": ["packages/tiles-core/src/*"]
+      "tiles-core/*": ["packages/tiles-core/src/*"],
+      "tiles-core/ui": ["packages/tiles-core/src/ui"],
+      "tiles-core/ui/*": ["packages/tiles-core/src/ui/*"],
+      "tiles-editor": ["packages/tiles-editor/src"],
+      "tiles-editor/*": ["packages/tiles-editor/src/*"]
     }
   },
   "include": [
-    "src/utils/colorUtils.ts",
     "src/utils/colorUtils.test.ts",
-    "packages/tiles-core/src"
+    "packages/tiles-core/src",
+    "packages/tiles-editor/src"
   ]
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect, RefObject } from 'react';
 import { Lesson, LessonTile, GridPosition, EditorState, TextTile, ImageTile } from 'tiles-core';
 import { EditorAction } from '../state/editorReducer';
-import { GridUtils } from '../utils/gridUtils';
+import { GridUtils } from 'tiles-editor';
 import { logger } from '../utils/logger';
 
 interface UseTileInteractionsProps {
@@ -35,7 +35,8 @@ export const useTileInteractions = ({
       tile.type === 'sequencing' ||
       tile.type === 'quiz' ||
       tile.type === 'open' ||
-      tile.type === 'pairing'
+      tile.type === 'pairing' ||
+      tile.type === 'blanks'
     ) {
       dispatch({ type: 'startTextEditing', tileId: tile.id });
     } else if (tile.type === 'image') {
