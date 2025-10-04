@@ -55,6 +55,7 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
 }) => {
   const accentColor = tile.content.backgroundColor || '#0f172a';
   const textColor = useMemo(() => getReadableTextColor(accentColor), [accentColor]);
+  const canInteract = !isPreview;
   const {
     panelBackground,
     panelBorder,
@@ -226,17 +227,15 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
           )}
         </TaskTileSection>
 
-        {!isPreview && (
-          <div className="flex items-center justify-center pt-1">
-            <ValidateButton
-              state="idle"
-              disabled
-              onClick={() => {}}
-              colors={validateButtonColors}
-              labels={{ idle: 'Sprawdź odpowiedź', success: 'Dobrze!', error: 'Spróbuj ponownie' }}
-            />
-          </div>
-        )}
+        <div className="flex items-center justify-center pt-1">
+          <ValidateButton
+            state="idle"
+            disabled={!canInteract}
+            onClick={() => {}}
+            colors={validateButtonColors}
+            labels={{ idle: 'Sprawdź odpowiedź', success: 'Dobrze!', error: 'Spróbuj ponownie' }}
+          />
+        </div>
       </div>
     </div>
   );
