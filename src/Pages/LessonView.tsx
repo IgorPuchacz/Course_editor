@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, LayoutDashboard, Loader2 } from 'lucide-react';
 import { Course, Lesson, LessonTile } from 'tiles-core';
-import { LessonRuntimeCanvas } from '../components/runtime/LessonRuntimeCanvas';
+import { LessonRuntimeCanvas } from 'tiles-runtime';
 import { LessonRuntimeService } from '../services/lessonRuntimeService';
 
 interface LessonViewProps {
