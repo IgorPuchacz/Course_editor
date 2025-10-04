@@ -465,17 +465,15 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
           </TaskTileSection>
         </div>
 
-        {isInteractionEnabled && (
-          <div className="flex flex-col items-center gap-2 pt-2">
-            <ValidateButton
-                state="idle"
-                disabled
-                onClick={() => {}}
-                colors={validateButtonColors}
-                labels={{ idle: 'Sprawdź odpowiedź', success: 'Dobrze!', error: 'Spróbuj ponownie' }}
-            />
-          </div>
-        )}
+        <div className="flex flex-col items-center gap-2 pt-2">
+          <ValidateButton
+            state={validationState}
+            disabled={!isInteractionEnabled}
+            onClick={() => {}}
+            colors={validateButtonColors}
+            labels={{ idle: 'Sprawdź odpowiedź', success: 'Dobrze!', error: 'Spróbuj ponownie' }}
+          />
+        </div>
       </div>
     </div>
   );
