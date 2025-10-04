@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, LayoutDashboard, Loader2 } from 'lucide-react';
 import { Course, Lesson, LessonTile } from 'tiles-core';
 import { LessonRuntimeCanvas } from '../components/runtime/LessonRuntimeCanvas';
-import { LessonContentService } from 'tiles-editor';
+import { LessonRuntimeService } from '../services/lessonRuntimeService';
 
 interface LessonViewProps {
   lesson: Lesson;
@@ -21,7 +21,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, course, onBack }
     const loadContent = async () => {
       setIsLoading(true);
       try {
-        const content = await LessonContentService.getLessonContent(lesson.id);
+        const content = await LessonRuntimeService.loadLesson(lesson.id);
         if (!isMounted) return;
         setLessonContent(content);
       } finally {
