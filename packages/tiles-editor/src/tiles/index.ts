@@ -6,3 +6,4 @@ export * from './programming';
 export * from './quiz';
 export * from './sequencing';
 export * from './text';
+export * from './visualization';

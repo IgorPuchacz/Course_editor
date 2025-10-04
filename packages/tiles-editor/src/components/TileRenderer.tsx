@@ -12,6 +12,7 @@ import { SequencingTileRenderer } from '../tiles/sequencing';
 import { OpenTileRenderer } from '../tiles/open';
 import { TextTileRenderer } from '../tiles/text';
 import { PairingTileRenderer } from '../tiles/pairing';
+import { VisualizationTileRenderer } from '../tiles/visualization';
 
 interface TileRendererProps {
   tile: LessonTile;
@@ -34,6 +35,7 @@ const TILE_RENDERERS: Partial<Record<LessonTile['type'], React.ComponentType<any
   text: TextTileRenderer,
   image: ImageTileRenderer,
   programming: ProgrammingTileRenderer,
+  visualization: VisualizationTileRenderer,
   quiz: QuizTileRenderer,
   sequencing: SequencingTileRenderer,
   blanks: BlanksTileRenderer,

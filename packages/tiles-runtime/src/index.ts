@@ -9,3 +9,4 @@ export * from './programming';
 export * from './text';
 export * from './image';
 export * from './pairing';
+export * from './visualization';

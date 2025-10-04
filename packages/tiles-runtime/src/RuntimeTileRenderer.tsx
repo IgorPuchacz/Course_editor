@@ -4,6 +4,7 @@ import {
   TextTile,
   ImageTile,
   ProgrammingTile,
+  VisualizationTile,
   QuizTile,
   BlanksTile,
   OpenTile,
@@ -23,6 +24,7 @@ import { BlanksInteractive } from './blanks';
 import { OpenInteractive } from './open';
 import { SequencingInteractive } from './sequencing';
 import { PairingInteractive } from './pairing';
+import { VisualizationInteractive } from './visualization';
 
 type RuntimeMode = 'preview' | 'student';
 
@@ -83,6 +85,10 @@ export const RuntimeTileRenderer: React.FC<RuntimeTileRendererProps> = ({ tile, 
       );
     case 'programming':
       return <ProgrammingTileView tile={tile as ProgrammingTile} />;
+    case 'visualization':
+      return (
+        <VisualizationInteractive tile={tile as VisualizationTile} mode={mode} />
+      );
     default:
       return (
         <TileChrome {...deriveChromeAppearance(tile)} contentClassName="flex items-center justify-center">
