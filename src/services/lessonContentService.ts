@@ -11,7 +11,7 @@ import {
   GridPosition,
   TILE_VERSION
 } from 'tiles-core';
-import { GridUtils } from 'tiles-editor';
+import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
 
 const DEFAULT_CANVAS_SETTINGS: CanvasSettings = {
@@ -21,110 +21,24 @@ const DEFAULT_CANVAS_SETTINGS: CanvasSettings = {
   snapToGrid: true
 };
 
-const STORAGE_KEY_PREFIX = 'lesson-content:';
-
-const inMemoryLessonStore = new Map<string, Lesson>();
-
-const isBrowserEnvironment = () => typeof window !== 'undefined' && !!window.localStorage;
-
-const getStorageKey = (lessonId: string) => `${STORAGE_KEY_PREFIX}${lessonId}`;
-
-const cloneLesson = (lesson: Lesson): Lesson => JSON.parse(JSON.stringify(lesson)) as Lesson;
-
-const ensureCanvasSettings = (settings?: CanvasSettings): CanvasSettings => ({
-  width: settings?.width ?? DEFAULT_CANVAS_SETTINGS.width,
-  height: settings?.height ?? DEFAULT_CANVAS_SETTINGS.height,
-  gridSize: settings?.gridSize ?? DEFAULT_CANVAS_SETTINGS.gridSize,
-  snapToGrid: settings?.snapToGrid ?? DEFAULT_CANVAS_SETTINGS.snapToGrid
-});
-
 export class LessonContentService {
-  private static createEmptyContent(lessonId: string): Lesson {
-    const timestamp = new Date().toISOString();
-
-    return {
-      id: `content-${lessonId}`,
-      lesson_id: lessonId,
-      tiles: [],
-      canvas_settings: { ...DEFAULT_CANVAS_SETTINGS },
-      total_pages: 1,
-      created_at: timestamp,
-      updated_at: timestamp
-    };
-  }
-
-  private static normalizeContent(content: Lesson): Lesson {
-    const cloned = cloneLesson(content);
-
-    const totalPages = Math.max(
-      cloned.total_pages || 1,
-      ...(cloned.tiles.length ? cloned.tiles.map(tile => tile.page ?? 1) : [1])
-    );
-
-    let maxHeight = 6;
-    for (let page = 1; page <= totalPages; page++) {
-      const pageTiles = cloned.tiles.filter(tile => (tile.page ?? 1) === page);
-      maxHeight = Math.max(maxHeight, GridUtils.calculateCanvasHeight(pageTiles));
-    }
-
-    cloned.total_pages = totalPages;
-    cloned.canvas_settings = ensureCanvasSettings(cloned.canvas_settings);
-    cloned.canvas_settings.height = maxHeight;
-    cloned.updated_at = new Date().toISOString();
-
-    return cloned;
-  }
-
-  private static writeToStores(content: Lesson): void {
-    inMemoryLessonStore.set(content.lesson_id, content);
-
-    if (isBrowserEnvironment()) {
-      try {
-        window.localStorage.setItem(getStorageKey(content.lesson_id), JSON.stringify(content));
-      } catch (error) {
-        logger.warn('Failed to persist lesson content to localStorage:', error);
-      }
-    }
-  }
-
-  private static readFromStores(lessonId: string): Lesson | null {
-    const fromMemory = inMemoryLessonStore.get(lessonId);
-    if (fromMemory) {
-      return cloneLesson(fromMemory);
-    }
-
-    if (isBrowserEnvironment()) {
-      try {
-        const stored = window.localStorage.getItem(getStorageKey(lessonId));
-        if (stored) {
-          const parsed = JSON.parse(stored) as Lesson;
-          const normalized = this.normalizeContent(parsed);
-          this.writeToStores(normalized);
-          return cloneLesson(normalized);
-        }
-      } catch (error) {
-        logger.warn('Failed to read lesson content from localStorage:', error);
-      }
-    }
-
-    return null;
-  }
-
   /**
    * Get lesson content by lesson ID
    */
   static async getLessonContent(lessonId: string): Promise<Lesson | null> {
     try {
-      const storedContent = this.readFromStores(lessonId);
+      // Simulate API call - replace with actual Supabase call
+      const mockContent: Lesson = {
+        id: `content-${lessonId}`,
+        lesson_id: lessonId,
+        tiles: [],
+        canvas_settings: { ...DEFAULT_CANVAS_SETTINGS },
+        total_pages: 1,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
 
-      if (storedContent) {
-        return storedContent;
-      }
-
-      const mockContent = this.createEmptyContent(lessonId);
-      this.writeToStores(mockContent);
-
-      return cloneLesson(mockContent);
+      return mockContent;
     } catch (error) {
       logger.error('Failed to load lesson content:', error);
       return null;
@@ -136,27 +50,29 @@ export class LessonContentService {
    */
   static async saveLessonContent(content: Lesson): Promise<void> {
     try {
-      const normalized = this.normalizeContent(content);
+      const totalPages = Math.max(
+        content.total_pages || 1,
+        ...content.tiles.map(tile => tile.page ?? 1)
+      );
+
+      let maxHeight = 6;
+      for (let page = 1; page <= totalPages; page++) {
+        const pageTiles = content.tiles.filter(tile => (tile.page ?? 1) === page);
+        maxHeight = Math.max(maxHeight, GridUtils.calculateCanvasHeight(pageTiles));
+      }
+
+      content.total_pages = totalPages;
+      content.canvas_settings.height = maxHeight;
+      content.updated_at = new Date().toISOString();
 
       // Simulate API call - replace with actual Supabase call
-      logger.info('Saving lesson content:', normalized);
-
-      this.writeToStores(normalized);
-
+      logger.info('Saving lesson content:', content);
+      
       // Here you would make the actual API call to save to Supabase
-      // await supabase.from('lesson_content').upsert(normalized);
+      // await supabase.from('lesson_content').upsert(content);
     } catch (error) {
       logger.error('Failed to save lesson content:', error);
       throw error;
-    }
-  }
-
-  static persistLessonContent(content: Lesson): void {
-    try {
-      const normalized = this.normalizeContent(content);
-      this.writeToStores(normalized);
-    } catch (error) {
-      logger.warn('Failed to persist lesson content draft:', error);
     }
   }
 
