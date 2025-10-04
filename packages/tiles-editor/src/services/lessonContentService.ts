@@ -11,7 +11,7 @@ import {
   GridPosition,
   TILE_VERSION
 } from 'tiles-core';
-import { GridUtils } from '../utils/gridUtils';
+import { GridUtils } from 'tiles-core/utils';
 import { logger } from '../utils/logger';
 
 const DEFAULT_CANVAS_SETTINGS: CanvasSettings = {

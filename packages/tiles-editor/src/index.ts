@@ -9,4 +9,3 @@ export * from './hooks/useLessonContentManager';
 export * from './hooks/useTileInteractions';
 export * from './state/editorReducer';
 export * from './services/lessonContentService';
-export * from './utils/gridUtils';

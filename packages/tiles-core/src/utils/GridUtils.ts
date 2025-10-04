@@ -1,4 +1,4 @@
-import { Position, Size, GridPosition, CanvasSettings, LessonTile } from 'tiles-core';
+import { Position, Size, GridPosition, CanvasSettings, LessonTile } from '../types';
 
 export class GridUtils {
   static readonly GRID_COLUMNS = 14;
