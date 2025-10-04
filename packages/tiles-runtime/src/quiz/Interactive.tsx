@@ -3,7 +3,13 @@ import { CheckCircle2, Circle, HelpCircle, RotateCcw, XCircle } from 'lucide-rea
 import { QuizTile } from 'tiles-core';
 import { getReadableTextColor } from 'tiles-core/utils';
 import { createSurfacePalette } from 'tiles-core/utils';
-import { TaskInstructionPanel } from 'ui-primitives';
+import {
+  TaskInstructionPanel,
+  ValidateButton,
+  createValidateButtonPalette,
+  type ValidateButtonColors,
+  type ValidateButtonState
+} from 'ui-primitives';
 
 interface QuizInteractiveProps {
   tile: QuizTile;
@@ -13,7 +19,7 @@ interface QuizInteractiveProps {
   instructionContent?: React.ReactNode;
 }
 
-type EvaluationState = 'idle' | 'correct' | 'incorrect';
+type EvaluationState = ValidateButtonState;
 
 export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
   tile,
@@ -97,6 +103,11 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
     setEvaluationState('idle');
   };
 
+  const validateButtonColors = useMemo<ValidateButtonColors>(
+    () => createValidateButtonPalette(accentColor, textColor),
+    [accentColor, textColor]
+  );
+
   const handleEvaluate = () => {
     if (!isInteractionEnabled) return;
     if (selectedAnswers.length === 0) return;
@@ -109,7 +120,12 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
       selectedAnswers.length === correctIndices.length &&
       selectedAnswers.every(index => correctIndices.includes(index));
 
-    setEvaluationState(isCorrectSelection ? 'correct' : 'incorrect');
+    setEvaluationState(isCorrectSelection ? 'success' : 'error');
+  };
+
+  const handleRetry = () => {
+    if (!isInteractionEnabled) return;
+    setEvaluationState('idle');
   };
 
   const renderInstructionContent = () => {
@@ -134,7 +150,7 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
   const renderAnswerButton = (answer: QuizTile['content']['answers'][number], index: number) => {
     const isSelected = selectedAnswers.includes(index);
     const showCorrectState = evaluationState !== 'idle' && answer.isCorrect;
-    const showIncorrectState = evaluationState === 'incorrect' && isSelected && !answer.isCorrect;
+    const showIncorrectState = evaluationState === 'error' && isSelected && !answer.isCorrect;
 
     const backgroundColor = showCorrectState
       ? 'rgba(34, 197, 94, 0.18)'
@@ -198,7 +214,7 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
   const renderEvaluationMessage = () => {
     if (!isInteractionEnabled || evaluationState === 'idle') return null;
 
-    const isCorrect = evaluationState === 'correct';
+    const isCorrect = evaluationState === 'success';
 
     return (
       <div
@@ -211,6 +227,8 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
       </div>
     );
   };
+
+  const validationState: ValidateButtonState = evaluationState;
 
   return (
     <div className="relative w-full h-full" onDoubleClick={handleTileDoubleClick}>
@@ -240,16 +258,19 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
         </div>
 
         {isInteractionEnabled && (
-          <div className="flex items-center gap-3 pt-2">
-            <button
-              type="button"
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+            <ValidateButton
+              state={validationState}
+              disabled={!isInteractionEnabled || selectedAnswers.length === 0}
               onClick={handleEvaluate}
-              className="px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors duration-200 bg-white/90 hover:bg-white"
-              style={{ color: accentColor }}
-              disabled={selectedAnswers.length === 0}
-            >
-              Sprawdź odpowiedź
-            </button>
+              onRetry={handleRetry}
+              colors={validateButtonColors}
+              labels={{
+                idle: 'Sprawdź odpowiedź',
+                success: 'Dobrze!',
+                error: 'Spróbuj ponownie'
+              }}
+            />
             <button
               type="button"
               onClick={handleReset}

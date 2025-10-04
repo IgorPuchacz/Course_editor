@@ -469,9 +469,10 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
           <ValidateButton
             state={validationState}
             disabled={!isInteractionEnabled}
-            onClick={() => {}}
+            onClick={handleCheck}
+            onRetry={handleRetry}
             colors={validateButtonColors}
-            labels={{ idle: 'Sprawdź odpowiedź', success: 'Dobrze!', error: 'Spróbuj ponownie' }}
+            labels={validateButtonLabels}
           />
         </div>
       </div>
