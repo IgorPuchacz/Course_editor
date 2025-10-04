@@ -5,7 +5,6 @@ import {
   createBlankId,
   createPlaceholderRegex,
   createSurfacePalette,
-  createValidateButtonPalette,
   getReadableTextColor,
   surfaceColor
 } from 'tiles-core/utils';
@@ -13,6 +12,7 @@ import {
   TaskInstructionPanel,
   TaskTileSection,
   ValidateButton,
+  createValidateButtonPalette,
   type ValidateButtonColors,
   type ValidateButtonState
 } from 'ui-primitives';

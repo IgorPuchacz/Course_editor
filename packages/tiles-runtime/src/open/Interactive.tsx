@@ -1,8 +1,14 @@
 import React, { useCallback, useMemo } from 'react';
 import { FileText, Paperclip, Download, PencilLine } from 'lucide-react';
 import { OpenTile } from 'tiles-core';
-import { getReadableTextColor, surfaceColor, createValidateButtonPalette } from 'tiles-core/utils';
-import { TaskInstructionPanel, TaskTileSection, ValidateButton, type ValidateButtonColors } from 'ui-primitives';
+import { getReadableTextColor, surfaceColor } from 'tiles-core/utils';
+import {
+  TaskInstructionPanel,
+  TaskTileSection,
+  ValidateButton,
+  createValidateButtonPalette,
+  type ValidateButtonColors
+} from 'ui-primitives';
 
 interface OpenInteractiveProps {
   tile: OpenTile;
