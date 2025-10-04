@@ -158,7 +158,6 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       message: `Czy na pewno chcesz usunąć ten kafelek? Ta operacja jest nieodwracalna.`,
       onConfirm: () => {
         deleteTile(tileId);
-        setConfirmDialog(prev => ({ ...prev, isOpen: false }));
       }
     });
   };
@@ -182,7 +181,6 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       onConfirm: () => {
         deletePage(pageToDelete);
         setActiveEditor(null);
-        setConfirmDialog(prev => ({ ...prev, isOpen: false }));
       }
     });
   };
@@ -199,13 +197,12 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       setConfirmDialog({
         isOpen: true,
         title: 'Niezapisane zmiany',
-        message: 'Masz niezapisane zmiany. Czy chcesz je zapisać przed wyjściem?',
-        onConfirm: async () => {
-          await saveLessonContent();
-          setConfirmDialog(prev => ({ ...prev, isOpen: false }));
-          onBack();
-        }
-      });
+      message: 'Masz niezapisane zmiany. Czy chcesz je zapisać przed wyjściem?',
+      onConfirm: async () => {
+        await saveLessonContent();
+        onBack();
+      }
+    });
     } else {
       onBack();
     }
@@ -223,7 +220,6 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
         if (cleared) {
           setActiveEditor(null);
         }
-        setConfirmDialog(prev => ({ ...prev, isOpen: false }));
       }
     });
   };
