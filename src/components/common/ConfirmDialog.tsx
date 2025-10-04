@@ -8,7 +8,7 @@ interface ConfirmDialogProps {
   confirmText?: string;
   cancelText?: string;
   type?: 'warning' | 'danger' | 'info';
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
   onCancel: () => void;
 }
 
@@ -37,6 +37,14 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     }
   };
 
+  const handleConfirm = async () => {
+    try {
+      await Promise.resolve(onConfirm());
+    } finally {
+      onCancel();
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
@@ -58,7 +66,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               {cancelText}
             </button>
             <button
-              onClick={onConfirm}
+              onClick={handleConfirm}
               className={`px-4 py-2 rounded-lg transition-colors ${getButtonColors()}`}
             >
               {confirmText}
