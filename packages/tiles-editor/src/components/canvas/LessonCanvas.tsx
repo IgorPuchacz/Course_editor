@@ -3,8 +3,8 @@ import { Type } from 'lucide-react';
 import { Lesson, LessonTile, EditorState } from 'tiles-core';
 import { GridUtils } from 'tiles-core/utils';
 import { Editor } from '@tiptap/react';
-import { TileRenderer } from 'components/TileRenderer';
-import { useTileInteractions } from 'hooks/useTileInteractions';
+import { TileRenderer } from '../TileRenderer'
+import { useTileInteractions } from '../../hooks/useTileInteractions'
 import { EditorAction } from 'state/editorReducer';
 
 interface LessonCanvasProps {
@@ -124,7 +124,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
         {renderDragPreview()}
 
         {/* Render Tiles */}
-        {content.tiles.map((tile) => (
+        {content.tiles.map(tile => (
           <TileRenderer
             key={tile.id}
             tile={tile}
