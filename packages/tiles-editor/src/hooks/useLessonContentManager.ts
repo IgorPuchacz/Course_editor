@@ -71,7 +71,6 @@ export const useLessonContentManager = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [testingTileIds, setTestingTileIds] = useState<string[]>([]);
 
   const normalizeTilePage = useCallback((tile: LessonTile): LessonTile => ({
     ...tile,
@@ -125,7 +124,6 @@ export const useLessonContentManager = ({
 
       setLessonContent(normalizedContent);
       setCurrentPage(1);
-      setTestingTileIds([]);
       logger.info(`Loaded lesson content with ${normalizedTiles.length} tiles across ${totalPages} pages`);
     } catch (err) {
       logger.error('Failed to load lesson content:', err);
@@ -319,12 +317,6 @@ export const useLessonContentManager = ({
     },
     [computeMaxCanvasHeight, getMaxPageFromTiles, dispatch]
   );
-
-  const toggleTestingTile = useCallback((tileId: string) => {
-    setTestingTileIds(prev =>
-      prev.includes(tileId) ? prev.filter(id => id !== tileId) : [...prev, tileId]
-    );
-  }, []);
 
   const deleteTile = useCallback(
     (tileId: string) => {
@@ -569,11 +561,9 @@ export const useLessonContentManager = ({
     pagedContent,
     selectedTile,
     selectedRichTextTile,
-    testingTileIds,
     addTile,
     updateTile,
     deleteTile,
-    toggleTestingTile,
     addPage,
     deletePage,
     changePage,

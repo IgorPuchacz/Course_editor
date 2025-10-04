@@ -9,7 +9,6 @@ export const BlanksTileRenderer: React.FC<BaseTileRendererProps<BlanksTile>> = (
   tile,
   isSelected,
   isEditingText,
-  isTestingMode,
   onUpdateTile,
   onFinishTextEditing,
   onEditorReady,
@@ -26,7 +25,6 @@ export const BlanksTileRenderer: React.FC<BaseTileRendererProps<BlanksTile>> = (
   ) => (
     <BlanksInteractive
       tile={blanksTile}
-      isTestingMode={isTestingMode}
       instructionContent={instructionContent}
       isPreview={isPreviewMode}
       onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}

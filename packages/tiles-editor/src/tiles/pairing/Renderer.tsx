@@ -9,7 +9,6 @@ export const PairingTileRenderer: React.FC<BaseTileRendererProps<PairingTile>> =
   tile,
   isSelected,
   isEditingText,
-  isTestingMode,
   onUpdateTile,
   onFinishTextEditing,
   onEditorReady,
@@ -26,7 +25,6 @@ export const PairingTileRenderer: React.FC<BaseTileRendererProps<PairingTile>> =
   ) => (
     <PairingInteractive
       tile={pairingTile}
-      isTestingMode={isTestingMode}
       instructionContent={instructionContent}
       isPreview={isPreviewMode}
       onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
