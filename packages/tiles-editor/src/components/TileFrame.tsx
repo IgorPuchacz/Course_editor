@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Move, Trash2 } from 'lucide-react';
 import { LessonTile } from 'tiles-core';
+import { TileContainer } from 'ui-primitives';
 
 const RESIZE_HANDLES = [
   { handle: 'nw', position: { x: 0, y: 0 }, cursor: 'nw-resize' },
@@ -13,7 +14,7 @@ const RESIZE_HANDLES = [
   { handle: 'e', position: { x: 1, y: 0.5 }, cursor: 'e-resize' }
 ] as const;
 
-const TILE_CORNER = 'rounded-xl';
+const TILE_CORNER = 'rounded-3xl';
 
 export interface TileFrameProps {
   tile: LessonTile;
@@ -106,7 +107,6 @@ export const TileFrame: React.FC<TileFrameProps> = ({
     );
   }, [handleResizeStart, isEditingText, isFramelessTextTile, isImageEditing, isSelected, isTestingMode, tile.gridPosition]);
 
-  const elevationClass = isSelected ? 'shadow-lg' : 'shadow-sm';
   const allowMouseDown = !isDraggingImage && !isTestingMode;
 
   return (
@@ -115,7 +115,7 @@ export const TileFrame: React.FC<TileFrameProps> = ({
         isEditing || isImageEditing || isEditingText ? 'z-20' : 'z-10'
       } ${
         isSelected ? 'ring-2 ring-blue-500 ring-opacity-75' : ''
-      } ${elevationClass}`}
+      }`}
       style={{
         left: tile.position.x,
         top: tile.position.y,
@@ -127,9 +127,16 @@ export const TileFrame: React.FC<TileFrameProps> = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className={`relative h-full w-full ${TILE_CORNER} overflow-hidden`}>
+      <TileContainer
+        radius="3xl"
+        elevation="lg"
+        className={`relative h-full w-full transition-shadow duration-200 ${
+          isFramelessTextTile ? 'bg-transparent' : ''
+        }`}
+        backgroundColor={isFramelessTextTile ? 'transparent' : undefined}
+      >
         {children({ isHovered })}
-      </div>
+      </TileContainer>
 
       {(isSelected || isHovered) && !isEditingText && !isImageEditing && (
         <div
