@@ -48,3 +48,6 @@ Projekt "Course_editor" to rozwijany edytor lekcji dla systemu e-learningowego, 
 
 ## Aktualny Stan Projektu
 Projekt jest w fazie aktywnego rozwoju. Podstawowa funkcjonalność edytora lekcji z kafelkami jest zaimplementowana. Ostatnie iteracje skupiły się na znacznym ulepszeniu interfejsu użytkownika edytora tekstu, czyniąc go bardziej intuicyjnym, estetycznym i funkcjonalnym. Edytor tekstu posiada teraz pełne formatowanie, kontrolę czcionek, wyrównania oraz dobrze ostylowane bloki kodu.
+
+## Dokumentacja architektury
+- [Architektura pakietów kafelków](docs/ARCHITECTURE.md)
