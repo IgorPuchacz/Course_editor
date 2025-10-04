@@ -14,8 +14,10 @@
     "baseUrl": ".",
     "paths": {
       "tiles-core": ["packages/tiles-core/src"],
-      "tiles-core/*": ["packages/tiles-core/src/*"]
-    },
+      "tiles-core/*": ["packages/tiles-core/src/*"],
+      "tiles-editor": ["packages/tiles-editor/src"],
+      "tiles-editor/*": ["packages/tiles-editor/src/*"]
+  },
 
     /* Linting */
     "strict": true,
@@ -23,5 +25,9 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts", "packages/tiles-core/src"]
+  "include": [
+    "vite.config.ts",
+    "packages/tiles-core/src",
+    "packages/tiles-editor/src"
+  ]
 }
