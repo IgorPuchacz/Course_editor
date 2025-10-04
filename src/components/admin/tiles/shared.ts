@@ -24,4 +24,4 @@ export {
   lightenColor,
   darkenColor,
   surfaceColor,
-} from '../../../utils/colorUtils';
+} from 'tiles-core/utils';

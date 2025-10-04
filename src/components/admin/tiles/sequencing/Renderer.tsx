@@ -1,8 +1,8 @@
 import React from 'react';
 import { SequencingTile } from 'tiles-core';
-import { createRichTextAdapter, type RichTextEditorProps } from '../RichTextEditor.tsx';
+import { createRichTextAdapter, RichTextEditor } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared';
-import { SequencingInteractive } from './Interactive';
+import { SequencingInteractive } from 'tiles-runtime/sequencing';
 
 export const SequencingTileRenderer: React.FC<BaseTileRendererProps<SequencingTile>> = ({
   tile,
@@ -26,13 +26,13 @@ export const SequencingTileRenderer: React.FC<BaseTileRendererProps<SequencingTi
   };
 
   const renderSequencingContent = (
-    instructionEditorProps?: RichTextEditorProps,
+    instructionContent?: React.ReactNode,
     isPreviewMode = false,
   ) => (
     <SequencingInteractive
       tile={sequencingTile}
       isTestingMode={isTestingMode}
-      instructionEditorProps={instructionEditorProps}
+      instructionContent={instructionContent}
       isPreview={isPreviewMode}
       onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
     />
@@ -57,17 +57,19 @@ export const SequencingTileRenderer: React.FC<BaseTileRendererProps<SequencingTi
     return (
       <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
         {renderSequencingContent(
-          {
-            content: instructionAdapter.content,
-            onChange: (updatedContent) => {
-              onUpdateTile(tile.id, {
-                content: instructionAdapter.applyChanges(updatedContent),
-              });
-            },
-            onFinish: onFinishTextEditing,
-            onEditorReady,
-            textColor,
-          },
+          (
+            <RichTextEditor
+              content={instructionAdapter.content}
+              onChange={(updatedContent) => {
+                onUpdateTile(tile.id, {
+                  content: instructionAdapter.applyChanges(updatedContent),
+                });
+              }}
+              onFinish={onFinishTextEditing}
+              onEditorReady={onEditorReady}
+              textColor={textColor}
+            />
+          ),
           true,
         )}
       </div>

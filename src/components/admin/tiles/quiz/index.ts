@@ -1,2 +1,2 @@
 export { QuizTileRenderer } from './Renderer';
-export { QuizInteractive } from './Interactive';
+export { QuizInteractive } from 'tiles-runtime/quiz';

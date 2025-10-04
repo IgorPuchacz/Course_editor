@@ -1,26 +1,27 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { CheckCircle, XCircle, RotateCcw, Sparkles, GripVertical, Shuffle, ArrowLeftRight } from 'lucide-react';
 import { SequencingTile } from 'tiles-core';
-import { getReadableTextColor, lightenColor, darkenColor } from '../../../../utils/colorUtils';
 import {
   createSurfacePalette,
-  createValidateButtonPalette
-} from '../../../../utils/surfacePalette.ts';
-import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
-import { TaskTileSection } from '../TaskTileSection.tsx';
-import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
+  createValidateButtonPalette,
+  darkenColor,
+  getReadableTextColor,
+  lightenColor
+} from 'tiles-core/utils';
 import {
+  TaskInstructionPanel,
+  TaskTileSection,
   ValidateButton,
-  ValidateButtonColors,
-  ValidateButtonState
-} from '../../../common/ValidateButton.tsx';
+  type ValidateButtonColors,
+  type ValidateButtonState
+} from 'tiles-core/ui';
 
 interface SequencingInteractiveProps {
   tile: SequencingTile;
   isPreview?: boolean;
   isTestingMode?: boolean;
   onRequestTextEditing?: () => void;
-  instructionEditorProps?: RichTextEditorProps;
+  instructionContent?: React.ReactNode;
   variant?: 'standalone' | 'embedded';
 }
 
@@ -43,7 +44,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   isPreview = false,
   isTestingMode = false,
   onRequestTextEditing,
-  instructionEditorProps,
+  instructionContent,
   variant = 'embedded'
 }) => {
   const [availableItems, setAvailableItems] = useState<DraggedItem[]>([]);
@@ -494,8 +495,8 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
           labelStyle={{ color: mutedLabelColor }}
           bodyClassName="px-5 pb-5"
         >
-          {instructionEditorProps ? (
-            <RichTextEditor {...instructionEditorProps} />
+          {instructionContent ? (
+            instructionContent
           ) : (
             <div
               className="text-base leading-relaxed"

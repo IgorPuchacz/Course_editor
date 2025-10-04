@@ -1,19 +1,19 @@
 import React, { useCallback, useMemo } from 'react';
 import { FileText, Paperclip, Download, PencilLine } from 'lucide-react';
 import { OpenTile } from 'tiles-core';
-import { getReadableTextColor, surfaceColor } from '../../../../utils/colorUtils';
-import { createValidateButtonPalette } from '../../../../utils/surfacePalette.ts';
-import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
-import { TaskTileSection } from '../TaskTileSection.tsx';
-import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
-import { ValidateButton, ValidateButtonColors } from '../../../common/ValidateButton.tsx';
+import {
+  getReadableTextColor,
+  surfaceColor,
+  createValidateButtonPalette
+} from 'tiles-core/utils';
+import { TaskInstructionPanel, TaskTileSection, ValidateButton, type ValidateButtonColors } from 'tiles-core/ui';
 
 interface OpenInteractiveProps {
   tile: OpenTile;
   isPreview?: boolean;
   isTestingMode?: boolean;
   onRequestTextEditing?: () => void;
-  instructionEditorProps?: RichTextEditorProps;
+  instructionContent?: React.ReactNode;
 }
 
 export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
@@ -21,7 +21,7 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
   isPreview = false,
   isTestingMode = false,
   onRequestTextEditing,
-  instructionEditorProps,
+  instructionContent,
 }) => {
   const accentColor = tile.content.backgroundColor || '#0f172a';
   const textColor = useMemo(() => getReadableTextColor(accentColor), [accentColor]);
@@ -78,8 +78,8 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
           }}
           labelStyle={{ color: mutedLabelColor }}
         >
-          {instructionEditorProps ? (
-            <RichTextEditor {...instructionEditorProps} />
+          {instructionContent ? (
+            instructionContent
           ) : (
             <div
               className="text-base leading-relaxed"

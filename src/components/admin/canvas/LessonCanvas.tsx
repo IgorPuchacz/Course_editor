@@ -3,7 +3,7 @@ import { Type } from 'lucide-react';
 import { Lesson, LessonTile, EditorState } from 'tiles-core';
 import { EditorAction } from '../../../state/editorReducer.ts';
 import { TileRenderer } from '../tiles/TileRenderer.tsx';
-import { GridUtils } from '../../../utils/gridUtils.ts';
+import { GridUtils } from 'tiles-core/utils';
 import { useTileInteractions } from '../../../hooks/useTileInteractions.ts';
 import { Editor } from '@tiptap/react';
 

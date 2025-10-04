@@ -1,7 +1,7 @@
 import { useState, useEffect, RefObject } from 'react';
 import { Lesson, LessonTile, GridPosition, EditorState, TextTile, ImageTile } from 'tiles-core';
 import { EditorAction } from '../state/editorReducer';
-import { GridUtils } from '../utils/gridUtils';
+import { GridUtils } from 'tiles-core/utils';
 import { logger } from '../utils/logger';
 
 interface UseTileInteractionsProps {

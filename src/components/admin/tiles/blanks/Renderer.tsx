@@ -1,8 +1,8 @@
 import React from 'react';
 import { BlanksTile } from 'tiles-core';
-import { createRichTextAdapter, type RichTextEditorProps } from '../RichTextEditor.tsx';
+import { createRichTextAdapter, RichTextEditor } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared';
-import { BlanksInteractive } from './Interactive';
+import { BlanksInteractive } from 'tiles-runtime/blanks';
 
 export const BlanksTileRenderer: React.FC<BaseTileRendererProps<BlanksTile>> = ({
   tile,
@@ -26,13 +26,13 @@ export const BlanksTileRenderer: React.FC<BaseTileRendererProps<BlanksTile>> = (
   };
 
   const renderBlanks = (
-    instructionEditorProps?: RichTextEditorProps,
+    instructionContent?: React.ReactNode,
     isPreviewMode = false,
   ) => (
     <BlanksInteractive
       tile={blanksTile}
       isTestingMode={isTestingMode}
-      instructionEditorProps={instructionEditorProps}
+      instructionContent={instructionContent}
       isPreview={isPreviewMode}
       onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
     />
@@ -57,17 +57,19 @@ export const BlanksTileRenderer: React.FC<BaseTileRendererProps<BlanksTile>> = (
     return (
       <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
         {renderBlanks(
-          {
-            content: instructionAdapter.content,
-            onChange: (updatedContent) => {
-              onUpdateTile(tile.id, {
-                content: instructionAdapter.applyChanges(updatedContent),
-              });
-            },
-            onFinish: onFinishTextEditing,
-            onEditorReady,
-            textColor,
-          },
+          (
+            <RichTextEditor
+              content={instructionAdapter.content}
+              onChange={(updatedContent) => {
+                onUpdateTile(tile.id, {
+                  content: instructionAdapter.applyChanges(updatedContent),
+                });
+              }}
+              onFinish={onFinishTextEditing}
+              onEditorReady={onEditorReady}
+              textColor={textColor}
+            />
+          ),
           true,
         )}
       </div>

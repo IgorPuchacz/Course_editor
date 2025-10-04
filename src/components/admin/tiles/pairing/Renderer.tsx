@@ -1,8 +1,8 @@
 import React from 'react';
 import { PairingTile } from 'tiles-core';
-import { createRichTextAdapter, type RichTextEditorProps } from '../RichTextEditor.tsx';
+import { createRichTextAdapter, RichTextEditor } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared';
-import { PairingInteractive } from './Interactive';
+import { PairingInteractive } from 'tiles-runtime/pairing';
 
 export const PairingTileRenderer: React.FC<BaseTileRendererProps<PairingTile>> = ({
   tile,
@@ -26,13 +26,13 @@ export const PairingTileRenderer: React.FC<BaseTileRendererProps<PairingTile>> =
   };
 
   const renderPairingContent = (
-    instructionEditorProps?: RichTextEditorProps,
+    instructionContent?: React.ReactNode,
     isPreviewMode = false,
   ) => (
     <PairingInteractive
       tile={pairingTile}
       isTestingMode={isTestingMode}
-      instructionEditorProps={instructionEditorProps}
+      instructionContent={instructionContent}
       isPreview={isPreviewMode}
       onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
     />
@@ -57,17 +57,19 @@ export const PairingTileRenderer: React.FC<BaseTileRendererProps<PairingTile>> =
     return (
       <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
         {renderPairingContent(
-          {
-            content: instructionAdapter.content,
-            onChange: (updatedContent) => {
-              onUpdateTile(tile.id, {
-                content: instructionAdapter.applyChanges(updatedContent),
-              });
-            },
-            onFinish: onFinishTextEditing,
-            onEditorReady,
-            textColor,
-          },
+          (
+            <RichTextEditor
+              content={instructionAdapter.content}
+              onChange={(updatedContent) => {
+                onUpdateTile(tile.id, {
+                  content: instructionAdapter.applyChanges(updatedContent),
+                });
+              }}
+              onFinish={onFinishTextEditing}
+              onEditorReady={onEditorReady}
+              textColor={textColor}
+            />
+          ),
           true,
         )}
       </div>
