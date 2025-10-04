@@ -1,6 +1,7 @@
 import React from 'react';
 import { Editor } from '@tiptap/react';
 import { LessonTile, ImageTile } from 'tiles-core';
+import { TileChrome } from 'ui-primitives';
 import { TileFrame } from './TileFrame';
 import { BaseTileRendererProps } from './shared';
 import { BlanksTileRenderer } from '../tiles/blanks';
@@ -104,16 +105,13 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
           {Renderer ? (
             <Renderer {...rendererProps} />
           ) : (
-            <div
-              className="w-full h-full flex items-center justify-center"
-              style={{
-                borderRadius: 'inherit',
-                backgroundColor,
-                border: showBorder ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
-              }}
+            <TileChrome
+              backgroundColor={backgroundColor}
+              showBorder={showBorder}
+              contentClassName="flex items-center justify-center"
             >
               <span className="text-gray-500 text-sm">Nieznany typ kafelka</span>
-            </div>
+            </TileChrome>
           )}
         </div>
       )}

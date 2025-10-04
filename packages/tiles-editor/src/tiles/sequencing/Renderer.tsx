@@ -1,5 +1,6 @@
 import React from 'react';
 import { SequencingTile } from 'tiles-core';
+import { TileChrome } from 'ui-primitives';
 import { createRichTextAdapter, RichTextEditor } from '../../components/RichTextEditor';
 import { BaseTileRendererProps, getReadableTextColor } from '../../components/shared';
 import { SequencingInteractive } from 'tiles-runtime/sequencing';
@@ -18,12 +19,6 @@ export const SequencingTileRenderer: React.FC<BaseTileRendererProps<SequencingTi
 }) => {
   const sequencingTile = tile;
   const textColor = getReadableTextColor(sequencingTile.content.backgroundColor || backgroundColor);
-
-  const wrapperStyle: React.CSSProperties = {
-    borderRadius: 'inherit',
-    backgroundColor,
-    border: showBorder ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
-  };
 
   const renderSequencingContent = (
     instructionContent?: React.ReactNode,
@@ -55,7 +50,7 @@ export const SequencingTileRenderer: React.FC<BaseTileRendererProps<SequencingTi
     });
 
     return (
-      <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
+      <TileChrome backgroundColor={backgroundColor} showBorder={showBorder}>
         {renderSequencingContent(
           <RichTextEditor
             content={instructionAdapter.content}
@@ -70,13 +65,13 @@ export const SequencingTileRenderer: React.FC<BaseTileRendererProps<SequencingTi
           />,
           true,
         )}
-      </div>
+      </TileChrome>
     );
   }
 
   return (
-    <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
+    <TileChrome backgroundColor={backgroundColor} showBorder={showBorder}>
       {renderSequencingContent()}
-    </div>
+    </TileChrome>
   );
 };

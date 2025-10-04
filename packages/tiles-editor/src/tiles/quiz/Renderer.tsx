@@ -1,5 +1,6 @@
 import React from 'react';
 import { QuizTile } from 'tiles-core';
+import { TileChrome } from 'ui-primitives';
 import { createRichTextAdapter, RichTextEditor } from '../../components/RichTextEditor';
 import { BaseTileRendererProps, getReadableTextColor } from '../../components/shared';
 import { QuizInteractive } from 'tiles-runtime/quiz';
@@ -30,12 +31,6 @@ export const QuizTileRenderer: React.FC<BaseTileRendererProps<QuizTile>> = ({
   } as QuizTile['content'];
   const questionTextColor = getReadableTextColor(quizContent.backgroundColor || backgroundColor);
 
-  const wrapperStyle: React.CSSProperties = {
-    borderRadius: 'inherit',
-    backgroundColor,
-    border: showBorder ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
-  };
-
   if (isEditingText && isSelected) {
     const questionAdapter = createRichTextAdapter({
       source: quizContent,
@@ -55,7 +50,7 @@ export const QuizTileRenderer: React.FC<BaseTileRendererProps<QuizTile>> = ({
     });
 
     return (
-      <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
+      <TileChrome backgroundColor={backgroundColor} showBorder={showBorder}>
         <QuizInteractive
           tile={{ ...quizTile, content: quizContent }}
           isPreview
@@ -73,17 +68,17 @@ export const QuizTileRenderer: React.FC<BaseTileRendererProps<QuizTile>> = ({
             />
           )}
         />
-      </div>
+      </TileChrome>
     );
   }
 
   return (
-    <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
+    <TileChrome backgroundColor={backgroundColor} showBorder={showBorder}>
       <QuizInteractive
         tile={quizTile}
         isTestingMode={isTestingMode}
         onRequestTextEditing={onDoubleClick}
       />
-    </div>
+    </TileChrome>
   );
 };

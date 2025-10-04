@@ -1,5 +1,6 @@
 import React from 'react';
 import { BlanksTile } from 'tiles-core';
+import { TileChrome } from 'ui-primitives';
 import { createRichTextAdapter, RichTextEditor } from '../../components/RichTextEditor';
 import { BaseTileRendererProps, getReadableTextColor } from '../../components/shared';
 import { BlanksInteractive } from 'tiles-runtime/blanks';
@@ -18,12 +19,6 @@ export const BlanksTileRenderer: React.FC<BaseTileRendererProps<BlanksTile>> = (
 }) => {
   const blanksTile = tile;
   const textColor = getReadableTextColor(blanksTile.content.backgroundColor || backgroundColor);
-
-  const wrapperStyle: React.CSSProperties = {
-    borderRadius: 'inherit',
-    backgroundColor,
-    border: showBorder ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
-  };
 
   const renderBlanks = (
     instructionContent?: React.ReactNode,
@@ -55,7 +50,7 @@ export const BlanksTileRenderer: React.FC<BaseTileRendererProps<BlanksTile>> = (
     });
 
     return (
-      <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
+      <TileChrome backgroundColor={backgroundColor} showBorder={showBorder}>
         {renderBlanks(
           <RichTextEditor
             content={instructionAdapter.content}
@@ -70,13 +65,13 @@ export const BlanksTileRenderer: React.FC<BaseTileRendererProps<BlanksTile>> = (
           />,
           true,
         )}
-      </div>
+      </TileChrome>
     );
   }
 
   return (
-    <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
+    <TileChrome backgroundColor={backgroundColor} showBorder={showBorder}>
       {renderBlanks()}
-    </div>
+    </TileChrome>
   );
 };
