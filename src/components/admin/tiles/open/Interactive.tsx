@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { FileText, Paperclip, Download, PencilLine } from 'lucide-react';
-import { OpenTile } from '../../../../types/lessonEditor';
+import { OpenTile } from 'tiles-core';
 import { getReadableTextColor, surfaceColor } from '../../../../utils/colorUtils';
 import { createValidateButtonPalette } from '../../../../utils/surfacePalette.ts';
 import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';

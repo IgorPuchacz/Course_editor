@@ -1,5 +1,5 @@
 import React from 'react';
-import { BlanksTile } from '../../../../types/lessonEditor';
+import { BlanksTile } from 'tiles-core';
 import { createRichTextAdapter, type RichTextEditorProps } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared';
 import { BlanksInteractive } from './Interactive';

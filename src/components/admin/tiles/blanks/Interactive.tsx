@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { RefreshCw, Sparkles, Puzzle, RotateCcw } from 'lucide-react';
-import { BlanksTile } from '../../../../types/lessonEditor';
+import { BlanksTile } from 'tiles-core';
 import { createBlankId, createPlaceholderRegex } from '../../../../utils/blanks.ts';
 import { getReadableTextColor, surfaceColor } from '../../../../utils/colorUtils';
 import {

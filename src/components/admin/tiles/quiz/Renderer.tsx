@@ -1,5 +1,5 @@
 import React from 'react';
-import { QuizTile } from '../../../../types/lessonEditor';
+import { QuizTile } from 'tiles-core';
 import { createRichTextAdapter } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared';
 import { QuizInteractive } from './Interactive';

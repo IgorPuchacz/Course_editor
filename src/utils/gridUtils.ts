@@ -1,4 +1,4 @@
-import { Position, Size, GridPosition, CanvasSettings } from '../types/lessonEditor';
+import { Position, Size, GridPosition, CanvasSettings, LessonTile } from 'tiles-core';
 
 export class GridUtils {
   static readonly GRID_COLUMNS = 14;
@@ -82,7 +82,7 @@ export class GridUtils {
   static isValidGridPosition(
     gridPos: GridPosition, 
     canvasSettings: CanvasSettings,
-    existingTiles: any[] = [],
+    existingTiles: LessonTile[] = [],
     excludeTileId?: string
   ): boolean {
     // Check bounds
@@ -115,7 +115,7 @@ export class GridUtils {
   static findNextAvailablePosition(
     desiredPos: GridPosition,
     canvasSettings: CanvasSettings,
-    existingTiles: any[]
+    existingTiles: LessonTile[]
   ): GridPosition {
     // Try the desired position first
     if (GridUtils.isValidGridPosition(desiredPos, canvasSettings, existingTiles)) {
@@ -148,7 +148,7 @@ export class GridUtils {
   /**
    * Calculate required canvas height based on tiles
    */
-  static calculateCanvasHeight(tiles: any[]): number {
+  static calculateCanvasHeight(tiles: LessonTile[]): number {
     if (tiles.length === 0) return 12; // Minimum height
     
     const maxRow = Math.max(...tiles.map(tile => 
@@ -161,7 +161,7 @@ export class GridUtils {
   /**
    * Get resize handles for a tile
    */
-  static getResizeHandles(gridPos: GridPosition): Array<{
+  static getResizeHandles(_gridPos: GridPosition): Array<{
     handle: string;
     position: { x: number; y: number };
     cursor: string;

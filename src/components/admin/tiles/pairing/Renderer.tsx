@@ -1,5 +1,5 @@
 import React from 'react';
-import { PairingTile } from '../../../../types/lessonEditor';
+import { PairingTile } from 'tiles-core';
 import { createRichTextAdapter, type RichTextEditorProps } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared';
 import { PairingInteractive } from './Interactive';

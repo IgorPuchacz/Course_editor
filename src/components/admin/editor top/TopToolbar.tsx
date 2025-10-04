@@ -5,7 +5,7 @@ import { FontSizeSelector } from './FontSizeSelector.tsx';
 import { TextColorPicker } from './TextColorPicker.tsx';
 import { FontSelector } from './FontSelector.tsx';
 import { AlignmentControls } from './AlignmentControls.tsx';
-import { LessonTile, ProgrammingTile, TextTile, SequencingTile, OpenTile } from '../../../types/lessonEditor.ts';
+import { LessonTile, ProgrammingTile, TextTile, SequencingTile, OpenTile } from 'tiles-core';
 
 
 interface TopToolbarProps {

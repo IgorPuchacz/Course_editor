@@ -1,6 +1,6 @@
 import React from 'react';
 import { Code2, Play } from 'lucide-react';
-import { ProgrammingTile } from '../../../../types/lessonEditor.ts';
+import { ProgrammingTile } from 'tiles-core';
 import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
 import { RichTextEditor, createRichTextAdapter } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, darkenColor, getReadableTextColor, surfaceColor } from '../shared.ts';

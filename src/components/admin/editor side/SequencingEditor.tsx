@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, GripVertical, RotateCcw, Sparkles, Square } from 'lucide-react';
-import { SequencingTile } from '../../../types/lessonEditor.ts';
+import { SequencingTile } from 'tiles-core';
 
 interface SequencingEditorProps {
   tile: SequencingTile;

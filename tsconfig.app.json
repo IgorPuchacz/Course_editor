@@ -5,6 +5,11 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "tiles-core": ["packages/tiles-core/src"],
+      "tiles-core/*": ["packages/tiles-core/src/*"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -20,5 +25,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src", "packages/tiles-core/src"]
 }

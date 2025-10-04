@@ -7,10 +7,16 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "outDir": "dist-tests",
-    "rootDir": "src"
+    "rootDir": "src",
+    "baseUrl": ".",
+    "paths": {
+      "tiles-core": ["packages/tiles-core/src"],
+      "tiles-core/*": ["packages/tiles-core/src/*"]
+    }
   },
   "include": [
     "src/utils/colorUtils.ts",
-    "src/utils/colorUtils.test.ts"
+    "src/utils/colorUtils.test.ts",
+    "packages/tiles-core/src"
   ]
 }

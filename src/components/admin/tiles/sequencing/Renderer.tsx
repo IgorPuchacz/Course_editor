@@ -1,5 +1,5 @@
 import React from 'react';
-import { SequencingTile } from '../../../../types/lessonEditor';
+import { SequencingTile } from 'tiles-core';
 import { createRichTextAdapter, type RichTextEditorProps } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared';
 import { SequencingInteractive } from './Interactive';

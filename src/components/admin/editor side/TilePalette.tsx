@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Type, Image, Puzzle, Eye, HelpCircle, Plus, Code, ArrowUpDown, Link2, FileText } from 'lucide-react';
-import { TilePaletteItem } from '../../../types/lessonEditor.ts';
+import { TilePaletteItem } from 'tiles-core';
 
 interface TilePaletteProps {
   onAddTile: (tileType: string, position: { x: number; y: number }) => void;

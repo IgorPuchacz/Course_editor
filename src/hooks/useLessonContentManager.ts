@@ -1,22 +1,24 @@
 import { Dispatch, useCallback, useEffect, useMemo, useState } from 'react';
 import { LessonContentService } from '../services/lessonContentService';
 import {
-  LessonContent,
+  Lesson,
   LessonTile,
   ProgrammingTile,
   SequencingTile,
   TextTile,
   OpenTile,
-  PairingTile
-} from '../types/lessonEditor';
+  PairingTile,
+  EditorState,
+  BlanksTile,
+  migrateTileConfig
+} from 'tiles-core';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
-import { EditorState, BlanksTile } from '../types/lessonEditor';
 import { EditorAction } from '../state/editorReducer';
 
 type TileFactory = (position: { x: number; y: number }, page: number) => LessonTile;
 
-const tileFactoryMap: Record<LessonTile['type'], TileFactory> = {
+const tileFactoryMap: Partial<Record<LessonTile['type'], TileFactory>> = {
   text: (position, page) => LessonContentService.createTextTile(position, page),
   image: (position, page) => LessonContentService.createImageTile(position, page),
   visualization: (position, page) => LessonContentService.createVisualizationTile(position, page),
@@ -65,7 +67,7 @@ export const useLessonContentManager = ({
 }: UseLessonContentManagerOptions) => {
   const { success, error, warning } = notifications;
 
-  const [lessonContent, setLessonContent] = useState<LessonContent | null>(null);
+  const [lessonContent, setLessonContent] = useState<Lesson | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -108,9 +110,10 @@ export const useLessonContentManager = ({
         return;
       }
 
-      const normalizedTiles = content.tiles.map(normalizeTilePage);
+      const migratedTiles = content.tiles.map(migrateTileConfig);
+      const normalizedTiles = migratedTiles.map(normalizeTilePage);
       const totalPages = Math.max(content.total_pages ?? 1, getMaxPageFromTiles(normalizedTiles));
-      const normalizedContent: LessonContent = {
+      const normalizedContent: Lesson = {
         ...content,
         tiles: normalizedTiles,
         total_pages: totalPages,
@@ -216,7 +219,7 @@ export const useLessonContentManager = ({
         const totalPages = Math.max(prev.total_pages, currentPage);
         const maxHeight = computeMaxCanvasHeight(updatedTiles, totalPages);
 
-        const updatedContent: LessonContent = {
+        const updatedContent: Lesson = {
           ...prev,
           tiles: updatedTiles,
           total_pages: totalPages,

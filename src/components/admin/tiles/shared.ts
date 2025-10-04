@@ -1,6 +1,6 @@
 import type React from 'react';
 import type { Editor } from '@tiptap/react';
-import type { ImageTile, LessonTile } from '../../../../types/lessonEditor';
+import type { ImageTile, LessonTile } from 'tiles-core';
 
 export interface BaseTileRendererProps<T extends LessonTile = LessonTile> {
   tile: T;
