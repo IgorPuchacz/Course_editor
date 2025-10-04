@@ -3,7 +3,7 @@ import {
   ValidateButtonColors,
   ValidateButtonState,
   ValidateButtonColorConfig
-} from '../components/common/ValidateButton.tsx';
+} from '../ui/ValidateButton';
 
 export interface SurfaceColorDefinition {
   lighten: number;

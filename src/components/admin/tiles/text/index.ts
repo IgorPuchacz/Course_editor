@@ -1,1 +1,1 @@
-export { TextTileInteractive } from './Interactive';
+export { TextTileInteractive } from 'tiles-runtime/text';

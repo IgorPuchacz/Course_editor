@@ -1,2 +1,2 @@
 export { PairingTileRenderer } from './Renderer';
-export { PairingInteractive } from './Interactive';
+export { PairingInteractive } from 'tiles-runtime/pairing';

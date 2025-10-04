@@ -1,8 +1,8 @@
 import React from 'react';
 import { OpenTile } from 'tiles-core';
-import { createRichTextAdapter, type RichTextEditorProps } from '../RichTextEditor.tsx';
+import { createRichTextAdapter, RichTextEditor } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared';
-import { OpenInteractive } from './Interactive';
+import { OpenInteractive } from 'tiles-runtime/open';
 
 export const OpenTileRenderer: React.FC<BaseTileRendererProps<OpenTile>> = ({
   tile,
@@ -26,13 +26,13 @@ export const OpenTileRenderer: React.FC<BaseTileRendererProps<OpenTile>> = ({
   };
 
   const renderOpenTile = (
-    instructionEditorProps?: RichTextEditorProps,
+    instructionContent?: React.ReactNode,
     isPreviewMode = false,
   ) => (
     <OpenInteractive
       tile={openTile}
       isTestingMode={isTestingMode}
-      instructionEditorProps={instructionEditorProps}
+      instructionContent={instructionContent}
       isPreview={isPreviewMode}
       onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
     />
@@ -57,17 +57,17 @@ export const OpenTileRenderer: React.FC<BaseTileRendererProps<OpenTile>> = ({
     return (
       <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
         {renderOpenTile(
-          {
-            content: instructionAdapter.content,
-            onChange: (updatedContent) => {
+          <RichTextEditor
+            content={instructionAdapter.content}
+            onChange={(updatedContent) => {
               onUpdateTile(tile.id, {
                 content: instructionAdapter.applyChanges(updatedContent),
               });
-            },
-            onFinish: onFinishTextEditing,
-            onEditorReady,
-            textColor,
-          },
+            }}
+            onFinish={onFinishTextEditing}
+            onEditorReady={onEditorReady}
+            textColor={textColor}
+          />,
           true,
         )}
       </div>

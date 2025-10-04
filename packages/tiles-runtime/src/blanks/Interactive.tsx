@@ -1,27 +1,28 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { RefreshCw, Sparkles, Puzzle, RotateCcw } from 'lucide-react';
 import { BlanksTile } from 'tiles-core';
-import { createBlankId, createPlaceholderRegex } from '../../../../utils/blanks.ts';
-import { getReadableTextColor, surfaceColor } from '../../../../utils/colorUtils';
 import {
+  createBlankId,
+  createPlaceholderRegex,
   createSurfacePalette,
-  createValidateButtonPalette
-} from '../../../../utils/surfacePalette.ts';
-import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
-import { TaskTileSection } from '../TaskTileSection.tsx';
-import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
+  createValidateButtonPalette,
+  getReadableTextColor,
+  surfaceColor
+} from 'tiles-core/utils';
 import {
+  TaskInstructionPanel,
+  TaskTileSection,
   ValidateButton,
-  ValidateButtonColors,
-  ValidateButtonState
-} from '../../../common/ValidateButton.tsx';
+  type ValidateButtonColors,
+  type ValidateButtonState
+} from 'tiles-core/ui';
 
 interface BlanksInteractiveProps {
   tile: BlanksTile;
   isPreview?: boolean;
   isTestingMode?: boolean;
   onRequestTextEditing?: () => void;
-  instructionEditorProps?: RichTextEditorProps;
+  instructionContent?: React.ReactNode;
 }
 
 type Segment =
@@ -81,7 +82,7 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
   isPreview = false,
   isTestingMode = false,
   onRequestTextEditing,
-  instructionEditorProps
+  instructionContent
 }) => {
   const [placements, setPlacements] = useState<Record<string, string | null>>({});
   const [evaluation, setEvaluation] = useState<EvaluationState>('idle');
@@ -366,9 +367,7 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
           }}
           labelStyle={{ color: mutedLabelColor }}
         >
-          {instructionEditorProps ? (
-            <RichTextEditor {...instructionEditorProps} />
-          ) : (
+          {instructionContent ?? (
             <div
               className="text-base leading-relaxed"
               dangerouslySetInnerHTML={{

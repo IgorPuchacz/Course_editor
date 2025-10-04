@@ -2,7 +2,7 @@ import React from 'react';
 import { QuizTile } from 'tiles-core';
 import { createRichTextAdapter } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared';
-import { QuizInteractive } from './Interactive';
+import { QuizInteractive } from 'tiles-runtime/quiz';
 
 export const QuizTileRenderer: React.FC<BaseTileRendererProps<QuizTile>> = ({
   tile,
@@ -48,17 +48,19 @@ export const QuizTileRenderer: React.FC<BaseTileRendererProps<QuizTile>> = ({
         <QuizInteractive
           tile={quizTile}
           isPreview
-          instructionEditorProps={{
-            content: questionAdapter.content,
-            onChange: (updatedContent) => {
-              onUpdateTile(tile.id, {
-                content: questionAdapter.applyChanges(updatedContent),
-              });
-            },
-            onFinish: onFinishTextEditing,
-            onEditorReady,
-            textColor: questionTextColor,
-          }}
+          instructionContent={(
+            <RichTextEditor
+              content={questionAdapter.content}
+              onChange={(updatedContent) => {
+                onUpdateTile(tile.id, {
+                  content: questionAdapter.applyChanges(updatedContent),
+                });
+              }}
+              onFinish={onFinishTextEditing}
+              onEditorReady={onEditorReady}
+              textColor={questionTextColor}
+            />
+          )}
         />
       </div>
     );

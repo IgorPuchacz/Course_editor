@@ -27,7 +27,7 @@ import {
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
 import { SequencingEditor } from './SequencingEditor.tsx';
-import { extractPlaceholdersFromTemplate } from '../../../utils/blanks.ts';
+import { extractPlaceholdersFromTemplate } from 'tiles-core/utils';
 
 interface TileSideEditorProps {
   tile: LessonTile | undefined;

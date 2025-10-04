@@ -1,1 +1,1 @@
-export { ProgrammingTileInteractive } from './Interactive';
+export { ProgrammingTileInteractive } from 'tiles-runtime/programming';

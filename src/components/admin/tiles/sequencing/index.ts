@@ -1,2 +1,2 @@
 export { SequencingTileRenderer } from './Renderer';
-export { SequencingInteractive } from './Interactive';
+export { SequencingInteractive } from 'tiles-runtime/sequencing';
