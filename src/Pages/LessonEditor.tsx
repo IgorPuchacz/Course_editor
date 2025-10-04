@@ -10,7 +10,7 @@ import {
   useLessonContentManager,
 } from 'tiles-editor';
 import { Editor } from '@tiptap/react';
-import { ToastContainer } from '../components/common/Toast.tsx';
+import { ToastContainer } from 'ui-primitives';
 import { useToast } from '../hooks/useToast.ts';
 import { ConfirmDialog } from '../components/common/ConfirmDialog.tsx';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.tsx';
