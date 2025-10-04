@@ -466,14 +466,13 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
         </div>
 
         {isInteractionEnabled && (
-          <div className="flex flex-wrap items-center gap-3 pt-2">
+          <div className="flex flex-col items-center gap-2 pt-2">
             <ValidateButton
-              onClick={handleCheck}
-              onRetry={handleRetry}
-              disabled={!isComplete || evaluation === 'success'}
-              state={validationState}
-              colors={validateButtonColors}
-              labels={validateButtonLabels}
+                state="idle"
+                disabled
+                onClick={() => {}}
+                colors={validateButtonColors}
+                labels={{ idle: 'Sprawdź odpowiedź', success: 'Dobrze!', error: 'Spróbuj ponownie' }}
             />
           </div>
         )}

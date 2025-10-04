@@ -1,6 +1,6 @@
 import React from 'react';
 import { ProgrammingTile } from 'tiles-core';
-import { TaskInstructionPanel } from 'tiles-core/ui';
+import { TaskInstructionPanel } from '../../../ui-primitives';
 import { darkenColor, getReadableTextColor, surfaceColor } from 'tiles-core/utils';
 import { TileChrome } from '../TileChrome';
 

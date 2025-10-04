@@ -632,17 +632,14 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
         </div>
 
         {!isPreview && (
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <ValidateButton
-                onClick={checkSequence}
-                onRetry={initializeExercise}
-                disabled={!sequenceComplete || (isChecked && isCorrect)}
-                state={validationState}
+          <div className="flex flex-col items-center gap-2 pt-2">
+            <ValidateButton
+                state="idle"
+                disabled
+                onClick={() => {}}
                 colors={validateButtonColors}
-                labels={validateButtonLabels}
-              />
-            </div>
+                labels={{ idle: 'Sprawdź odpowiedź', success: 'Dobrze!', error: 'Spróbuj ponownie' }}
+            />
           </div>
         )}
       </div>
