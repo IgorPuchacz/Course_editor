@@ -4,7 +4,7 @@ import { Lesson, Course } from '../types/course.ts';
 import { useLessonEditor } from '../hooks/useLessonEditor.ts';
 import { TilePalette } from '../components/admin/editor side/TilePalette.tsx';
 import { LessonCanvas } from '../components/admin/canvas/LessonCanvas.tsx';
-import { TileSideEditor } from '../components/admin/editor side/TileSideEditor.tsx';
+import { TileSideEditor } from 'tiles-editor/side-editors';
 import { TopToolbar } from '../components/admin/editor top/TopToolbar.tsx';
 import { Editor } from '@tiptap/react';
 import { ToastContainer } from '../components/common/Toast.tsx';

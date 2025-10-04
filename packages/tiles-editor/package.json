@@ -1,0 +1,8 @@
+{
+  "name": "@course-editor/tiles-editor",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

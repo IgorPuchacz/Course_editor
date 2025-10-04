@@ -8,7 +8,11 @@
     "baseUrl": ".",
     "paths": {
       "tiles-core": ["packages/tiles-core/src"],
-      "tiles-core/*": ["packages/tiles-core/src/*"]
+      "tiles-core/*": ["packages/tiles-core/src/*"],
+      "tiles-runtime": ["packages/tiles-runtime/src"],
+      "tiles-runtime/*": ["packages/tiles-runtime/src/*"],
+      "tiles-editor": ["packages/tiles-editor/src"],
+      "tiles-editor/*": ["packages/tiles-editor/src/*"]
     },
 
     /* Bundler mode */
@@ -25,5 +29,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "packages/tiles-core/src"]
+  "include": ["src", "packages/tiles-core/src", "packages/tiles-runtime/src", "packages/tiles-editor/src"]
 }
