@@ -53,15 +53,20 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
   });
 
   // Calculate canvas dimensions
+  const columns = Math.max(content.canvas_settings.width ?? GridUtils.GRID_COLUMNS, 1);
+  const rows = Math.max(content.canvas_settings.height, 1);
+  const cellSize = content.canvas_settings.gridSize;
+  const gap = GridUtils.GRID_GAP;
+
   const canvasStyle = {
-    width: GridUtils.GRID_COLUMNS * (content.canvas_settings.gridSize + GridUtils.GRID_GAP) - GridUtils.GRID_GAP,
-    minHeight: content.canvas_settings.height * (content.canvas_settings.gridSize + GridUtils.GRID_GAP) - GridUtils.GRID_GAP
+    width: columns * cellSize + (columns - 1) * gap,
+    minHeight: rows * cellSize + (rows - 1) * gap
   };
 
   const renderGridBackground = () => {
     if (!showGrid) return null;
     
-    const cellSize = content.canvas_settings.gridSize + GridUtils.GRID_GAP;
+    const cellSizeWithGap = content.canvas_settings.gridSize + GridUtils.GRID_GAP;
     
     return (
       <div 
@@ -71,7 +76,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
             linear-gradient(to right, #e5e7eb 1px, transparent 1px),
             linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)
           `,
-          backgroundSize: `${cellSize}px ${cellSize}px`
+          backgroundSize: `${cellSizeWithGap}px ${cellSizeWithGap}px`
         }}
       />
     );
@@ -155,7 +160,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
       {/* Canvas Info */}
       <div className="mt-4 text-center">
         <p className="text-xs text-gray-500">
-          Siatka: {GridUtils.GRID_COLUMNS} × {content.canvas_settings.height} kafelków
+          Siatka: {columns} × {content.canvas_settings.height} kafelków
           {showGrid && ' • Siatka włączona'}
         </p>
       </div>

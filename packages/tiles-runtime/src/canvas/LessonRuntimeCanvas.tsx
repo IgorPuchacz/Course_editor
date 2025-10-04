@@ -14,38 +14,48 @@ const getGridColumns = (canvasSettings: CanvasSettings): number => {
 };
 
 export const LessonRuntimeCanvas: React.FC<LessonRuntimeCanvasProps> = ({ tiles, canvasSettings }) => {
-  const columns = getGridColumns(canvasSettings);
-  const cellSize = canvasSettings.gridSize + GridUtils.GRID_GAP;
+  const columns = Math.max(getGridColumns(canvasSettings), 1);
+  const rows = Math.max(canvasSettings.height, 1);
+  const cellSize = canvasSettings.gridSize;
+  const gap = GridUtils.GRID_GAP;
+
+  const canvasWidth = columns * cellSize + (columns - 1) * gap;
+  const canvasMinHeight = rows * cellSize + (rows - 1) * gap;
 
   return (
-    <div
-      className="w-full rounded-3xl bg-slate-50 p-6 border border-slate-200 shadow-inner"
-    >
+    <div className="w-full rounded-3xl bg-slate-50 p-6 border border-slate-200 shadow-inner">
       <div
-        className="w-full"
+        className="mx-auto"
         style={{
-          display: 'grid',
-          gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-          gridAutoRows: `${cellSize}px`,
-          gap: `${GridUtils.GRID_GAP}px`,
+          width: canvasWidth,
+          minHeight: canvasMinHeight,
         }}
       >
-        {tiles.map(tile => {
-          const { col, row, colSpan, rowSpan } = tile.gridPosition;
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${columns}, ${cellSize}px)`,
+            gridAutoRows: `${cellSize}px`,
+            gap: `${gap}px`,
+          }}
+        >
+          {tiles.map(tile => {
+            const { col, row, colSpan, rowSpan } = tile.gridPosition;
 
-          return (
-            <TileContainer
-              key={tile.id}
-              className="relative flex"
-              style={{
-                gridColumn: `${col + 1} / span ${Math.max(colSpan, 1)}`,
-                gridRow: `${row + 1} / span ${Math.max(rowSpan, 1)}`,
-              }}
-            >
-              <RuntimeTileRenderer tile={tile} />
-            </TileContainer>
-          );
-        })}
+            return (
+              <TileContainer
+                key={tile.id}
+                className="relative flex"
+                style={{
+                  gridColumn: `${col + 1} / span ${Math.max(colSpan, 1)}`,
+                  gridRow: `${row + 1} / span ${Math.max(rowSpan, 1)}`,
+                }}
+              >
+                <RuntimeTileRenderer tile={tile} />
+              </TileContainer>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
