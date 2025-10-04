@@ -54,19 +54,31 @@ export const RuntimeTileRenderer: React.FC<RuntimeTileRendererProps> = ({ tile, 
     case 'quiz':
       return (
         <TileChrome {...deriveChromeAppearance(tile)}>
-          <QuizInteractive tile={tile as QuizTile} isPreview />
+          <QuizInteractive
+            tile={tile as QuizTile}
+            isPreview={mode !== 'student'}
+            isTestingMode={mode === 'student'}
+          />
         </TileChrome>
       );
     case 'blanks':
       return (
         <TileChrome {...deriveChromeAppearance(tile)}>
-          <BlanksInteractive tile={tile as BlanksTile} isPreview />
+          <BlanksInteractive
+            tile={tile as BlanksTile}
+            isPreview={mode !== 'student'}
+            isTestingMode={mode === 'student'}
+          />
         </TileChrome>
       );
     case 'open':
       return (
         <TileChrome {...deriveChromeAppearance(tile)}>
-          <OpenInteractive tile={tile as OpenTile} isPreview />
+          <OpenInteractive
+            tile={tile as OpenTile}
+            isPreview={mode !== 'student'}
+            isTestingMode={mode === 'student'}
+          />
         </TileChrome>
       );
     case 'sequencing':

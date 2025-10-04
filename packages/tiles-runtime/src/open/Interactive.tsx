@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo } from 'react';
-import { FileText, Paperclip, Download, PencilLine } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { CheckCircle2, FileText, Paperclip, Download, PencilLine, XCircle } from 'lucide-react';
 import { OpenTile } from 'tiles-core';
 import { getReadableTextColor, surfaceColor } from 'tiles-core/utils';
 import {
@@ -7,7 +7,8 @@ import {
   TaskTileSection,
   ValidateButton,
   createValidateButtonPalette,
-  type ValidateButtonColors
+  type ValidateButtonColors,
+  type ValidateButtonState
 } from 'ui-primitives';
 
 interface OpenInteractiveProps {
@@ -40,6 +41,10 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
   const panelBorder = surfaceColor(accentColor, textColor, 0.5, 0.55);
 
   const attachments = useMemo(() => tile.content.attachments ?? [], [tile.content.attachments]);
+  const [answer, setAnswer] = useState('');
+  const [evaluation, setEvaluation] = useState<ValidateButtonState>('idle');
+  const [attempts, setAttempts] = useState(0);
+  const isInteractionEnabled = !isPreview;
 
   const validateButtonColors = useMemo<ValidateButtonColors>(
     () => createValidateButtonPalette(accentColor, textColor),
@@ -47,12 +52,72 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
   );
 
   const handleTileDoubleClick = useCallback(() => {
-    if (isPreview) {
+    if (isPreview || isTestingMode) {
       return;
     }
 
     onRequestTextEditing?.();
-  }, [isPreview, onRequestTextEditing]);
+  }, [isPreview, isTestingMode, onRequestTextEditing]);
+
+  useEffect(() => {
+    setAnswer('');
+    setEvaluation('idle');
+    setAttempts(0);
+  }, [tile.content.correctAnswer, tile.content.ignoreCase, tile.content.ignoreWhitespace]);
+
+  const normalizeAnswer = useCallback(
+    (value: string) => {
+      let normalized = value;
+
+      if (tile.content.ignoreWhitespace) {
+        normalized = normalized.replace(/\s+/g, '');
+      } else {
+        normalized = normalized.trim();
+      }
+
+      if (tile.content.ignoreCase) {
+        normalized = normalized.toLowerCase();
+      }
+
+      return normalized;
+    },
+    [tile.content.ignoreCase, tile.content.ignoreWhitespace]
+  );
+
+  const handleAnswerChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (!isInteractionEnabled) return;
+    const { value } = event.target;
+    setAnswer(value);
+    if (evaluation !== 'idle') {
+      setEvaluation('idle');
+    }
+  };
+
+  const handleValidate = () => {
+    if (!isInteractionEnabled) return;
+
+    setAttempts(prev => prev + 1);
+
+    const userInput = answer.trim();
+    if (!userInput) {
+      setEvaluation('error');
+      return;
+    }
+
+    const normalizedUserInput = normalizeAnswer(answer);
+    const normalizedCorrect = normalizeAnswer(tile.content.correctAnswer ?? '');
+
+    setEvaluation(normalizedUserInput === normalizedCorrect ? 'success' : 'error');
+  };
+
+  const handleRetry = () => {
+    if (!isInteractionEnabled) return;
+    setEvaluation('idle');
+  };
+
+  const validationState: ValidateButtonState = evaluation;
+  const showFeedback = evaluation !== 'idle';
+  const isCorrect = evaluation === 'success';
 
   const answerPlaceholder = tile.content.expectedFormat
     ? `Oczekiwany format:\n${tile.content.expectedFormat}`
@@ -96,6 +161,15 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
             style={{ color: captionColor }}
           >
             Tryb testowania
+          </div>
+        )}
+
+        {attempts > 0 && (
+          <div
+            className="text-xs uppercase tracking-[0.32em]"
+            style={{ color: captionColor }}
+          >
+            Próba #{attempts}
           </div>
         )}
 
@@ -166,16 +240,31 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
                 color: textColor,
               }}
               placeholder={answerPlaceholder}
-              disabled
+              value={answer}
+              onChange={handleAnswerChange}
+              disabled={!isInteractionEnabled}
             />
+            {showFeedback && (
+              <div
+                className={`mt-3 inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium ${
+                  isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'
+                }`}
+              >
+                {isCorrect ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+                {isCorrect
+                  ? 'Świetnie! Twoja odpowiedź jest poprawna.'
+                  : 'To jeszcze nie to. Sprawdź swoją odpowiedź i spróbuj ponownie.'}
+              </div>
+            )}
           </TaskTileSection>
         </div>
 
         <div className="flex flex-col items-center gap-2 pt-2">
           <ValidateButton
-            state="idle"
-            disabled
-            onClick={() => {}}
+            state={validationState}
+            disabled={!isInteractionEnabled || answer.trim().length === 0}
+            onClick={handleValidate}
+            onRetry={handleRetry}
             colors={validateButtonColors}
             labels={{ idle: 'Sprawdź odpowiedź', success: 'Dobrze!', error: 'Spróbuj ponownie' }}
           />
