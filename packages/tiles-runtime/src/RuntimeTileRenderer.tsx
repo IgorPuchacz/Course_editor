@@ -24,8 +24,11 @@ import { OpenInteractive } from './open';
 import { SequencingInteractive } from './sequencing';
 import { PairingInteractive } from './pairing';
 
+type RuntimeMode = 'preview' | 'student';
+
 interface RuntimeTileRendererProps {
   tile: LessonTile;
+  mode?: RuntimeMode;
 }
 
 const deriveChromeAppearance = (
@@ -42,7 +45,7 @@ const deriveChromeAppearance = (
   };
 };
 
-export const RuntimeTileRenderer: React.FC<RuntimeTileRendererProps> = ({ tile }) => {
+export const RuntimeTileRenderer: React.FC<RuntimeTileRendererProps> = ({ tile, mode = 'preview' }) => {
   switch (tile.type) {
     case 'text':
       return <TextTileView tile={tile as TextTile} />;
@@ -69,7 +72,7 @@ export const RuntimeTileRenderer: React.FC<RuntimeTileRendererProps> = ({ tile }
     case 'sequencing':
       return (
         <TileChrome {...deriveChromeAppearance(tile)}>
-          <SequencingInteractive tile={tile as SequencingTile} isPreview />
+          <SequencingInteractive tile={tile as SequencingTile} isPreview={mode !== 'student'} />
         </TileChrome>
       );
     case 'pairing':

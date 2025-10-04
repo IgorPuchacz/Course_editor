@@ -94,7 +94,11 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, course, onBack }
             Dodaj kafelki w edytorze, aby zobaczyć podgląd lekcji.
           </div>
         ) : (
-          <LessonRuntimeCanvas tiles={tilesForPage} canvasSettings={lessonContent.canvas_settings} />
+          <LessonRuntimeCanvas
+            tiles={tilesForPage}
+            canvasSettings={lessonContent.canvas_settings}
+            mode="student"
+          />
         )}
 
         {totalPages > 1 && (
