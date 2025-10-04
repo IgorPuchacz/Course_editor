@@ -11,7 +11,7 @@ import {
   TaskTileSection,
   ValidateButton,
   type ValidateButtonColors
-} from 'tiles-core/ui';
+} from 'ui-primitives';
 
 interface PairingInteractiveProps {
   tile: PairingTile;

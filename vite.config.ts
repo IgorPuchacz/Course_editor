@@ -10,6 +10,7 @@ export default defineConfig({
       'tiles-core': fileURLToPath(new URL('./packages/tiles-core/src', import.meta.url)),
       'tiles-runtime': fileURLToPath(new URL('./packages/tiles-runtime/src', import.meta.url)),
       'tiles-editor': fileURLToPath(new URL('./packages/tiles-editor/src', import.meta.url)),
+      'ui-primitives': fileURLToPath(new URL('./packages/ui-primitives/src', import.meta.url)),
     },
   },
   optimizeDeps: {
