@@ -1,6 +1,6 @@
 import React from 'react';
 import { Editor } from '@tiptap/react';
-import { LessonTile, ImageTile } from '../../../types/lessonEditor.ts';
+import { LessonTile, ImageTile } from 'tiles-core';
 import { TileFrame } from '../canvas/TileFrame.tsx';
 import { BaseTileRendererProps } from './shared.ts';
 import { BlanksTileRenderer } from './blanks';

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { CheckCircle, XCircle, RotateCcw, Sparkles, GripVertical, Shuffle, ArrowLeftRight } from 'lucide-react';
-import { SequencingTile } from '../../../../types/lessonEditor';
+import { SequencingTile } from 'tiles-core';
 import { getReadableTextColor, lightenColor, darkenColor } from '../../../../utils/colorUtils';
 import {
   createSurfacePalette,

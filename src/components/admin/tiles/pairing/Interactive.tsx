@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Link2, Shuffle, Sparkles } from 'lucide-react';
-import { PairingTile } from '../../../../types/lessonEditor';
+import { PairingTile } from 'tiles-core';
 import { getReadableTextColor } from '../../../../utils/colorUtils';
 import {
   createSurfacePalette,

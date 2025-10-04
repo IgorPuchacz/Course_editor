@@ -1,5 +1,5 @@
 import React from 'react';
-import { OpenTile } from '../../../../types/lessonEditor';
+import { OpenTile } from 'tiles-core';
 import { createRichTextAdapter, type RichTextEditorProps } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared';
 import { OpenInteractive } from './Interactive';

@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import { Type } from 'lucide-react';
-import { LessonContent, LessonTile, EditorState } from '../../../types/lessonEditor.ts';
+import { Lesson, LessonTile, EditorState } from 'tiles-core';
 import { EditorAction } from '../../../state/editorReducer.ts';
 import { TileRenderer } from '../tiles/TileRenderer.tsx';
 import { GridUtils } from '../../../utils/gridUtils.ts';
@@ -8,7 +8,7 @@ import { useTileInteractions } from '../../../hooks/useTileInteractions.ts';
 import { Editor } from '@tiptap/react';
 
 interface LessonCanvasProps {
-  content: LessonContent;
+  content: Lesson;
   editorState: EditorState;
   dispatch: React.Dispatch<EditorAction>;
   onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;

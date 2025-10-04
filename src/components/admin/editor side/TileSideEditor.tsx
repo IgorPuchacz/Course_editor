@@ -23,7 +23,7 @@ import {
   BlanksTile,
   OpenTile,
   PairingTile
-} from '../../../types/lessonEditor.ts';
+} from 'tiles-core';
 import { ImageUploadComponent } from './ImageUploadComponent.tsx';
 import { ImagePositionControl } from './ImagePositionControl.tsx';
 import { SequencingEditor } from './SequencingEditor.tsx';

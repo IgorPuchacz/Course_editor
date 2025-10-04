@@ -1,11 +1,11 @@
 import { useState, useEffect, RefObject } from 'react';
-import { LessonContent, LessonTile, GridPosition, EditorState, TextTile, ImageTile, SequencingTile } from '../types/lessonEditor';
+import { Lesson, LessonTile, GridPosition, EditorState, TextTile, ImageTile } from 'tiles-core';
 import { EditorAction } from '../state/editorReducer';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
 
 interface UseTileInteractionsProps {
-  content: LessonContent;
+  content: Lesson;
   editorState: EditorState;
   dispatch: React.Dispatch<EditorAction>;
   onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextTile } from '../../../../types/lessonEditor.ts';
+import { TextTile } from 'tiles-core';
 import { RichTextEditor, createRichTextAdapter } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared.ts';
 

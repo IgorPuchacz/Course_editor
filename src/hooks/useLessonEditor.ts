@@ -1,6 +1,6 @@
 import { useReducer } from 'react';
 import { editorReducer, initialEditorState, EditorAction } from '../state/editorReducer';
-import { EditorState } from '../types/lessonEditor';
+import { EditorState } from 'tiles-core';
 
 export const useLessonEditor = () => {
   const [state, dispatch] = useReducer<React.Reducer<EditorState, EditorAction>>(editorReducer, initialEditorState);

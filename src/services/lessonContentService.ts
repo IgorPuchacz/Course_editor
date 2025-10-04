@@ -1,5 +1,5 @@
 import {
-  LessonContent,
+  Lesson,
   LessonTile,
   TextTile,
   ProgrammingTile,
@@ -8,8 +8,9 @@ import {
   OpenTile,
   PairingTile,
   CanvasSettings,
-  GridPosition
-} from '../types/lessonEditor';
+  GridPosition,
+  TILE_VERSION
+} from 'tiles-core';
 import { GridUtils } from '../utils/gridUtils';
 import { logger } from '../utils/logger';
 
@@ -24,10 +25,10 @@ export class LessonContentService {
   /**
    * Get lesson content by lesson ID
    */
-  static async getLessonContent(lessonId: string): Promise<LessonContent | null> {
+  static async getLessonContent(lessonId: string): Promise<Lesson | null> {
     try {
       // Simulate API call - replace with actual Supabase call
-      const mockContent: LessonContent = {
+      const mockContent: Lesson = {
         id: `content-${lessonId}`,
         lesson_id: lessonId,
         tiles: [],
@@ -47,7 +48,7 @@ export class LessonContentService {
   /**
    * Save lesson content
    */
-  static async saveLessonContent(content: LessonContent): Promise<void> {
+  static async saveLessonContent(content: Lesson): Promise<void> {
     try {
       const totalPages = Math.max(
         content.total_pages || 1,
@@ -318,7 +319,8 @@ export class LessonContentService {
       page,
       created_at: now,
       updated_at: now,
-      z_index: 1
+      z_index: 1,
+      version: TILE_VERSION
     } as Omit<Extract<LessonTile, { type: TType }>, 'content'>;
   }
 }

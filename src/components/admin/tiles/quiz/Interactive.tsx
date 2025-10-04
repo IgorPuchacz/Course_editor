@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Circle, HelpCircle, RotateCcw, XCircle } from 'lucide-react';
-import { QuizTile } from '../../../../types/lessonEditor';
+import { QuizTile } from 'tiles-core';
 import { getReadableTextColor } from '../../../../utils/colorUtils';
 import { createSurfacePalette } from '../../../../utils/surfacePalette.ts';
 import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ImageTile } from '../../../../types/lessonEditor.ts';
+import { ImageTile } from 'tiles-core';
 import { BaseTileRendererProps } from '../shared.ts';
 
 export interface ImageTileRendererProps extends BaseTileRendererProps<ImageTile> {

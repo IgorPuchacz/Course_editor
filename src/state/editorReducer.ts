@@ -1,4 +1,4 @@
-import { EditorState, LessonTile, Position, Size, GridPosition, ResizeHandle } from '../types/lessonEditor';
+import { EditorState, LessonTile, Position, Size, GridPosition, ResizeHandle } from 'tiles-core';
 
 export type EditorAction =
   | { type: 'selectTile'; tileId: string | null }
