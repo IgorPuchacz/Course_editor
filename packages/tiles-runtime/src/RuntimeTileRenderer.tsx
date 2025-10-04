@@ -11,8 +11,13 @@ import {
   PairingTile
 } from 'tiles-core';
 import type { TileChromeProps } from 'ui-primitives';
-import { TileChrome } from 'ui-primitives';
+import { TileChrome, TaskInstructionPanel } from 'ui-primitives';
 import { TextTileView, ImageTileView, ProgrammingTileView } from './views';
+import {
+  getReadableTextColor,
+  surfaceColor,
+  darkenColor
+} from 'tiles-core/utils';
 import { QuizInteractive } from './quiz';
 import { BlanksInteractive } from './blanks';
 import { OpenInteractive } from './open';

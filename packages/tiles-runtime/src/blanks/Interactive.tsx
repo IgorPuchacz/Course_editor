@@ -15,7 +15,7 @@ import {
   ValidateButton,
   type ValidateButtonColors,
   type ValidateButtonState
-} from 'tiles-core/ui';
+} from 'ui-primitives';
 
 interface BlanksInteractiveProps {
   tile: BlanksTile;

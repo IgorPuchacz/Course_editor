@@ -14,7 +14,7 @@ import {
   ValidateButton,
   type ValidateButtonColors,
   type ValidateButtonState
-} from 'tiles-core/ui';
+} from 'ui-primitives';
 
 interface SequencingInteractiveProps {
   tile: SequencingTile;
