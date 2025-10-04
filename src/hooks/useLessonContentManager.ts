@@ -12,7 +12,7 @@ import {
   BlanksTile,
   migrateTileConfig
 } from 'tiles-core';
-import { GridUtils } from '../utils/gridUtils';
+import { GridUtils } from 'tiles-editor';
 import { logger } from '../utils/logger';
 import { EditorAction } from '../state/editorReducer';
 
@@ -146,6 +146,14 @@ export const useLessonContentManager = ({
       setCurrentPage(maxPage);
     }
   }, [lessonContent, currentPage]);
+
+  useEffect(() => {
+    if (!lessonContent) {
+      return;
+    }
+
+    LessonContentService.persistLessonContent(lessonContent);
+  }, [lessonContent]);
 
   const saveLessonContent = useCallback(
     async (showNotification = true) => {
