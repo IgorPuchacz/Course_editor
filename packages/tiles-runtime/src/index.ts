@@ -1,4 +1,5 @@
 export * from './RuntimeTileRenderer';
+export * from './canvas';
 export * from './views';
 export * from './quiz';
 export * from './blanks';
