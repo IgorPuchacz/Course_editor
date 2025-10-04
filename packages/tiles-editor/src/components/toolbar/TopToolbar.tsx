@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Bold, Italic, Underline, List, ListOrdered, Undo, Redo, Code, FileCode, X, ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { Editor } from '@tiptap/react';
-import { FontSizeSelector } from './FontSizeSelector.tsx';
-import { TextColorPicker } from './TextColorPicker.tsx';
-import { FontSelector } from './FontSelector.tsx';
-import { AlignmentControls } from './AlignmentControls.tsx';
+import { FontSizeSelector } from './FontSizeSelector';
+import { TextColorPicker } from './TextColorPicker';
+import { FontSelector } from './FontSelector';
+import { AlignmentControls } from './AlignmentControls';
 import { LessonTile, ProgrammingTile, TextTile, SequencingTile, OpenTile } from 'tiles-core';
 
 
