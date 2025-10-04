@@ -1,5 +1,6 @@
 import React from 'react';
 import { TextTile } from 'tiles-core';
+import { TileChrome, TextTileView } from 'ui-primitives';
 import { RichTextEditor, createRichTextAdapter } from '../../components/RichTextEditor';
 import { BaseTileRendererProps, getReadableTextColor } from '../../components/shared';
 
@@ -15,12 +16,6 @@ export const TextTileRenderer: React.FC<BaseTileRendererProps<TextTile>> = ({
 }) => {
   const textTile = tile;
   const textColor = getReadableTextColor(backgroundColor);
-
-  const wrapperStyle: React.CSSProperties = {
-    borderRadius: 'inherit',
-    backgroundColor,
-    border: showBorder ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
-  };
 
   if (isEditingText && isSelected) {
     const adapter = createRichTextAdapter({
@@ -39,7 +34,12 @@ export const TextTileRenderer: React.FC<BaseTileRendererProps<TextTile>> = ({
     });
 
     return (
-      <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
+      <TileChrome
+        backgroundColor={backgroundColor}
+        showBorder={showBorder}
+        padding="1rem"
+        contentClassName="overflow-hidden"
+      >
         <RichTextEditor
           content={adapter.content}
           onChange={(updatedContent) => {
@@ -51,41 +51,9 @@ export const TextTileRenderer: React.FC<BaseTileRendererProps<TextTile>> = ({
           onEditorReady={onEditorReady}
           textColor={textColor}
         />
-      </div>
+      </TileChrome>
     );
   }
 
-  return (
-    <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
-      <div
-        className="w-full h-full p-3 overflow-hidden tile-text-content"
-        style={{
-          fontSize: `${textTile.content.fontSize}px`,
-          fontFamily: textTile.content.fontFamily,
-          color: textColor,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent:
-            textTile.content.verticalAlign === 'center'
-              ? 'center'
-              : textTile.content.verticalAlign === 'bottom'
-                ? 'flex-end'
-                : 'flex-start',
-        }}
-      >
-        <div
-          className="break-words rich-text-content tile-formatted-text w-full"
-          style={{
-            minHeight: '1em',
-            outline: 'none',
-          }}
-          dangerouslySetInnerHTML={{
-            __html:
-              textTile.content.richText ||
-              `<p style="margin: 0;">${textTile.content.text || 'Kliknij dwukrotnie, aby edytować'}</p>`,
-          }}
-        />
-      </div>
-    </div>
-  );
+  return <TextTileView tile={textTile} />;
 };

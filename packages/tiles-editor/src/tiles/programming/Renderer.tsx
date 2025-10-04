@@ -1,6 +1,7 @@
 import React from 'react';
 import { Code2, Play } from 'lucide-react';
 import { ProgrammingTile } from 'tiles-core';
+import { TileChrome, ProgrammingTileView } from 'ui-primitives';
 import { TaskInstructionPanel } from 'tiles-core/ui';
 import { RichTextEditor, createRichTextAdapter } from '../../components/RichTextEditor';
 import { BaseTileRendererProps, darkenColor, getReadableTextColor, surfaceColor } from '../../components/shared';
@@ -136,60 +137,31 @@ export const ProgrammingTileRenderer: React.FC<BaseTileRendererProps<Programming
     });
 
     return (
-      <div
-        className="w-full h-full overflow-hidden"
-        style={{
-          borderRadius: 'inherit',
-          backgroundColor,
-          border: showBorder ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
-        }}
+      <TileChrome
+        backgroundColor={backgroundColor}
+        showBorder={showBorder}
+        padding="1.5rem"
+        contentClassName="flex flex-col gap-5"
+        contentStyle={{ color: textColor }}
       >
-        <div className="w-full h-full flex flex-col gap-5 p-5" style={{ color: textColor }}>
-          {renderDescriptionBlock(
-            <RichTextEditor
-              textColor={textColor}
-              content={adapter.content}
-              onChange={(updatedContent) => {
-                onUpdateTile(tile.id, {
-                  content: adapter.applyChanges(updatedContent),
-                });
-              }}
-              onFinish={onFinishTextEditing}
-              onEditorReady={onEditorReady}
-            />
-          )}
-
-          {renderCodePreview()}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="w-full h-full overflow-hidden"
-      style={{
-        borderRadius: 'inherit',
-        backgroundColor,
-        border: showBorder ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
-      }}
-    >
-      <div className="w-full h-full flex flex-col gap-5 p-5" style={{ color: textColor }}>
         {renderDescriptionBlock(
-          <div
-            className="text-sm leading-relaxed"
-            style={{
-              fontFamily: programmingTile.content.fontFamily,
-              fontSize: `${programmingTile.content.fontSize}px`,
+          <RichTextEditor
+            textColor={textColor}
+            content={adapter.content}
+            onChange={(updatedContent) => {
+              onUpdateTile(tile.id, {
+                content: adapter.applyChanges(updatedContent),
+              });
             }}
-            dangerouslySetInnerHTML={{
-              __html: programmingTile.content.richDescription || programmingTile.content.description,
-            }}
+            onFinish={onFinishTextEditing}
+            onEditorReady={onEditorReady}
           />
         )}
 
         {renderCodePreview()}
-      </div>
-    </div>
-  );
+      </TileChrome>
+    );
+  }
+
+  return <ProgrammingTileView tile={programmingTile} />;
 };

@@ -1,5 +1,6 @@
 import React from 'react';
 import { PairingTile } from 'tiles-core';
+import { TileChrome } from 'ui-primitives';
 import { createRichTextAdapter, RichTextEditor } from '../../components/RichTextEditor';
 import { BaseTileRendererProps, getReadableTextColor } from '../../components/shared';
 import { PairingInteractive } from 'tiles-runtime/pairing';
@@ -18,12 +19,6 @@ export const PairingTileRenderer: React.FC<BaseTileRendererProps<PairingTile>> =
 }) => {
   const pairingTile = tile;
   const textColor = getReadableTextColor(pairingTile.content.backgroundColor || backgroundColor);
-
-  const wrapperStyle: React.CSSProperties = {
-    borderRadius: 'inherit',
-    backgroundColor,
-    border: showBorder ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
-  };
 
   const renderPairingContent = (
     instructionContent?: React.ReactNode,
@@ -55,7 +50,7 @@ export const PairingTileRenderer: React.FC<BaseTileRendererProps<PairingTile>> =
     });
 
     return (
-      <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
+      <TileChrome backgroundColor={backgroundColor} showBorder={showBorder}>
         {renderPairingContent(
           <RichTextEditor
             content={instructionAdapter.content}
@@ -70,13 +65,13 @@ export const PairingTileRenderer: React.FC<BaseTileRendererProps<PairingTile>> =
           />,
           true,
         )}
-      </div>
+      </TileChrome>
     );
   }
 
   return (
-    <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
+    <TileChrome backgroundColor={backgroundColor} showBorder={showBorder}>
       {renderPairingContent()}
-    </div>
+    </TileChrome>
   );
 };

@@ -1,5 +1,6 @@
 import React from 'react';
 import { OpenTile } from 'tiles-core';
+import { TileChrome } from 'ui-primitives';
 import { createRichTextAdapter, RichTextEditor } from '../../components/RichTextEditor';
 import { BaseTileRendererProps, getReadableTextColor } from '../../components/shared';
 import { OpenInteractive } from 'tiles-runtime/open';
@@ -18,12 +19,6 @@ export const OpenTileRenderer: React.FC<BaseTileRendererProps<OpenTile>> = ({
 }) => {
   const openTile = tile;
   const textColor = getReadableTextColor(openTile.content.backgroundColor || backgroundColor);
-
-  const wrapperStyle: React.CSSProperties = {
-    borderRadius: 'inherit',
-    backgroundColor,
-    border: showBorder ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
-  };
 
   const renderOpenTile = (
     instructionContent?: React.ReactNode,
@@ -55,7 +50,7 @@ export const OpenTileRenderer: React.FC<BaseTileRendererProps<OpenTile>> = ({
     });
 
     return (
-      <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
+      <TileChrome backgroundColor={backgroundColor} showBorder={showBorder}>
         {renderOpenTile(
           <RichTextEditor
             content={instructionAdapter.content}
@@ -70,13 +65,13 @@ export const OpenTileRenderer: React.FC<BaseTileRendererProps<OpenTile>> = ({
           />,
           true,
         )}
-      </div>
+      </TileChrome>
     );
   }
 
   return (
-    <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
+    <TileChrome backgroundColor={backgroundColor} showBorder={showBorder}>
       {renderOpenTile()}
-    </div>
+    </TileChrome>
   );
 };
