@@ -1,17 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Save, RotateCcw, Grid, Edit } from 'lucide-react';
 import { Lesson, Course } from '../types/course.ts';
-import { useLessonEditor } from '../hooks/useLessonEditor.ts';
+import { TileSideEditor, useLessonEditor, useLessonContentManager } from 'tiles-editor';
 import { TilePalette } from '../components/admin/editor side/TilePalette.tsx';
 import { LessonCanvas } from '../components/admin/canvas/LessonCanvas.tsx';
-import { TileSideEditor } from 'tiles-editor';
 import { TopToolbar } from '../components/admin/editor top/TopToolbar.tsx';
 import { Editor } from '@tiptap/react';
 import { ToastContainer } from '../components/common/Toast.tsx';
 import { useToast } from '../hooks/useToast.ts';
 import { ConfirmDialog } from '../components/common/ConfirmDialog.tsx';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.tsx';
-import { useLessonContentManager } from '../hooks/useLessonContentManager.ts';
 
 interface LessonEditorProps {
   lesson: Lesson;

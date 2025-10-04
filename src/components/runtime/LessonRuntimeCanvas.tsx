@@ -1,7 +1,7 @@
 import React from 'react';
 import { CanvasSettings, LessonTile } from 'tiles-core';
 import { RuntimeTileRenderer } from 'tiles-runtime';
-import { GridUtils } from '../../utils/gridUtils';
+import { GridUtils } from 'tiles-editor';
 
 interface LessonRuntimeCanvasProps {
   tiles: LessonTile[];
