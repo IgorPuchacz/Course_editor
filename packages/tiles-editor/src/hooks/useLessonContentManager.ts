@@ -319,7 +319,7 @@ export const useLessonContentManager = ({
   );
 
   const deleteTile = useCallback(
-    (tileId: string) => {
+    (tileId: string): boolean => {
       let removedTileExists = false;
 
       setLessonContent(prev => {
@@ -349,7 +349,7 @@ export const useLessonContentManager = ({
       });
 
       if (!removedTileExists) {
-        return;
+        return false;
       }
 
       setTestingTileIds(prev => prev.filter(id => id !== tileId));
@@ -360,9 +360,9 @@ export const useLessonContentManager = ({
         dispatch({ type: 'stopEditing' });
       }
 
-      success('Kafelek usunięty', 'Kafelek został pomyślnie usunięty');
+      return true;
     },
-    [computeMaxCanvasHeight, dispatch, editorState.selectedTileId, success]
+    [computeMaxCanvasHeight, dispatch, editorState.selectedTileId]
   );
 
   const addPage = useCallback(() => {

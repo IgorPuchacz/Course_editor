@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Move, Trash2 } from 'lucide-react';
 import { LessonTile } from 'tiles-core';
 import { TileContainer } from 'ui-primitives';
@@ -47,11 +47,21 @@ export const TileFrame: React.FC<TileFrameProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
+  const showSelectionChrome = useMemo(() => {
+    return isSelected && !isEditingText && !isImageEditing;
+  }, [isEditingText, isImageEditing, isSelected]);
+
   useEffect(() => {
     if (isEditingText) {
       setIsHovered(false);
     }
   }, [isEditingText]);
+
+  useEffect(() => {
+    if (!isSelected) {
+      setIsHovered(false);
+    }
+  }, [isSelected]);
 
   const handleMouseEnter = useCallback(() => {
     if (!isEditingText) {
@@ -76,35 +86,6 @@ export const TileFrame: React.FC<TileFrameProps> = ({
     document.dispatchEvent(resizeEvent);
   }, [tile.id]);
 
-  const renderResizeHandles = useCallback(() => {
-    if (!isSelected || isEditingText || isImageEditing) {
-      return null;
-    }
-
-    return (
-      <>
-        {RESIZE_HANDLES.map(({ handle, position, cursor }) => (
-          <div
-            key={handle}
-            className={`absolute w-3 h-3 rounded-full transition-colors ${
-              isFramelessTextTile
-                ? 'bg-blue-500 border-2 border-white shadow-lg hover:bg-blue-600 opacity-90 hover:opacity-100'
-                : 'bg-blue-500 border-2 border-white shadow-md hover:bg-blue-600'
-            }`}
-            style={{
-              left: `${position.x * 100}%`,
-              top: `${position.y * 100}%`,
-              transform: 'translate(-50%, -50%)',
-              cursor,
-              zIndex: 10
-            }}
-            onMouseDown={(e) => handleResizeStart(e, handle)}
-          />
-        ))}
-      </>
-    );
-  }, [handleResizeStart, isEditingText, isFramelessTextTile, isImageEditing, isSelected, tile.gridPosition]);
-
   const allowMouseDown = !isDraggingImage;
 
   return (
@@ -112,7 +93,7 @@ export const TileFrame: React.FC<TileFrameProps> = ({
       className={`absolute select-none transition-all duration-200 ${TILE_CORNER} ${
         isEditing || isImageEditing || isEditingText ? 'z-20' : 'z-10'
       } ${
-        isSelected ? 'ring-2 ring-blue-500 ring-opacity-75' : ''
+        showSelectionChrome ? 'ring-2 ring-blue-500 ring-opacity-75' : ''
       }`}
       style={{
         left: tile.position.x,
@@ -127,7 +108,7 @@ export const TileFrame: React.FC<TileFrameProps> = ({
     >
       <TileContainer
         radius="3xl"
-        elevation="lg"
+        elevation={isFramelessTextTile ? 'none' : 'lg'}
         className={`relative h-full w-full transition-shadow duration-200 ${
           isFramelessTextTile ? 'bg-transparent' : ''
         }`}
@@ -136,7 +117,7 @@ export const TileFrame: React.FC<TileFrameProps> = ({
         {children({ isHovered })}
       </TileContainer>
 
-      {(isSelected || isHovered) && !isEditingText && !isImageEditing && (
+      {(showSelectionChrome || isHovered) && !isEditingText && !isImageEditing && (
         <div
           className="absolute -top-8 left-0 flex items-center space-x-1 bg-white rounded-md shadow-md border border-gray-200 px-2 py-1"
           onMouseDown={(event) => {
@@ -167,13 +148,34 @@ export const TileFrame: React.FC<TileFrameProps> = ({
         </div>
       )}
 
-      {showGrid && isSelected && (
+      {showGrid && showSelectionChrome && (
         <div className="absolute -bottom-6 left-0 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
           {tile.gridPosition.col},{tile.gridPosition.row}({tile.gridPosition.colSpan}×{tile.gridPosition.rowSpan})
         </div>
       )}
 
-      {!isEditingText && !isImageEditing && renderResizeHandles()}
+      {showSelectionChrome && (
+        <>
+          {RESIZE_HANDLES.map(({ handle, position, cursor }) => (
+            <div
+              key={handle}
+              className={`absolute w-3 h-3 rounded-full transition-colors ${
+                isFramelessTextTile
+                  ? 'bg-blue-500 border-2 border-white shadow-lg hover:bg-blue-600 opacity-90 hover:opacity-100'
+                  : 'bg-blue-500 border-2 border-white shadow-md hover:bg-blue-600'
+              }`}
+              style={{
+                left: `${position.x * 100}%`,
+                top: `${position.y * 100}%`,
+                transform: 'translate(-50%, -50%)',
+                cursor,
+                zIndex: 10
+              }}
+              onMouseDown={(e) => handleResizeStart(e, handle)}
+            />
+          ))}
+        </>
+      )}
     </div>
   );
 };

@@ -157,7 +157,10 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
       title: 'Usuń kafelek',
       message: `Czy na pewno chcesz usunąć ten kafelek? Ta operacja jest nieodwracalna.`,
       onConfirm: () => {
-        deleteTile(tileId);
+        const wasRemoved = deleteTile(tileId);
+        if (wasRemoved) {
+          success('Kafelek usunięty', 'Kafelek został pomyślnie usunięty');
+        }
       }
     });
   };
