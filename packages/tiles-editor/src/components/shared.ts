@@ -8,7 +8,6 @@ export interface BaseTileRendererProps<T extends LessonTile = LessonTile> {
   isEditing: boolean;
   isEditingText: boolean;
   isImageEditing: boolean;
-  isTestingMode?: boolean;
   isDraggingImage: boolean;
   onDoubleClick: () => void;
   onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;

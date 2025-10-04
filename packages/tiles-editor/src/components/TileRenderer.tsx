@@ -19,7 +19,6 @@ interface TileRendererProps {
   isEditing: boolean;
   isEditingText: boolean;
   isImageEditing: boolean;
-  isTestingMode?: boolean;
   onMouseDown: (e: React.MouseEvent) => void;
   onImageMouseDown: (e: React.MouseEvent, tile?: ImageTile) => void;
   isDraggingImage: boolean;
@@ -47,7 +46,6 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
   isSelected,
   isEditing,
   isImageEditing,
-  isTestingMode = false,
   onMouseDown,
   onImageMouseDown,
   isDraggingImage,
@@ -74,7 +72,6 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
     isEditing,
     isEditingText,
     isImageEditing,
-    isTestingMode,
     isDraggingImage,
     onDoubleClick,
     onUpdateTile,
@@ -92,7 +89,6 @@ export const TileRenderer: React.FC<TileRendererProps> = ({
       isEditing={isEditing}
       isEditingText={isEditingText}
       isImageEditing={isImageEditing}
-      isTestingMode={isTestingMode}
       isDraggingImage={isDraggingImage}
       showGrid={showGrid}
       isFramelessTextTile={isFramelessTextTile}

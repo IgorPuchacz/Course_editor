@@ -22,7 +22,6 @@ export interface TileFrameProps {
   isEditing: boolean;
   isEditingText: boolean;
   isImageEditing: boolean;
-  isTestingMode?: boolean;
   isDraggingImage: boolean;
   showGrid: boolean;
   isFramelessTextTile?: boolean;
@@ -38,7 +37,6 @@ export const TileFrame: React.FC<TileFrameProps> = ({
   isEditing,
   isEditingText,
   isImageEditing,
-  isTestingMode = false,
   isDraggingImage,
   showGrid,
   isFramelessTextTile = false,
@@ -79,7 +77,7 @@ export const TileFrame: React.FC<TileFrameProps> = ({
   }, [tile.id]);
 
   const renderResizeHandles = useCallback(() => {
-    if (!isSelected || isEditingText || isImageEditing || isTestingMode) {
+    if (!isSelected || isEditingText || isImageEditing) {
       return null;
     }
 
@@ -105,9 +103,9 @@ export const TileFrame: React.FC<TileFrameProps> = ({
         ))}
       </>
     );
-  }, [handleResizeStart, isEditingText, isFramelessTextTile, isImageEditing, isSelected, isTestingMode, tile.gridPosition]);
+  }, [handleResizeStart, isEditingText, isFramelessTextTile, isImageEditing, isSelected, tile.gridPosition]);
 
-  const allowMouseDown = !isDraggingImage && !isTestingMode;
+  const allowMouseDown = !isDraggingImage;
 
   return (
     <div

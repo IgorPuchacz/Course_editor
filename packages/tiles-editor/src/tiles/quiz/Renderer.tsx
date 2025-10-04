@@ -9,7 +9,6 @@ export const QuizTileRenderer: React.FC<BaseTileRendererProps<QuizTile>> = ({
   tile,
   isSelected,
   isEditingText,
-  isTestingMode,
   onUpdateTile,
   onFinishTextEditing,
   onEditorReady,
@@ -76,7 +75,6 @@ export const QuizTileRenderer: React.FC<BaseTileRendererProps<QuizTile>> = ({
     <TileChrome backgroundColor={backgroundColor} showBorder={showBorder}>
       <QuizInteractive
         tile={quizTile}
-        isTestingMode={isTestingMode}
         onRequestTextEditing={onDoubleClick}
       />
     </TileChrome>

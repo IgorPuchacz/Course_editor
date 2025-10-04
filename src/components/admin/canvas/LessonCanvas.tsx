@@ -16,7 +16,6 @@ interface LessonCanvasProps {
   onFinishTextEditing: () => void;
   showGrid?: boolean;
   onEditorReady: (editor: Editor | null) => void;
-  testingTileIds?: string[];
 }
 
 export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({ 
@@ -30,7 +29,6 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
   onFinishTextEditing,
   showGrid = true,
   onEditorReady,
-  testingTileIds = []
 }, ref) => {
   const {
     dragPreview,
@@ -132,7 +130,6 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
             isEditing={editorState.mode === 'editing' && editorState.selectedTileId === tile.id}
             isEditingText={editorState.mode === 'textEditing' && editorState.selectedTileId === tile.id}
             isImageEditing={editorState.mode === 'imageEditing' && editorState.selectedTileId === tile.id}
-            isTestingMode={testingTileIds.includes(tile.id)}
             onMouseDown={(e) => handleTileMouseDown(e, tile)}
             onImageMouseDown={handleImageMouseDown}
             isDraggingImage={editorState.interaction.type === 'imageDrag'}

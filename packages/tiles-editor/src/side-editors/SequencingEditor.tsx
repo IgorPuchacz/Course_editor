@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, GripVertical, RotateCcw, Sparkles, Square } from 'lucide-react';
+import { Plus, Trash2, GripVertical, RotateCcw } from 'lucide-react';
 import { SequencingTile } from 'tiles-core';
 
 interface SequencingEditorProps {
   tile: SequencingTile;
   onUpdateTile: (tileId: string, updates: Partial<SequencingTile>) => void;
-  isTesting?: boolean;
-  onToggleTesting?: (tileId: string) => void;
 }
 
 export const SequencingEditor: React.FC<SequencingEditorProps> = ({
   tile,
   onUpdateTile,
-  isTesting = false,
-  onToggleTesting
 }) => {
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
 
@@ -111,32 +107,6 @@ export const SequencingEditor: React.FC<SequencingEditorProps> = ({
             onChange={(e) => handleContentUpdate('backgroundColor', e.target.value)}
             className="w-full h-12 border border-gray-300 rounded-lg cursor-pointer"
         />
-      </div>
-
-      <div className="p-4 rounded-lg border border-gray-200 bg-white shadow-sm">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900">Tryb testowania</h3>
-            <p className="text-xs text-gray-600 mt-1">
-              {isTesting
-                ? 'Tryb ucznia jest aktywny. Kafelek na płótnie jest zablokowany przed przypadkową edycją.'
-                : 'Wyłącz interakcje edycyjne kafelka i sprawdź zadanie dokładnie tak, jak zobaczy je uczeń.'}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => onToggleTesting?.(tile.id)}
-            disabled={!onToggleTesting}
-            className={`inline-flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg transition-colors shadow-sm ${
-              isTesting
-                ? 'bg-slate-900 text-white hover:bg-slate-800'
-                : 'bg-blue-600 text-white hover:bg-blue-500'
-            } disabled:opacity-60 disabled:cursor-not-allowed`}
-          >
-            {isTesting ? <Square className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
-            <span>{isTesting ? 'Zakończ testowanie' : 'Przetestuj zadanie'}</span>
-          </button>
-        </div>
       </div>
 
       {/* Items Management */}

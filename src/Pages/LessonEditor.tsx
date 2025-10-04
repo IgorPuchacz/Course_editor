@@ -38,11 +38,9 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
     pagedContent,
     selectedTile,
     selectedRichTextTile,
-    testingTileIds,
     addTile,
     updateTile,
     deleteTile,
-    toggleTestingTile,
     addPage,
     deletePage,
     changePage,
@@ -362,8 +360,6 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
                 tile={selectedTile}
                 onUpdateTile={updateTile}
                 onSelectTile={handleSelectTile}
-                isTesting={testingTileIds.includes(selectedTile.id)}
-                onToggleTesting={toggleTestingTile}
               />
             </div>
           ) : (
@@ -415,7 +411,6 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lesson, course, onBa
                 dispatch={dispatch}
                 showGrid={editorState.showGrid}
                 onEditorReady={setActiveEditor}
-                testingTileIds={testingTileIds}
               />
             </div>
           </div>

@@ -33,16 +33,12 @@ interface TileSideEditorProps {
   tile: LessonTile | undefined;
   onUpdateTile: (tileId: string, updates: Partial<LessonTile>) => void;
   onSelectTile?: (tileId: string | null) => void;
-  isTesting?: boolean;
-  onToggleTesting?: (tileId: string) => void;
 }
 
 export const TileSideEditor: React.FC<TileSideEditorProps> = ({
   tile,
   onUpdateTile,
   onSelectTile,
-  isTesting = false,
-  onToggleTesting
 }) => {
 
   if (!tile) {
@@ -285,8 +281,6 @@ export const TileSideEditor: React.FC<TileSideEditorProps> = ({
           <SequencingEditor
             tile={sequencingTile}
             onUpdateTile={onUpdateTile}
-            isTesting={isTesting}
-            onToggleTesting={onToggleTesting}
           />
         );
       }

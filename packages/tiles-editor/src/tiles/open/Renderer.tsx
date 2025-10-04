@@ -9,7 +9,6 @@ export const OpenTileRenderer: React.FC<BaseTileRendererProps<OpenTile>> = ({
   tile,
   isSelected,
   isEditingText,
-  isTestingMode,
   onUpdateTile,
   onFinishTextEditing,
   onEditorReady,
@@ -26,7 +25,6 @@ export const OpenTileRenderer: React.FC<BaseTileRendererProps<OpenTile>> = ({
   ) => (
     <OpenInteractive
       tile={openTile}
-      isTestingMode={isTestingMode}
       instructionContent={instructionContent}
       isPreview={isPreviewMode}
       onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}

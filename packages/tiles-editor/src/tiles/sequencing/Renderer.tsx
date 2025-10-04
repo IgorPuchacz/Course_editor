@@ -9,7 +9,6 @@ export const SequencingTileRenderer: React.FC<BaseTileRendererProps<SequencingTi
   tile,
   isSelected,
   isEditingText,
-  isTestingMode,
   onUpdateTile,
   onFinishTextEditing,
   onEditorReady,
@@ -26,7 +25,6 @@ export const SequencingTileRenderer: React.FC<BaseTileRendererProps<SequencingTi
   ) => (
     <SequencingInteractive
       tile={sequencingTile}
-      isTestingMode={isTestingMode}
       instructionContent={instructionContent}
       isPreview={isPreviewMode}
       onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
