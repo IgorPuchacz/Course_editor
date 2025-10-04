@@ -147,6 +147,14 @@ export const useLessonContentManager = ({
     }
   }, [lessonContent, currentPage]);
 
+  useEffect(() => {
+    if (!lessonContent) {
+      return;
+    }
+
+    LessonContentService.persistLessonContent(lessonContent);
+  }, [lessonContent]);
+
   const saveLessonContent = useCallback(
     async (showNotification = true) => {
       if (!lessonContent) return;
