@@ -11,12 +11,15 @@
     "baseUrl": ".",
     "paths": {
       "tiles-core": ["packages/tiles-core/src"],
-      "tiles-core/*": ["packages/tiles-core/src/*"]
+      "tiles-core/*": ["packages/tiles-core/src/*"],
+      "tiles-runtime": ["packages/tiles-runtime/src"],
+      "tiles-runtime/*": ["packages/tiles-runtime/src/*"]
     }
   },
   "include": [
     "src/utils/colorUtils.ts",
     "src/utils/colorUtils.test.ts",
-    "packages/tiles-core/src"
+    "packages/tiles-core/src",
+    "packages/tiles-runtime/src"
   ]
 }

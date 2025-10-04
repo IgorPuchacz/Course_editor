@@ -1,30 +1,50 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Circle, HelpCircle, RotateCcw, XCircle } from 'lucide-react';
+import { CheckCircle2, Circle, HelpCircle, RotateCcw, Sparkles, XCircle } from 'lucide-react';
 import { QuizTile } from 'tiles-core';
-import { getReadableTextColor } from '../../../../utils/colorUtils';
-import { createSurfacePalette } from '../../../../utils/surfacePalette.ts';
-import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
-import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
 
-interface QuizInteractiveProps {
+import { InstructionPanel } from '../../components/InstructionPanel';
+import { getReadableTextColor, createSurfacePalette } from '../../utils/color';
+
+export type QuizEvaluationState = 'idle' | 'correct' | 'incorrect';
+
+export interface QuizRuntimeTileProps {
   tile: QuizTile;
   isPreview?: boolean;
   isTestingMode?: boolean;
   onRequestTextEditing?: () => void;
-  instructionEditorProps?: RichTextEditorProps;
+  instructionSlot?: React.ReactNode;
+  onEvaluationChange?: (state: QuizEvaluationState) => void;
 }
 
-type EvaluationState = 'idle' | 'correct' | 'incorrect';
+export const evaluateQuizAnswers = (
+  tile: QuizTile,
+  selectedAnswers: number[]
+): QuizEvaluationState => {
+  if (selectedAnswers.length === 0) {
+    return 'idle';
+  }
 
-export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
+  const correctIndices = tile.content.answers
+    .map((answer, index) => (answer.isCorrect ? index : null))
+    .filter((index): index is number => index !== null);
+
+  const isCorrectSelection =
+    selectedAnswers.length === correctIndices.length &&
+    selectedAnswers.every(index => correctIndices.includes(index));
+
+  return isCorrectSelection ? 'correct' : 'incorrect';
+};
+
+export const QuizRuntimeTile: React.FC<QuizRuntimeTileProps> = ({
   tile,
   isPreview = false,
   isTestingMode = false,
   onRequestTextEditing,
-  instructionEditorProps
+  instructionSlot,
+  onEvaluationChange
 }) => {
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
-  const [evaluationState, setEvaluationState] = useState<EvaluationState>('idle');
+  const [evaluationState, setEvaluationState] = useState<QuizEvaluationState>('idle');
 
   useEffect(() => {
     setSelectedAnswers([]);
@@ -42,6 +62,10 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
       setEvaluationState('idle');
     }
   }, [isInteractionEnabled]);
+
+  useEffect(() => {
+    onEvaluationChange?.(evaluationState);
+  }, [evaluationState, onEvaluationChange]);
 
   const {
     panelBackground,
@@ -102,20 +126,12 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
     if (!isInteractionEnabled) return;
     if (selectedAnswers.length === 0) return;
 
-    const correctIndices = tile.content.answers
-      .map((answer, index) => (answer.isCorrect ? index : null))
-      .filter((index): index is number => index !== null);
-
-    const isCorrectSelection =
-      selectedAnswers.length === correctIndices.length &&
-      selectedAnswers.every(index => correctIndices.includes(index));
-
-    setEvaluationState(isCorrectSelection ? 'correct' : 'incorrect');
+    setEvaluationState(evaluateQuizAnswers(tile, selectedAnswers));
   };
 
   const renderInstructionContent = () => {
-    if (instructionEditorProps) {
-      return <RichTextEditor {...instructionEditorProps} />;
+    if (instructionSlot) {
+      return instructionSlot;
     }
 
     return (
@@ -199,73 +215,85 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
   const renderEvaluationMessage = () => {
     if (!isInteractionEnabled || evaluationState === 'idle') return null;
 
-    const isCorrect = evaluationState === 'correct';
+    if (evaluationState === 'correct') {
+      return (
+        <div className="flex items-center gap-2 text-sm font-medium text-emerald-600">
+          <CheckCircle2 className="w-5 h-5" aria-hidden="true" />
+          <span>Great job! All selected answers are correct.</span>
+        </div>
+      );
+    }
 
     return (
-      <div
-        className={`flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium ${
-          isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'
-        }`}
-      >
-        {isCorrect ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
-        {isCorrect ? 'Świetnie! To poprawna odpowiedź.' : 'Spróbuj ponownie. Sprawdź wybrane odpowiedzi.'}
+      <div className="flex items-center gap-2 text-sm font-medium text-rose-500">
+        <XCircle className="w-5 h-5" aria-hidden="true" />
+        <span>Not quite right yet. Adjust your answers and try again.</span>
       </div>
     );
   };
 
   return (
-    <div className="relative w-full h-full" onDoubleClick={handleTileDoubleClick}>
-      <div className="w-full h-full flex flex-col gap-5 p-6">
+    <div
+      className="flex flex-col gap-4"
+      style={{ color: textColor }}
+      onDoubleClick={handleTileDoubleClick}
+    >
+      <InstructionPanel
+        icon={<HelpCircle className="w-5 h-5" style={{ color: textColor }} aria-hidden="true" />}
+        label="Task"
+        className="shadow-sm"
+        style={{
+          backgroundColor: panelBackground,
+          border: `1px solid ${panelBorder}`
+        }}
+        iconWrapperStyle={{ backgroundColor: iconBackground }}
+      >
+        {renderInstructionContent()}
+      </InstructionPanel>
 
-        <TaskInstructionPanel
-          icon={<HelpCircle className="w-4 h-4" />}
-          label="Pytanie"
-          className="border"
-          style={{
-            backgroundColor: panelBackground,
-            borderColor: panelBorder,
-            color: textColor
-          }}
-          iconWrapperClassName="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm"
-          iconWrapperStyle={{
-            backgroundColor: iconBackground,
-            color: textColor
-          }}
-          labelStyle={{ color: mutedTextColor }}
-        >
-          {renderInstructionContent()}
-        </TaskInstructionPanel>
+      <div className="flex flex-col gap-3">
+        {tile.content.answers.map((answer, index) => renderAnswerButton(answer, index))}
+      </div>
 
-        <div className="flex flex-col gap-3">
-          {tile.content.answers.map((answer, index) => renderAnswerButton(answer, index))}
-        </div>
+      <div className="flex flex-col gap-3 mt-2">
+        {renderEvaluationMessage()}
 
-        {isInteractionEnabled && (
-          <div className="flex items-center gap-3 pt-2">
-            <button
-              type="button"
-              onClick={handleEvaluate}
-              className="px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors duration-200 bg-white/90 hover:bg-white"
-              style={{ color: accentColor }}
-              disabled={selectedAnswers.length === 0}
-            >
-              Sprawdź odpowiedź
-            </button>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <button
+            type="button"
+            onClick={handleEvaluate}
+            className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold shadow-md transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900/20 disabled:cursor-not-allowed disabled:opacity-60"
+            style={{
+              backgroundColor: iconBackground,
+              color: textColor,
+              border: `1px solid ${panelBorder}`
+            }}
+            disabled={!isInteractionEnabled}
+          >
+            {(evaluationState === 'correct' && (
+              <CheckCircle2 className="w-5 h-5" aria-hidden="true" />
+            )) ||
+              (evaluationState === 'incorrect' && (
+                <XCircle className="w-5 h-5" aria-hidden="true" />
+              )) || <Sparkles className="w-5 h-5" aria-hidden="true" />}
+            <span>{evaluationState === 'correct' ? 'Well done!' : 'Check answers'}</span>
+          </button>
+
+          {isInteractionEnabled && (
             <button
               type="button"
               onClick={handleReset}
-              className="px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 text-slate-600 hover:text-slate-800"
+              className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900/20"
+              style={{ color: mutedTextColor }}
             >
-              <RotateCcw className="w-4 h-4" />
-              Wyczyść wybór
+              <RotateCcw className="w-4 h-4" aria-hidden="true" />
+              <span>Reset</span>
             </button>
-          </div>
-        )}
-
-        {renderEvaluationMessage()}
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
-export default QuizInteractive;
+export default QuizRuntimeTile;

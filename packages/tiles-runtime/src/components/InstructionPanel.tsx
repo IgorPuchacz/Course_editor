@@ -1,0 +1,53 @@
+import React from 'react';
+
+export interface InstructionPanelProps {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+  headerClassName?: string;
+  iconWrapperClassName?: string;
+  iconWrapperStyle?: React.CSSProperties;
+  labelClassName?: string;
+  labelStyle?: React.CSSProperties;
+  bodyClassName?: string;
+}
+
+export const InstructionPanel: React.FC<InstructionPanelProps> = ({
+  icon,
+  label,
+  children,
+  className = '',
+  style,
+  headerClassName,
+  iconWrapperClassName,
+  iconWrapperStyle,
+  labelClassName,
+  labelStyle,
+  bodyClassName
+}) => {
+  return (
+    <div className={`rounded-2xl font-sans ${className}`} style={style}>
+      <div className={headerClassName ?? 'px-5 pt-5 pb-3 flex items-center gap-3'}>
+        <div
+          className={iconWrapperClassName ?? 'w-9 h-9 rounded-xl flex items-center justify-center shadow-sm'}
+          style={iconWrapperStyle}
+        >
+          {icon}
+        </div>
+        <div className="flex flex-col">
+          <span
+            className={labelClassName ?? 'text-sm uppercase tracking-[0.24em] font-semibold'}
+            style={labelStyle}
+          >
+            {label}
+          </span>
+        </div>
+      </div>
+      <div className={bodyClassName ?? 'px-5 pb-5 h-full'}>{children}</div>
+    </div>
+  );
+};
+
+export default InstructionPanel;

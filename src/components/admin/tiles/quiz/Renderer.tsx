@@ -1,8 +1,8 @@
 import React from 'react';
 import { QuizTile } from 'tiles-core';
-import { createRichTextAdapter } from '../RichTextEditor.tsx';
+import { RichTextEditor, createRichTextAdapter } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared';
-import { QuizInteractive } from './Interactive';
+import { QuizRuntimeTile } from 'tiles-runtime';
 
 export const QuizTileRenderer: React.FC<BaseTileRendererProps<QuizTile>> = ({
   tile,
@@ -45,20 +45,22 @@ export const QuizTileRenderer: React.FC<BaseTileRendererProps<QuizTile>> = ({
 
     return (
       <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
-        <QuizInteractive
+        <QuizRuntimeTile
           tile={quizTile}
           isPreview
-          instructionEditorProps={{
-            content: questionAdapter.content,
-            onChange: (updatedContent) => {
-              onUpdateTile(tile.id, {
-                content: questionAdapter.applyChanges(updatedContent),
-              });
-            },
-            onFinish: onFinishTextEditing,
-            onEditorReady,
-            textColor: questionTextColor,
-          }}
+          instructionSlot={(
+            <RichTextEditor
+              content={questionAdapter.content}
+              onChange={(updatedContent) => {
+                onUpdateTile(tile.id, {
+                  content: questionAdapter.applyChanges(updatedContent),
+                });
+              }}
+              onFinish={onFinishTextEditing}
+              onEditorReady={onEditorReady}
+              textColor={questionTextColor}
+            />
+          )}
         />
       </div>
     );
@@ -66,7 +68,7 @@ export const QuizTileRenderer: React.FC<BaseTileRendererProps<QuizTile>> = ({
 
   return (
     <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
-      <QuizInteractive
+      <QuizRuntimeTile
         tile={quizTile}
         isTestingMode={isTestingMode}
         onRequestTextEditing={onDoubleClick}

@@ -1,14 +1,14 @@
 import React from 'react';
 import { BlanksTile } from 'tiles-core';
-import { createRichTextAdapter, type RichTextEditorProps } from '../RichTextEditor.tsx';
+import { RichTextEditor, createRichTextAdapter } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared';
-import { BlanksInteractive } from './Interactive';
+import { BlanksRuntimeTile } from 'tiles-runtime';
 
 export const BlanksTileRenderer: React.FC<BaseTileRendererProps<BlanksTile>> = ({
   tile,
   isSelected,
   isEditingText,
-  isTestingMode,
+  isTestingMode: _isTestingMode,
   onUpdateTile,
   onFinishTextEditing,
   onEditorReady,
@@ -24,19 +24,6 @@ export const BlanksTileRenderer: React.FC<BaseTileRendererProps<BlanksTile>> = (
     backgroundColor,
     border: showBorder ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
   };
-
-  const renderBlanks = (
-    instructionEditorProps?: RichTextEditorProps,
-    isPreviewMode = false,
-  ) => (
-    <BlanksInteractive
-      tile={blanksTile}
-      isTestingMode={isTestingMode}
-      instructionEditorProps={instructionEditorProps}
-      isPreview={isPreviewMode}
-      onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
-    />
-  );
 
   if (isEditingText && isSelected) {
     const instructionAdapter = createRichTextAdapter({
@@ -56,27 +43,33 @@ export const BlanksTileRenderer: React.FC<BaseTileRendererProps<BlanksTile>> = (
 
     return (
       <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
-        {renderBlanks(
-          {
-            content: instructionAdapter.content,
-            onChange: (updatedContent) => {
-              onUpdateTile(tile.id, {
-                content: instructionAdapter.applyChanges(updatedContent),
-              });
-            },
-            onFinish: onFinishTextEditing,
-            onEditorReady,
-            textColor,
-          },
-          true,
-        )}
+        <BlanksRuntimeTile
+          tile={blanksTile}
+          isPreview
+          instructionSlot={(
+            <RichTextEditor
+              content={instructionAdapter.content}
+              onChange={(updatedContent) => {
+                onUpdateTile(tile.id, {
+                  content: instructionAdapter.applyChanges(updatedContent),
+                });
+              }}
+              onFinish={onFinishTextEditing}
+              onEditorReady={onEditorReady}
+              textColor={textColor}
+            />
+          )}
+        />
       </div>
     );
   }
 
   return (
     <div className="w-full h-full overflow-hidden" style={wrapperStyle}>
-      {renderBlanks()}
+      <BlanksRuntimeTile
+        tile={blanksTile}
+        onRequestTextEditing={onDoubleClick}
+      />
     </div>
   );
 };
