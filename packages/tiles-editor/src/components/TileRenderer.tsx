@@ -1,17 +1,12 @@
 import React from 'react';
 import { Editor } from '@tiptap/react';
-import { LessonTile, ImageTile } from 'tiles-core';
-import { TileChrome } from 'ui-primitives';
+import { LessonTile, ImageTile } from '../../../tiles-core';
+import { TileChrome } from '../../../ui-primitives';
 import { TileFrame } from './TileFrame';
 import { BaseTileRendererProps } from './shared';
-import { BlanksTileRenderer } from '../tiles/blanks';
-import { ImageTileRenderer } from '../tiles/image';
-import { ProgrammingTileRenderer } from '../tiles/programming';
-import { QuizTileRenderer } from '../tiles/quiz';
-import { SequencingTileRenderer } from '../tiles/sequencing';
-import { OpenTileRenderer } from '../tiles/open';
-import { TextTileRenderer } from '../tiles/text';
-import { PairingTileRenderer } from '../tiles/pairing';
+import { BlanksTileRenderer, ImageTileRenderer, ProgrammingTileRenderer,
+         QuizTileRenderer, SequencingTileRenderer, OpenTileRenderer,
+         TextTileRenderer, PairingTileRenderer} from '../tiles';
 
 interface TileRendererProps {
   tile: LessonTile;

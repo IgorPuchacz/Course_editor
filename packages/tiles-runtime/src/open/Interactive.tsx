@@ -154,25 +154,6 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
             />
           )}
         </TaskInstructionPanel>
-
-        {isTestingMode && (
-          <div
-            className="text-[11px] uppercase tracking-[0.32em]"
-            style={{ color: captionColor }}
-          >
-            Tryb testowania
-          </div>
-        )}
-
-        {attempts > 0 && (
-          <div
-            className="text-xs uppercase tracking-[0.32em]"
-            style={{ color: captionColor }}
-          >
-            Próba #{attempts}
-          </div>
-        )}
-
         <div className="flex-1 min-h-0 flex flex-col gap-6 overflow-hidden">
           <TaskTileSection
             icon={<Paperclip className="w-4 h-4" />}

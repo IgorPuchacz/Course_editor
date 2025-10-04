@@ -377,18 +377,6 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
           )}
         </TaskInstructionPanel>
 
-        {isTestingMode && (
-          <div className="text-[11px] uppercase tracking-[0.32em]" style={{ color: testingCaptionColor }}>
-            Tryb testowania
-          </div>
-        )}
-
-        {attempts > 0 && (
-          <div className="text-xs uppercase tracking-[0.32em]" style={{ color: testingCaptionColor }}>
-            Próba #{attempts}
-          </div>
-        )}
-
         <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-5 gap-6">
           <TaskTileSection
             className="lg:col-span-3 shadow-sm min-h-0"
