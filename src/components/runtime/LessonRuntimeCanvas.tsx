@@ -2,6 +2,7 @@ import React from 'react';
 import { CanvasSettings, LessonTile } from 'tiles-core';
 import { RuntimeTileRenderer } from 'tiles-runtime';
 import { GridUtils } from 'tiles-core/utils';
+import { TileContainer } from 'ui-primitives';
 
 interface LessonRuntimeCanvasProps {
   tiles: LessonTile[];
@@ -33,20 +34,16 @@ export const LessonRuntimeCanvas: React.FC<LessonRuntimeCanvasProps> = ({ tiles,
           const { col, row, colSpan, rowSpan } = tile.gridPosition;
 
           return (
-            <div
+            <TileContainer
               key={tile.id}
               className="relative flex"
               style={{
                 gridColumn: `${col + 1} / span ${Math.max(colSpan, 1)}`,
                 gridRow: `${row + 1} / span ${Math.max(rowSpan, 1)}`,
-                borderRadius: '1.5rem',
-                overflow: 'hidden',
-                boxShadow: '0 16px 32px rgba(15, 23, 42, 0.12)',
-                backgroundColor: '#ffffff',
               }}
             >
               <RuntimeTileRenderer tile={tile} />
-            </div>
+            </TileContainer>
           );
         })}
       </div>

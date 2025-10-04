@@ -1,5 +1,6 @@
 
 export * from './TileChrome';
+export * from './TileContainer';
 export * from './views';
 export * from './TaskInstructionPanel';
 export * from './TaskTileSection';
