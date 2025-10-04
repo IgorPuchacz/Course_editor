@@ -10,7 +10,7 @@ import {
   SequencingTile,
   PairingTile
 } from 'tiles-core';
-import { TaskInstructionPanel } from 'tiles-core/ui';
+import { TaskInstructionPanel } from 'ui-primitives';
 import {
   getReadableTextColor,
   surfaceColor,

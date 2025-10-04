@@ -16,7 +16,9 @@
       "tiles-core": ["packages/tiles-core/src"],
       "tiles-core/*": ["packages/tiles-core/src/*"],
       "tiles-editor": ["packages/tiles-editor/src"],
-      "tiles-editor/*": ["packages/tiles-editor/src/*"]
+      "tiles-editor/*": ["packages/tiles-editor/src/*"],
+      "ui-primitives": ["packages/ui-primitives/src"],
+      "ui-primitives/*": ["packages/ui-primitives/src/*"]
   },
 
     /* Linting */
@@ -28,6 +30,7 @@
   "include": [
     "vite.config.ts",
     "packages/tiles-core/src",
-    "packages/tiles-editor/src"
+    "packages/tiles-editor/src",
+    "packages/ui-primitives/src"
   ]
 }

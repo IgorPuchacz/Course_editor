@@ -7,7 +7,9 @@
       "tiles-runtime": ["packages/tiles-runtime/src"],
       "tiles-runtime/*": ["packages/tiles-runtime/src/*"],
       "tiles-editor": ["packages/tiles-editor/src"],
-      "tiles-editor/*": ["packages/tiles-editor/src/*"]
+      "tiles-editor/*": ["packages/tiles-editor/src/*"],
+      "ui-primitives": ["packages/ui-primitives/src"],
+      "ui-primitives/*": ["packages/ui-primitives/src/*"]
     }
   },
   "files": [],

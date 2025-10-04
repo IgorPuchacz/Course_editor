@@ -3,7 +3,7 @@ import { CheckCircle2, Circle, HelpCircle, RotateCcw, XCircle } from 'lucide-rea
 import { QuizTile } from 'tiles-core';
 import { getReadableTextColor } from 'tiles-core/utils';
 import { createSurfacePalette } from 'tiles-core/utils';
-import { TaskInstructionPanel } from 'tiles-core/ui';
+import { TaskInstructionPanel } from 'ui-primitives';
 
 interface QuizInteractiveProps {
   tile: QuizTile;

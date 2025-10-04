@@ -3,7 +3,7 @@ import {
   ValidateButtonColors,
   ValidateButtonState,
   ValidateButtonColorConfig
-} from '../ui/ValidateButton';
+} from 'ui-primitives';
 
 export interface SurfaceColorDefinition {
   lighten: number;

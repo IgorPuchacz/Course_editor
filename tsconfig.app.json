@@ -12,7 +12,9 @@
       "tiles-runtime": ["packages/tiles-runtime/src"],
       "tiles-runtime/*": ["packages/tiles-runtime/src/*"],
       "tiles-editor": ["packages/tiles-editor/src"],
-      "tiles-editor/*": ["packages/tiles-editor/src/*"]
+      "tiles-editor/*": ["packages/tiles-editor/src/*"],
+      "ui-primitives": ["packages/ui-primitives/src"],
+      "ui-primitives/*": ["packages/ui-primitives/src/*"]
     },
 
     /* Bundler mode */
@@ -33,6 +35,7 @@
     "src",
     "packages/tiles-core/src",
     "packages/tiles-runtime/src",
-    "packages/tiles-editor/src"
+    "packages/tiles-editor/src",
+    "packages/ui-primitives/src"
   ]
 }

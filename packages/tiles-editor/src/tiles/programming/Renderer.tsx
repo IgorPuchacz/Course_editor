@@ -1,7 +1,7 @@
 import React from 'react';
 import { Code2, Play } from 'lucide-react';
 import { ProgrammingTile } from 'tiles-core';
-import { TaskInstructionPanel } from 'tiles-core/ui';
+import { TaskInstructionPanel } from 'ui-primitives';
 import { RichTextEditor, createRichTextAdapter } from '../../components/RichTextEditor';
 import { BaseTileRendererProps, darkenColor, getReadableTextColor, surfaceColor } from '../../components/shared';
 
