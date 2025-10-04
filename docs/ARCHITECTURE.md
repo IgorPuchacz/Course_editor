@@ -14,7 +14,7 @@ Docelowe rozdzielenie na trzy pakiety umożliwia:
 - **`tiles-runtime`**: zestaw lekkich komponentów wyświetlających kafelki w trybie ucznia. Bazuje na tych samych typach, ale nie importuje kodu edytora; zamiast tego konsumuje gotową strukturę lekcji i zapewnia minimalną logikę interakcji (np. ocenianie quizów, odtwarzanie multimediów).
 
 ## Współdzielenie UI i prymitywów
-- Wspólne prymitywy (np. system powiadomień, modale, kontrolki siatki) powinny być wyniesione do osobnego podkatalogu `packages/ui-primitives` lub re-eksportowane z `tiles-editor`, o ile nie zawierają zależności specyficznych dla edycji. Przykładowe komponenty, takie jak `ToastContainer`, już spełniają kryteria neutralności i mogą być współdzielone.【F:packages/ui-primitives/src/Toast.tsx†L1-L120】
+- Wspólne prymitywy (np. system powiadomień, modale, kontrolki siatki) powinny być wyniesione do osobnego podkatalogu `packages/ui-primitives` lub re-eksportowane z `tiles-editor`, o ile nie zawierają zależności specyficznych dla edycji. Przykładowe komponenty, takie jak `ToastContainer`, już spełniają kryteria neutralności i mogą być współdzielone.【F:src/components/common/Toast.tsx†L1-L116】
 - Logika siatki (`GridUtils`) i obliczeń pozycji powinna pozostać w `tiles-core`, aby zarówno edytor, jak i runtime mogły korzystać z identycznych algorytmów rozmieszczania.【F:src/hooks/useTileInteractions.ts†L16-L65】
 - Każdy nowy kafelek otrzymuje definicję w `tiles-core` oraz dedykowane komponenty renderujące w obu pakietach UI. Edytor może rozszerzać komponent runtime o dodatkowe nakładki (ramki zaznaczenia, uchwyty resize), ale podstawowy layout i styl powinny być dzielone poprzez kompozycję, a nie duplikację kodu.
 
