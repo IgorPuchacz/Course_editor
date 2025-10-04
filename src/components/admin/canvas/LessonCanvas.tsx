@@ -1,7 +1,8 @@
 import React, { forwardRef } from 'react';
 import { Type } from 'lucide-react';
 import { Lesson, LessonTile, EditorState } from 'tiles-core';
-import { TileRenderer, useTileInteractions, GridUtils, EditorAction } from 'tiles-editor';
+import { TileRenderer, useTileInteractions, EditorAction } from 'tiles-editor';
+import { GridUtils } from 'tiles-core/utils';
 import { Editor } from '@tiptap/react';
 
 interface LessonCanvasProps {
