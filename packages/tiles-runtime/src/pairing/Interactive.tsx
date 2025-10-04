@@ -1,15 +1,12 @@
 import React, { useMemo } from 'react';
 import { Link2, Shuffle, Sparkles } from 'lucide-react';
 import { PairingTile } from 'tiles-core';
-import {
-  createSurfacePalette,
-  createValidateButtonPalette,
-  getReadableTextColor
-} from 'tiles-core/utils';
+import { createSurfacePalette, getReadableTextColor } from 'tiles-core/utils';
 import {
   TaskInstructionPanel,
   TaskTileSection,
   ValidateButton,
+  createValidateButtonPalette,
   type ValidateButtonColors
 } from 'ui-primitives';
 

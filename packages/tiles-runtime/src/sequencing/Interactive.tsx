@@ -5,13 +5,13 @@ import {
   darkenColor,
   getReadableTextColor,
   lightenColor,
-  createSurfacePalette,
-  createValidateButtonPalette
+  createSurfacePalette
 } from 'tiles-core/utils';
 import {
   TaskInstructionPanel,
   TaskTileSection,
   ValidateButton,
+  createValidateButtonPalette,
   type ValidateButtonColors,
   type ValidateButtonState
 } from 'ui-primitives';
