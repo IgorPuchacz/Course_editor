@@ -5,7 +5,7 @@ import {
   lightenColor,
   darkenColor,
   surfaceColor,
-} from './colorUtils.js';
+} from 'tiles-core/utils';
 
 type TestFn = () => void;
 interface TestCase {
