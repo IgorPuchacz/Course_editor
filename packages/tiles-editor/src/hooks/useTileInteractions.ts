@@ -113,7 +113,13 @@ export const useTileInteractions = ({
       };
       document.addEventListener('mouseup', removeOutline);
     }
-    dispatch({ type: 'startDrag', tile, offset: { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY } });
+    const tileElement = e.currentTarget as HTMLElement;
+    const rect = tileElement.getBoundingClientRect();
+    dispatch({
+      type: 'startDrag',
+      tile,
+      offset: { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    });
   };
 
   const handleImageMouseDown = (e: React.MouseEvent, tile: LessonTile) => {
