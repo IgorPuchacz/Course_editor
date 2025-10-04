@@ -7,13 +7,18 @@ import { RuntimeTileRenderer } from '../RuntimeTileRenderer';
 interface LessonRuntimeCanvasProps {
   tiles: LessonTile[];
   canvasSettings: CanvasSettings;
+  mode?: 'preview' | 'student';
 }
 
 const getGridColumns = (canvasSettings: CanvasSettings): number => {
   return canvasSettings.width ?? GridUtils.GRID_COLUMNS;
 };
 
-export const LessonRuntimeCanvas: React.FC<LessonRuntimeCanvasProps> = ({ tiles, canvasSettings }) => {
+export const LessonRuntimeCanvas: React.FC<LessonRuntimeCanvasProps> = ({
+  tiles,
+  canvasSettings,
+  mode = 'preview',
+}) => {
   const columns = Math.max(getGridColumns(canvasSettings), 1);
   const rows = Math.max(canvasSettings.height, 1);
   const cellSize = canvasSettings.gridSize;
@@ -51,7 +56,7 @@ export const LessonRuntimeCanvas: React.FC<LessonRuntimeCanvasProps> = ({ tiles,
                   gridRow: `${row + 1} / span ${Math.max(rowSpan, 1)}`,
                 }}
               >
-                <RuntimeTileRenderer tile={tile} />
+                <RuntimeTileRenderer tile={tile} mode={mode} />
               </TileContainer>
             );
           })}
