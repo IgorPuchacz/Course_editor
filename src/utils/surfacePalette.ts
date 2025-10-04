@@ -3,7 +3,7 @@ import {
   ValidateButtonColors,
   ValidateButtonState,
   ValidateButtonColorConfig
-} from '../components/common/ValidateButton.tsx';
+} from 'tiles-core';
 
 export interface SurfaceColorDefinition {
   lighten: number;

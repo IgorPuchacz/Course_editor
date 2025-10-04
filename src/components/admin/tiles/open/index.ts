@@ -1,2 +1,2 @@
 export { OpenTileRenderer } from './Renderer';
-export { OpenInteractive } from './Interactive';
+export { OpenInteractive } from 'tiles-runtime';

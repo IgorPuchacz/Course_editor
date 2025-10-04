@@ -1,17 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Circle, HelpCircle, RotateCcw, XCircle } from 'lucide-react';
-import { QuizTile } from 'tiles-core';
-import { getReadableTextColor } from '../../../../utils/colorUtils';
-import { createSurfacePalette } from '../../../../utils/surfacePalette.ts';
-import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
-import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
+import { QuizTile, TaskInstructionPanel } from 'tiles-core';
+import { getReadableTextColor } from '../../../../src/utils/colorUtils';
+import { createSurfacePalette } from '../../../../src/utils/surfacePalette.ts';
 
 interface QuizInteractiveProps {
   tile: QuizTile;
   isPreview?: boolean;
   isTestingMode?: boolean;
   onRequestTextEditing?: () => void;
-  instructionEditorProps?: RichTextEditorProps;
+  instructionEditor?: React.ReactNode;
 }
 
 type EvaluationState = 'idle' | 'correct' | 'incorrect';
@@ -21,7 +19,7 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
   isPreview = false,
   isTestingMode = false,
   onRequestTextEditing,
-  instructionEditorProps
+  instructionEditor
 }) => {
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
   const [evaluationState, setEvaluationState] = useState<EvaluationState>('idle');
@@ -114,8 +112,8 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
   };
 
   const renderInstructionContent = () => {
-    if (instructionEditorProps) {
-      return <RichTextEditor {...instructionEditorProps} />;
+    if (instructionEditor) {
+      return instructionEditor;
     }
 
     return (

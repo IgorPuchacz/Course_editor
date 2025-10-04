@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       'tiles-core': fileURLToPath(new URL('./packages/tiles-core/src', import.meta.url)),
+      'tiles-runtime': fileURLToPath(new URL('./packages/tiles-runtime/src', import.meta.url)),
     },
   },
   optimizeDeps: {

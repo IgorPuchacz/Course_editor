@@ -1,26 +1,25 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { CheckCircle, XCircle, RotateCcw, Sparkles, GripVertical, Shuffle, ArrowLeftRight } from 'lucide-react';
-import { SequencingTile } from 'tiles-core';
-import { getReadableTextColor, lightenColor, darkenColor } from '../../../../utils/colorUtils';
+import {
+  SequencingTile,
+  TaskInstructionPanel,
+  TaskTileSection,
+  ValidateButton,
+  type ValidateButtonColors,
+  type ValidateButtonState
+} from 'tiles-core';
+import { getReadableTextColor, lightenColor, darkenColor } from '../../../../src/utils/colorUtils';
 import {
   createSurfacePalette,
   createValidateButtonPalette
-} from '../../../../utils/surfacePalette.ts';
-import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
-import { TaskTileSection } from '../TaskTileSection.tsx';
-import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
-import {
-  ValidateButton,
-  ValidateButtonColors,
-  ValidateButtonState
-} from '../../../common/ValidateButton.tsx';
+} from '../../../../src/utils/surfacePalette.ts';
 
 interface SequencingInteractiveProps {
   tile: SequencingTile;
   isPreview?: boolean;
   isTestingMode?: boolean;
   onRequestTextEditing?: () => void;
-  instructionEditorProps?: RichTextEditorProps;
+  instructionEditor?: React.ReactNode;
   variant?: 'standalone' | 'embedded';
 }
 
@@ -43,7 +42,7 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   isPreview = false,
   isTestingMode = false,
   onRequestTextEditing,
-  instructionEditorProps,
+  instructionEditor,
   variant = 'embedded'
 }) => {
   const [availableItems, setAvailableItems] = useState<DraggedItem[]>([]);
@@ -494,8 +493,8 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
           labelStyle={{ color: mutedLabelColor }}
           bodyClassName="px-5 pb-5"
         >
-          {instructionEditorProps ? (
-            <RichTextEditor {...instructionEditorProps} />
+          {instructionEditor ? (
+            instructionEditor
           ) : (
             <div
               className="text-base leading-relaxed"

@@ -1,8 +1,8 @@
 import React from 'react';
 import { OpenTile } from 'tiles-core';
-import { createRichTextAdapter, type RichTextEditorProps } from '../RichTextEditor.tsx';
+import { RichTextEditor, createRichTextAdapter, type RichTextEditorProps } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared';
-import { OpenInteractive } from './Interactive';
+import { OpenInteractive } from 'tiles-runtime';
 
 export const OpenTileRenderer: React.FC<BaseTileRendererProps<OpenTile>> = ({
   tile,
@@ -32,7 +32,9 @@ export const OpenTileRenderer: React.FC<BaseTileRendererProps<OpenTile>> = ({
     <OpenInteractive
       tile={openTile}
       isTestingMode={isTestingMode}
-      instructionEditorProps={instructionEditorProps}
+      instructionEditor={
+        instructionEditorProps ? <RichTextEditor {...instructionEditorProps} /> : undefined
+      }
       isPreview={isPreviewMode}
       onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
     />

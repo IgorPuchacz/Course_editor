@@ -1,27 +1,26 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { RefreshCw, Sparkles, Puzzle, RotateCcw } from 'lucide-react';
-import { BlanksTile } from 'tiles-core';
-import { createBlankId, createPlaceholderRegex } from '../../../../utils/blanks.ts';
-import { getReadableTextColor, surfaceColor } from '../../../../utils/colorUtils';
+import {
+  BlanksTile,
+  TaskInstructionPanel,
+  TaskTileSection,
+  ValidateButton,
+  type ValidateButtonColors,
+  type ValidateButtonState
+} from 'tiles-core';
+import { createBlankId, createPlaceholderRegex } from '../../../../src/utils/blanks.ts';
+import { getReadableTextColor, surfaceColor } from '../../../../src/utils/colorUtils';
 import {
   createSurfacePalette,
   createValidateButtonPalette
-} from '../../../../utils/surfacePalette.ts';
-import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
-import { TaskTileSection } from '../TaskTileSection.tsx';
-import { RichTextEditor, RichTextEditorProps } from '../RichTextEditor.tsx';
-import {
-  ValidateButton,
-  ValidateButtonColors,
-  ValidateButtonState
-} from '../../../common/ValidateButton.tsx';
+} from '../../../../src/utils/surfacePalette.ts';
 
 interface BlanksInteractiveProps {
   tile: BlanksTile;
   isPreview?: boolean;
   isTestingMode?: boolean;
   onRequestTextEditing?: () => void;
-  instructionEditorProps?: RichTextEditorProps;
+  instructionEditor?: React.ReactNode;
 }
 
 type Segment =
@@ -81,7 +80,7 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
   isPreview = false,
   isTestingMode = false,
   onRequestTextEditing,
-  instructionEditorProps
+  instructionEditor
 }) => {
   const [placements, setPlacements] = useState<Record<string, string | null>>({});
   const [evaluation, setEvaluation] = useState<EvaluationState>('idle');
@@ -366,8 +365,8 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
           }}
           labelStyle={{ color: mutedLabelColor }}
         >
-          {instructionEditorProps ? (
-            <RichTextEditor {...instructionEditorProps} />
+          {instructionEditor ? (
+            instructionEditor
           ) : (
             <div
               className="text-base leading-relaxed"

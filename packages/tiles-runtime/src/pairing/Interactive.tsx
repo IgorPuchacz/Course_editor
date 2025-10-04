@@ -1,22 +1,24 @@
 import React, { useMemo } from 'react';
 import { Link2, Shuffle, Sparkles } from 'lucide-react';
-import { PairingTile } from 'tiles-core';
-import { getReadableTextColor } from '../../../../utils/colorUtils';
+import {
+  PairingTile,
+  TaskInstructionPanel,
+  TaskTileSection,
+  ValidateButton,
+  type ValidateButtonColors
+} from 'tiles-core';
+import { getReadableTextColor } from '../../../../src/utils/colorUtils';
 import {
   createSurfacePalette,
   createValidateButtonPalette
-} from '../../../../utils/surfacePalette.ts';
-import { TaskInstructionPanel } from '../TaskInstructionPanel.tsx';
-import { TaskTileSection } from '../TaskTileSection.tsx';
-import { RichTextEditor, type RichTextEditorProps } from '../RichTextEditor.tsx';
-import { ValidateButton, type ValidateButtonColors } from '../../../common/ValidateButton.tsx';
+} from '../../../../src/utils/surfacePalette.ts';
 
 interface PairingInteractiveProps {
   tile: PairingTile;
   isPreview?: boolean;
   isTestingMode?: boolean;
   onRequestTextEditing?: () => void;
-  instructionEditorProps?: RichTextEditorProps;
+  instructionEditor?: React.ReactNode;
 }
 
 interface ShuffledItem {
@@ -52,7 +54,7 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
   isPreview = false,
   isTestingMode = false,
   onRequestTextEditing,
-  instructionEditorProps
+  instructionEditor
 }) => {
   const accentColor = tile.content.backgroundColor || '#0f172a';
   const textColor = useMemo(() => getReadableTextColor(accentColor), [accentColor]);
@@ -150,8 +152,8 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
           }}
           labelStyle={{ color: mutedLabelColor }}
         >
-          {instructionEditorProps ? (
-            <RichTextEditor {...instructionEditorProps} />
+          {instructionEditor ? (
+            instructionEditor
           ) : (
             <div
               className="text-base leading-relaxed"

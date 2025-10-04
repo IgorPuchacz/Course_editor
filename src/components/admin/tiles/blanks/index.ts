@@ -1,2 +1,2 @@
 export { BlanksTileRenderer } from './Renderer';
-export { BlanksInteractive } from './Interactive';
+export { BlanksInteractive } from 'tiles-runtime';

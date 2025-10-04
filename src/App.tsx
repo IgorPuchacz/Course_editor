@@ -2,10 +2,11 @@ import React from 'react';
 import { useState } from 'react';
 import { BookOpen, Play, Users, Settings, ArrowRight } from 'lucide-react';
 import { LessonEditor } from './Pages/LessonEditor.tsx';
+import { LessonViewer } from './Pages/LessonViewer.tsx';
 import { Lesson, Course } from './types/course';
 
 function App() {
-  const [currentView, setCurrentView] = useState<'dashboard' | 'lesson-editor'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'lesson-editor' | 'lesson-view'>('dashboard');
   
   // Mock data for demonstration
   const mockCourse: Course = {
@@ -39,6 +40,16 @@ function App() {
   if (currentView === 'lesson-editor') {
     return (
       <LessonEditor
+        lesson={mockLesson}
+        course={mockCourse}
+        onBack={() => setCurrentView('dashboard')}
+      />
+    );
+  }
+
+  if (currentView === 'lesson-view') {
+    return (
+      <LessonViewer
         lesson={mockLesson}
         course={mockCourse}
         onBack={() => setCurrentView('dashboard')}
@@ -167,13 +178,22 @@ function App() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setCurrentView('lesson-editor')}
-                  className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 font-medium"
-                >
-                  <span>Otwórz Edytor Lekcji</span>
-                  <ArrowRight className="w-5 h-5" />
-                </button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setCurrentView('lesson-editor')}
+                    className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 font-medium"
+                  >
+                    <span>Otwórz Edytor Lekcji</span>
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => setCurrentView('lesson-view')}
+                    className="w-full bg-white text-blue-600 px-6 py-3 rounded-lg border border-blue-200 hover:bg-blue-50 transition-colors flex items-center justify-center space-x-2 font-medium"
+                  >
+                    <span>Podgląd Lekcji (uczeń)</span>
+                    <Play className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>

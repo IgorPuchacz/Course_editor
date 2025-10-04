@@ -1,8 +1,8 @@
 import React from 'react';
 import { PairingTile } from 'tiles-core';
-import { createRichTextAdapter, type RichTextEditorProps } from '../RichTextEditor.tsx';
+import { RichTextEditor, createRichTextAdapter, type RichTextEditorProps } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared';
-import { PairingInteractive } from './Interactive';
+import { PairingInteractive } from 'tiles-runtime';
 
 export const PairingTileRenderer: React.FC<BaseTileRendererProps<PairingTile>> = ({
   tile,
@@ -32,7 +32,9 @@ export const PairingTileRenderer: React.FC<BaseTileRendererProps<PairingTile>> =
     <PairingInteractive
       tile={pairingTile}
       isTestingMode={isTestingMode}
-      instructionEditorProps={instructionEditorProps}
+      instructionEditor={
+        instructionEditorProps ? <RichTextEditor {...instructionEditorProps} /> : undefined
+      }
       isPreview={isPreviewMode}
       onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
     />

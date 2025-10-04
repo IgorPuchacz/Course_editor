@@ -1,8 +1,8 @@
 import React from 'react';
 import { BlanksTile } from 'tiles-core';
-import { createRichTextAdapter, type RichTextEditorProps } from '../RichTextEditor.tsx';
+import { RichTextEditor, createRichTextAdapter, type RichTextEditorProps } from '../RichTextEditor.tsx';
 import { BaseTileRendererProps, getReadableTextColor } from '../shared';
-import { BlanksInteractive } from './Interactive';
+import { BlanksInteractive } from 'tiles-runtime';
 
 export const BlanksTileRenderer: React.FC<BaseTileRendererProps<BlanksTile>> = ({
   tile,
@@ -32,7 +32,9 @@ export const BlanksTileRenderer: React.FC<BaseTileRendererProps<BlanksTile>> = (
     <BlanksInteractive
       tile={blanksTile}
       isTestingMode={isTestingMode}
-      instructionEditorProps={instructionEditorProps}
+      instructionEditor={
+        instructionEditorProps ? <RichTextEditor {...instructionEditorProps} /> : undefined
+      }
       isPreview={isPreviewMode}
       onRequestTextEditing={isPreviewMode ? undefined : onDoubleClick}
     />
