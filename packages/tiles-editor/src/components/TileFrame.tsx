@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, useLayoutEffect } from 'react';
 import { Move, Trash2 } from 'lucide-react';
 import { LessonTile } from 'tiles-core';
 import { TileContainer } from 'ui-primitives';
@@ -51,6 +51,30 @@ export const TileFrame: React.FC<TileFrameProps> = ({
     return isSelected && !isEditingText && !isImageEditing;
   }, [isEditingText, isImageEditing, isSelected]);
 
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (containerRef.current && !showSelectionChrome) {
+      const el = containerRef.current;
+
+      const prevTransform = el.style.transform;
+      const prevBackface = (el.style as any).backfaceVisibility;
+
+      // push compositing hints inline
+      el.style.transform = (prevTransform ? prevTransform + " " : "") + "translateZ(0)";
+      (el.style as any).backfaceVisibility = "hidden";
+
+      // flush
+      void el.offsetHeight;
+
+      // cleanup on next frame
+      requestAnimationFrame(() => {
+        el.style.transform = prevTransform || "";
+        (el.style as any).backfaceVisibility = prevBackface || "";
+      });
+    }
+  }, [showSelectionChrome]);
+
   useEffect(() => {
     if (isEditingText) {
       setIsHovered(false);
@@ -90,6 +114,7 @@ export const TileFrame: React.FC<TileFrameProps> = ({
 
   return (
     <div
+        ref={containerRef}
       className={`absolute select-none transition-all duration-200 ${TILE_CORNER} ${
         isEditing || isImageEditing || isEditingText ? 'z-20' : 'z-10'
       } ${
@@ -117,7 +142,7 @@ export const TileFrame: React.FC<TileFrameProps> = ({
         {children({ isHovered })}
       </TileContainer>
 
-      {(showSelectionChrome || isHovered) && !isEditingText && !isImageEditing && (
+      {(showSelectionChrome || isSelected) && !isEditingText && !isImageEditing && (
         <div
           className="absolute -top-8 left-0 flex items-center space-x-1 bg-white rounded-md shadow-md border border-gray-200 px-2 py-1"
           onMouseDown={(event) => {
