@@ -218,9 +218,11 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
 
   const validationState: ValidateButtonState = evaluationState;
 
+  const evaluationMessage = renderEvaluationMessage();
+
   return (
     <div className="relative w-full h-full" onDoubleClick={handleTileDoubleClick}>
-      <div className="w-full h-full flex flex-col gap-5 p-6">
+      <div className="w-full h-full flex flex-col gap-5 p-6 overflow-hidden">
 
         <TaskInstructionPanel
           icon={<HelpCircle className="w-4 h-4" />}
@@ -241,22 +243,26 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
           {renderInstructionContent()}
         </TaskInstructionPanel>
 
-        <div className="flex flex-col gap-3">
-          {tile.content.answers.map((answer, index) => renderAnswerButton(answer, index))}
+        <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
+          <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-auto">
+            {tile.content.answers.map((answer, index) => renderAnswerButton(answer, index))}
+          </div>
+
+          {evaluationMessage && (
+            <div className="flex-shrink-0">
+              {evaluationMessage}
+            </div>
+          )}
         </div>
 
-        {isInteractionEnabled && (
-          <div className="flex flex-col items-center gap-2 pt-2">
-            <ValidateButton
-              state={validationState}
-              disabled={!isInteractionEnabled || selectedAnswers.length === 0}
-              onClick={handleEvaluate}
-              onRetry={handleRetry}
-            />
-          </div>
-        )}
-
-        {renderEvaluationMessage()}
+        <div className="flex flex-col items-center gap-2 pt-2">
+          <ValidateButton
+            state={validationState}
+            disabled={!isInteractionEnabled || selectedAnswers.length === 0}
+            onClick={handleEvaluate}
+            onRetry={handleRetry}
+          />
+        </div>
       </div>
     </div>
   );
