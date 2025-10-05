@@ -430,7 +430,7 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
         <div className="flex flex-col items-center gap-2 pt-2">
           <ValidateButton
             state={validationState}
-            disabled={!isInteractionEnabled}
+            disabled={!isInteractionEnabled || !isComplete}
             onClick={handleCheck}
             onRetry={handleRetry}
           />
