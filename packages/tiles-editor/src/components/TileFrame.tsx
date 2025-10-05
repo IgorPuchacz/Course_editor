@@ -154,28 +154,33 @@ export const TileFrame: React.FC<TileFrameProps> = ({
         </div>
       )}
 
-      {showSelectionChrome && (
-        <>
-          {RESIZE_HANDLES.map(({ handle, position, cursor }) => (
-            <div
-              key={handle}
-              className={`absolute w-3 h-3 rounded-full transition-colors ${
-                isFramelessTextTile
-                  ? 'bg-blue-500 border-2 border-white shadow-lg hover:bg-blue-600 opacity-90 hover:opacity-100'
-                  : 'bg-blue-500 border-2 border-white shadow-md hover:bg-blue-600'
-              }`}
-              style={{
-                left: `${position.x * 100}%`,
-                top: `${position.y * 100}%`,
-                transform: 'translate(-50%, -50%)',
-                cursor,
-                zIndex: 10
-              }}
-              onMouseDown={(e) => handleResizeStart(e, handle)}
-            />
-          ))}
-        </>
-      )}
+      <div
+        className={`absolute inset-0 transition-opacity duration-150 ${
+          showSelectionChrome
+            ? 'opacity-100 visible pointer-events-auto'
+            : 'opacity-0 invisible pointer-events-none'
+        }`}
+        aria-hidden={!showSelectionChrome}
+      >
+        {RESIZE_HANDLES.map(({ handle, position, cursor }) => (
+          <div
+            key={handle}
+            className={`absolute w-3 h-3 rounded-full transition-colors ${
+              isFramelessTextTile
+                ? 'bg-blue-500 border-2 border-white shadow-lg hover:bg-blue-600 opacity-90 hover:opacity-100'
+                : 'bg-blue-500 border-2 border-white shadow-md hover:bg-blue-600'
+            }`}
+            style={{
+              left: `${position.x * 100}%`,
+              top: `${position.y * 100}%`,
+              transform: 'translate3d(-50%, -50%, 0)',
+              cursor,
+              zIndex: 10
+            }}
+            onMouseDown={(e) => handleResizeStart(e, handle)}
+          />
+        ))}
+      </div>
     </div>
   );
 };
