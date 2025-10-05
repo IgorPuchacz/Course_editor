@@ -360,9 +360,11 @@ export const useLessonContentManager = ({
         dispatch({ type: 'stopEditing' });
       }
 
+      success('Kafelek usunięty', 'Kafelek został pomyślnie usunięty');
+
       return true;
     },
-    [computeMaxCanvasHeight, dispatch, editorState.selectedTileId]
+    [computeMaxCanvasHeight, dispatch, editorState.selectedTileId, success]
   );
 
   const addPage = useCallback(() => {
