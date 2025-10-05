@@ -181,7 +181,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     }
   };
 
-  const combinedClassName = `w-full h-full p-3 overflow-hidden relative tile-text-content tiptap-editor${
+  const combinedClassName = `w-full h-full overflow-hidden relative tile-text-content tiptap-editor${
     className ? ` ${className}` : ''
   }`;
 

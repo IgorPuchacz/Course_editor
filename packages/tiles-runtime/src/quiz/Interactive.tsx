@@ -5,6 +5,7 @@ import { getReadableTextColor } from 'tiles-core/utils';
 import { createSurfacePalette } from 'tiles-core/utils';
 import {
   TaskInstructionPanel,
+  TileInstructionContent,
   ValidateButton,
   createValidateButtonPalette,
   type ValidateButtonColors,
@@ -134,15 +135,14 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
     }
 
     return (
-      <div
-        className="text-sm leading-relaxed"
-        style={{
-          fontFamily: tile.content.questionFontFamily || 'Inter',
-          fontSize: `${tile.content.questionFontSize ?? 16}px`
-        }}
-        dangerouslySetInnerHTML={{
-          __html: tile.content.richQuestion || `<p>${tile.content.question}</p>`
-        }}
+      <TileInstructionContent
+        html={
+          tile.content.richQuestion ||
+          `<p style="margin: 0;">${tile.content.question}</p>`
+        }
+        textColor={textColor}
+        fontFamily={tile.content.questionFontFamily}
+        fontSize={tile.content.questionFontSize}
       />
     );
   };

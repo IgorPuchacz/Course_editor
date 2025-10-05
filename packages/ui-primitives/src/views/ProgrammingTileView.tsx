@@ -1,6 +1,6 @@
 import React from 'react';
 import { ProgrammingTile } from 'tiles-core';
-import { TaskInstructionPanel } from '../../../ui-primitives';
+import { TaskInstructionPanel, TileInstructionContent } from '../../../ui-primitives';
 import { darkenColor, getReadableTextColor, surfaceColor } from 'tiles-core/utils';
 import { TileChrome } from '../TileChrome';
 
@@ -65,15 +65,14 @@ export const ProgrammingTileView: React.FC<ProgrammingTileViewProps> = ({
         }}
         labelStyle={{ color: textColor === '#0f172a' ? '#475569' : '#dbeafe' }}
       >
-        <div
-          className="text-sm leading-relaxed"
-          style={{
-            fontFamily: tile.content.fontFamily,
-            fontSize: `${tile.content.fontSize}px`,
-          }}
-          dangerouslySetInnerHTML={{
-            __html: tile.content.richDescription || `<p>${tile.content.description}</p>`
-          }}
+        <TileInstructionContent
+          html={
+            tile.content.richDescription ||
+            `<p style="margin: 0;">${tile.content.description}</p>`
+          }
+          textColor={textColor}
+          fontFamily={tile.content.fontFamily}
+          fontSize={tile.content.fontSize}
         />
       </TaskInstructionPanel>
 
