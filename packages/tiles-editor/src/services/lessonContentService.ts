@@ -11,7 +11,7 @@ import {
   GridPosition,
   TILE_VERSION
 } from 'tiles-core';
-import { GridUtils } from 'tiles-core/utils';
+import { GridUtils, extractPlaceholdersFromTemplate } from 'tiles-core/utils';
 import { logger } from '../utils/logger';
 
 const DEFAULT_CANVAS_SETTINGS: CanvasSettings = {
@@ -326,21 +326,27 @@ export class LessonContentService {
    */
   static createBlanksTile(position: { x: number; y: number }, page = 1): BlanksTile {
     const base = this.initializeTileBase('blanks', position, page, { colSpan: 10, rowSpan: 8 });
+    const textTemplate =
+      'Stolicą Polski jest {{Warszawa}}. Narodowym symbolem jest {{biało-czerwona flaga}}.';
+    const placeholders = extractPlaceholdersFromTemplate(textTemplate);
 
     return {
       ...base,
       content: {
         instruction: 'Przeciągnij właściwe wyrażenia do luk w tekście.',
         richInstruction: '<p style="margin: 0;">Przeciągnij właściwe wyrażenia do luk w tekście.</p>',
-        textTemplate: 'Stolicą Polski jest {{Warszawa}}. Narodowym symbolem jest {{biało-czerwona flaga}}.',
+        textTemplate,
         backgroundColor: '#d4d4d4',
-        blanks: [
-          { id: 'blank-warszawa-1', correctOptionId: 'auto-warszawa-1' },
-          { id: 'blank-bialo-czerwona-flaga-2', correctOptionId: 'auto-bialo-czerwona-flaga-2' }
-        ],
+        blanks: placeholders.map(({ blankId, optionId }) => ({
+          id: blankId,
+          correctOptionId: optionId
+        })),
         options: [
-          { id: 'auto-warszawa-1', text: 'Warszawa', isAuto: true },
-          { id: 'auto-bialo-czerwona-flaga-2', text: 'biało-czerwona flaga', isAuto: true },
+          ...placeholders.map(({ optionId, answerText }) => ({
+            id: optionId,
+            text: answerText,
+            isAuto: true
+          })),
           { id: 'distractor-wisla', text: 'Wisła', isAuto: false }
         ]
       }
