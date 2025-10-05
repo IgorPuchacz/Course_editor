@@ -12,8 +12,6 @@ import {
   TaskTileSection,
   TileInstructionContent,
   ValidateButton,
-  createValidateButtonPalette,
-  type ValidateButtonColors,
   type ValidateButtonState
 } from 'ui-primitives';
 
@@ -134,61 +132,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
   const successIconColor = textColor === '#0f172a' ? darkenColor(accentColor, 0.2) : lightenColor(accentColor, 0.32);
   const failureFeedbackBackground = '#fee2e2';
   const failureFeedbackBorder = '#fca5a5';
-  const primaryButtonBackground = textColor === '#0f172a' ? darkenColor(accentColor, 0.25) : lightenColor(accentColor, 0.28);
-  const primaryButtonTextColor = textColor === '#0f172a' ? '#f8fafc' : '#0f172a';
-  const validateButtonColors = useMemo<ValidateButtonColors>(
-    () =>
-      createValidateButtonPalette(accentColor, textColor, {
-        idle: {
-          background: primaryButtonBackground,
-          color: primaryButtonTextColor
-        },
-        success: {
-          background: successFeedbackBackground,
-          color: successIconColor,
-          border: successFeedbackBorder
-        },
-        error: {
-          background: failureFeedbackBackground,
-          color: '#7f1d1d',
-          border: failureFeedbackBorder
-        }
-      }),
-    [
-      accentColor,
-      textColor,
-      primaryButtonBackground,
-      primaryButtonTextColor,
-      successFeedbackBackground,
-      successFeedbackBorder,
-      successIconColor,
-      failureFeedbackBackground,
-      failureFeedbackBorder
-    ]
-  );
-  const validateButtonLabels = useMemo(
-    () => ({
-      idle: (
-        <>
-          <Sparkles className="h-5 w-5" aria-hidden="true" />
-          <span>Sprawdź kolejność</span>
-        </>
-      ),
-      success: (
-        <>
-          <span aria-hidden="true">✅</span>
-          <span>Dobrze!</span>
-        </>
-      ),
-      error: (
-        <>
-          <RotateCcw className="h-5 w-5" aria-hidden="true" />
-          <span>Spróbuj jeszcze raz</span>
-        </>
-      )
-    }),
-    []
-  );
   const showBorder = tile.content.showBorder !== false;
   const isEmbedded = variant === 'embedded';
 
@@ -637,8 +580,6 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
             state={validationState}
             disabled={!canInteract || !sequenceComplete}
             onClick={checkSequence}
-            colors={validateButtonColors}
-            labels={validateButtonLabels}
           />
         </div>
       </div>

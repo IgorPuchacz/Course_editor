@@ -2,37 +2,21 @@ import React from 'react';
 
 export type ValidateButtonState = 'idle' | 'success' | 'error';
 
-export interface ValidateButtonColorConfig {
-  background: string;
-  color: string;
-  border?: string;
-}
-
-export type ValidateButtonColors = Partial<
-  Record<ValidateButtonState, Partial<ValidateButtonColorConfig>>
->;
-
-export type ValidateButtonLabels = Partial<Record<ValidateButtonState, React.ReactNode>>;
-
 interface ValidateButtonProps {
   state: ValidateButtonState;
   onClick: () => void;
   onRetry?: () => void;
   disabled?: boolean;
-  className?: string;
-  style?: React.CSSProperties;
-  colors?: ValidateButtonColors;
-  labels?: ValidateButtonLabels;
   type?: 'button' | 'submit' | 'reset';
 }
 
-const DEFAULT_LABELS: Record<ValidateButtonState, React.ReactNode> = {
-  idle: 'Check answer',
-  success: 'Correct!',
-  error: 'Try again'
+const LABELS: Record<ValidateButtonState, string> = {
+  idle: 'Sprawdź odpowiedź',
+  success: 'Dobrze!',
+  error: 'Spróbuj ponownie'
 };
 
-const DEFAULT_COLORS: Record<ValidateButtonState, ValidateButtonColorConfig> = {
+const COLORS: Record<ValidateButtonState, { background: string; color: string; border: string }> = {
   idle: {
     background: '#0f172a',
     color: '#f8fafc',
@@ -50,36 +34,15 @@ const DEFAULT_COLORS: Record<ValidateButtonState, ValidateButtonColorConfig> = {
   }
 };
 
-const mergeColorConfig = (
-  state: ValidateButtonState,
-  overrides?: ValidateButtonColors
-): ValidateButtonColorConfig => {
-  const base = DEFAULT_COLORS[state];
-  if (!overrides || !overrides[state]) {
-    return base;
-  }
-
-  const override = overrides[state]!;
-  return {
-    background: override.background ?? base.background,
-    color: override.color ?? base.color,
-    border: override.border ?? base.border
-  };
-};
-
 export const ValidateButton: React.FC<ValidateButtonProps> = ({
   state,
   onClick,
   onRetry,
   disabled = false,
-  className = '',
-  style,
-  colors,
-  labels,
   type = 'button'
 }) => {
-  const label = labels?.[state] ?? DEFAULT_LABELS[state];
-  const { background, color, border } = mergeColorConfig(state, colors);
+  const label = LABELS[state];
+  const { background, color, border } = COLORS[state];
 
   const handleClick = React.useCallback(() => {
     if (disabled) return;
@@ -95,10 +58,9 @@ export const ValidateButton: React.FC<ValidateButtonProps> = ({
   const buttonStyle: React.CSSProperties = {
     backgroundColor: background,
     color,
-    borderColor: border ?? 'transparent',
+    borderColor: border,
     boxShadow: '0 16px 32px rgba(15, 23, 42, 0.18)',
-    flexShrink: 0,
-    ...style
+    flexShrink: 0
   };
 
   return (
@@ -106,7 +68,7 @@ export const ValidateButton: React.FC<ValidateButtonProps> = ({
       type={type}
       onClick={handleClick}
       disabled={disabled}
-      className={`inline-flex h-11 min-w-[220px] w-full max-w-[360px] sm:w-[60%] items-center justify-center gap-2 rounded-xl border font-semibold text-sm transition-transform duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900/20 disabled:cursor-not-allowed disabled:opacity-60 hover:-translate-y-0.5 active:translate-y-0 ${className}`.trim()}
+      className="inline-flex h-11 min-w-[220px] w-full max-w-[360px] sm:w-[60%] items-center justify-center gap-2 rounded-xl border font-semibold text-sm transition-transform duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900/20 disabled:cursor-not-allowed disabled:opacity-60 hover:-translate-y-0.5 active:translate-y-0"
       style={buttonStyle}
       data-state={state}
     >
