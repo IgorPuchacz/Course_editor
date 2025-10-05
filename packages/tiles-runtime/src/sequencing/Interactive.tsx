@@ -10,6 +10,7 @@ import {
 import {
   TaskInstructionPanel,
   TaskTileSection,
+  TileInstructionContent,
   ValidateButton,
   createValidateButtonPalette,
   type ValidateButtonColors,
@@ -496,15 +497,15 @@ export const SequencingInteractive: React.FC<SequencingInteractiveProps> = ({
           bodyClassName="px-5 pb-5"
         >
           {instructionContent ?? (
-            <div
-              className="text-base leading-relaxed"
-              style={{
-                fontFamily: tile.content.fontFamily,
-                fontSize: `${tile.content.fontSize}px`
-              }}
-              dangerouslySetInnerHTML={{
-                __html: tile.content.richQuestion || tile.content.question
-              }}
+            <TileInstructionContent
+              html={
+                tile.content.richQuestion ||
+                `<p style="margin: 0;">${tile.content.question}</p>`
+              }
+              textColor={textColor}
+              fontFamily={tile.content.fontFamily}
+              fontSize={tile.content.fontSize}
+              verticalAlign={tile.content.verticalAlign}
             />
           )}
         </TaskInstructionPanel>

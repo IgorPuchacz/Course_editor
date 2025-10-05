@@ -5,6 +5,7 @@ import { getReadableTextColor, surfaceColor } from 'tiles-core/utils';
 import {
   TaskInstructionPanel,
   TaskTileSection,
+  TileInstructionContent,
   ValidateButton,
   createValidateButtonPalette,
   type ValidateButtonColors,
@@ -146,11 +147,15 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
           labelStyle={{ color: mutedLabelColor }}
         >
           {instructionContent ?? (
-            <div
-              className="text-base leading-relaxed"
-              dangerouslySetInnerHTML={{
-                __html: tile.content.richInstruction || `<p>${tile.content.instruction}</p>`
-              }}
+            <TileInstructionContent
+              html={
+                tile.content.richInstruction ||
+                `<p style="margin: 0;">${tile.content.instruction}</p>`
+              }
+              textColor={textColor}
+              fontFamily={tile.content.fontFamily}
+              fontSize={tile.content.fontSize}
+              verticalAlign={tile.content.verticalAlign}
             />
           )}
         </TaskInstructionPanel>
