@@ -13,8 +13,6 @@ import {
   TaskTileSection,
   TileInstructionContent,
   ValidateButton,
-  createValidateButtonPalette,
-  type ValidateButtonColors,
   type ValidateButtonState
 } from 'ui-primitives';
 
@@ -121,32 +119,6 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
     [accentColor, textColor]
   );
   const mutedLabelColor = textColor === '#0f172a' ? '#475569' : '#d1d5db';
-  const validateButtonColors = useMemo<ValidateButtonColors>(
-    () => createValidateButtonPalette(accentColor, textColor),
-    [accentColor, textColor]
-  );
-  const validateButtonLabels = useMemo(
-    () => ({
-      idle: (
-        <>
-          <span>Sprawdź odpowiedzi</span>
-        </>
-      ),
-      success: (
-        <>
-          <span aria-hidden="true">✅</span>
-          <span>Dobrze!</span>
-        </>
-      ),
-      error: (
-        <>
-          <RotateCcw className="h-5 w-5" aria-hidden="true" />
-          <span>Spróbuj jeszcze raz</span>
-        </>
-      )
-    }),
-    []
-  );
 
   const segments = useMemo(() => parseTemplate(tile.content.textTemplate), [tile.content.textTemplate]);
 
@@ -461,8 +433,6 @@ export const BlanksInteractive: React.FC<BlanksInteractiveProps> = ({
             disabled={!isInteractionEnabled}
             onClick={handleCheck}
             onRetry={handleRetry}
-            colors={validateButtonColors}
-            labels={validateButtonLabels}
           />
         </div>
       </div>

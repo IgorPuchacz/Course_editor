@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Circle, HelpCircle, RotateCcw, XCircle } from 'lucide-react';
+import { CheckCircle2, Circle, HelpCircle, XCircle } from 'lucide-react';
 import { QuizTile } from 'tiles-core';
 import { getReadableTextColor } from 'tiles-core/utils';
 import { createSurfacePalette } from 'tiles-core/utils';
@@ -7,8 +7,6 @@ import {
   TaskInstructionPanel,
   TileInstructionContent,
   ValidateButton,
-  createValidateButtonPalette,
-  type ValidateButtonColors,
   type ValidateButtonState
 } from 'ui-primitives';
 
@@ -98,17 +96,6 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
     });
   };
 
-  const handleReset = () => {
-    if (!isInteractionEnabled) return;
-    setSelectedAnswers([]);
-    setEvaluationState('idle');
-  };
-
-  const validateButtonColors = useMemo<ValidateButtonColors>(
-    () => createValidateButtonPalette(accentColor, textColor),
-    [accentColor, textColor]
-  );
-
   const handleEvaluate = () => {
     if (!isInteractionEnabled) return;
     if (selectedAnswers.length === 0) return;
@@ -126,6 +113,7 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
 
   const handleRetry = () => {
     if (!isInteractionEnabled) return;
+    setSelectedAnswers([]);
     setEvaluationState('idle');
   };
 
@@ -258,27 +246,13 @@ export const QuizInteractive: React.FC<QuizInteractiveProps> = ({
         </div>
 
         {isInteractionEnabled && (
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+          <div className="flex flex-col items-center gap-2 pt-2">
             <ValidateButton
               state={validationState}
               disabled={!isInteractionEnabled || selectedAnswers.length === 0}
               onClick={handleEvaluate}
               onRetry={handleRetry}
-              colors={validateButtonColors}
-              labels={{
-                idle: 'Sprawdź odpowiedź',
-                success: 'Dobrze!',
-                error: 'Spróbuj ponownie'
-              }}
             />
-            <button
-              type="button"
-              onClick={handleReset}
-              className="px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 text-slate-600 hover:text-slate-800"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Wyczyść wybór
-            </button>
           </div>
         )}
 

@@ -6,9 +6,7 @@ import {
   TaskInstructionPanel,
   TaskTileSection,
   TileInstructionContent,
-  ValidateButton,
-  createValidateButtonPalette,
-  type ValidateButtonColors
+  ValidateButton
 } from 'ui-primitives';
 
 interface PairingInteractiveProps {
@@ -84,22 +82,6 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
   );
   const mutedLabelColor = textColor === '#0f172a' ? '#475569' : '#d1d5db';
   const columnCaptionColor = textColor === '#0f172a' ? '#64748b' : '#e2e8f0';
-
-  const validateButtonColors = useMemo<ValidateButtonColors>(
-    () => createValidateButtonPalette(accentColor, textColor),
-    [accentColor, textColor]
-  );
-
-  const validateButtonLabels = useMemo(
-    () => ({
-      idle: (
-        <>
-          <span>Sprawdź dopasowania</span>
-        </>
-      )
-    }),
-    []
-  );
 
   const shuffledRightItems = useMemo(() => {
     const originalIds = tile.content.pairs.map(pair => pair.id);
@@ -233,13 +215,7 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
         </TaskTileSection>
 
         <div className="flex items-center justify-center pt-1">
-          <ValidateButton
-            state="idle"
-            disabled={!canInteract}
-            onClick={() => {}}
-            colors={validateButtonColors}
-            labels={{ idle: 'Sprawdź odpowiedź', success: 'Dobrze!', error: 'Spróbuj ponownie' }}
-          />
+          <ValidateButton state="idle" disabled={!canInteract} onClick={() => {}} />
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, FileText, Paperclip, Download, PencilLine, XCircle } from 'lucide-react';
+import { FileText, Paperclip, Download, PencilLine } from 'lucide-react';
 import { OpenTile } from 'tiles-core';
 import { getReadableTextColor, surfaceColor } from 'tiles-core/utils';
 import {
@@ -7,8 +7,6 @@ import {
   TaskTileSection,
   TileInstructionContent,
   ValidateButton,
-  createValidateButtonPalette,
-  type ValidateButtonColors,
   type ValidateButtonState
 } from 'ui-primitives';
 
@@ -46,11 +44,6 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
   const [evaluation, setEvaluation] = useState<ValidateButtonState>('idle');
   const [attempts, setAttempts] = useState(0);
   const isInteractionEnabled = !isPreview;
-
-  const validateButtonColors = useMemo<ValidateButtonColors>(
-    () => createValidateButtonPalette(accentColor, textColor),
-    [accentColor, textColor]
-  );
 
   const handleTileDoubleClick = useCallback(() => {
     if (isPreview || isTestingMode) {
@@ -117,8 +110,6 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
   };
 
   const validationState: ValidateButtonState = evaluation;
-  const showFeedback = evaluation !== 'idle';
-  const isCorrect = evaluation === 'success';
 
   const answerPlaceholder = tile.content.expectedFormat
     ? `Oczekiwany format:\n${tile.content.expectedFormat}`
@@ -230,18 +221,6 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
               onChange={handleAnswerChange}
               disabled={!isInteractionEnabled}
             />
-            {showFeedback && (
-              <div
-                className={`mt-3 inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium ${
-                  isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'
-                }`}
-              >
-                {isCorrect ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
-                {isCorrect
-                  ? 'Świetnie! Twoja odpowiedź jest poprawna.'
-                  : 'To jeszcze nie to. Sprawdź swoją odpowiedź i spróbuj ponownie.'}
-              </div>
-            )}
           </TaskTileSection>
         </div>
 
@@ -251,8 +230,6 @@ export const OpenInteractive: React.FC<OpenInteractiveProps> = ({
             disabled={!isInteractionEnabled || answer.trim().length === 0}
             onClick={handleValidate}
             onRetry={handleRetry}
-            colors={validateButtonColors}
-            labels={{ idle: 'Sprawdź odpowiedź', success: 'Dobrze!', error: 'Spróbuj ponownie' }}
           />
         </div>
       </div>
