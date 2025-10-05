@@ -34,6 +34,30 @@ interface ShuffledItem {
   text: string;
 }
 
+const COLORS = [
+  '#ec4899', // pink-500
+  '#f59e0b', // amber-500
+  '#10b981', // emerald-500
+  '#3b82f6', // blue-500
+  '#a855f7', // violet-500
+  '#ef4444', // red-500
+  '#22c55e', // green-500
+];
+
+const hash = (s: string) => {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+};
+
+const seededFunColor = (leftId: string) => {
+  const idx = hash(leftId) % COLORS.length;
+  return COLORS[idx];
+};
+
 export type ValidationResult = {
   correct: Set<string>;
   incorrect: Set<string>;
@@ -78,19 +102,55 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
 }) => {
   const accentColor = tile.content.backgroundColor || '#0f172a';
   const textColor = useMemo(() => getReadableTextColor(accentColor), [accentColor]);
-  const canInteract = !isPreview;
+  const canInteract = true;
   const [connections, setConnections] = useState<Map<string, string>>(() => new Map());
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [validateState, setValidateState] = useState<ValidateButtonState>('idle');
   const [drag, setDrag] = useState<Temp>(initialDragState);
   const contentRef = useRef<HTMLDivElement>(null);
-  const templateRef = useRef<HTMLDivElement>(null);
   const leftRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const rightRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const { w: contentWidth, h: contentHeight } = useElementSize(contentRef);
   const [headerHeight, setHeaderHeight] = useState(0);
   const [verticalPadding, setVerticalPadding] = useState(0);
   const [itemHeight, setItemHeight] = useState(0);
+
+  const getFirstLeftEl = useCallback((): HTMLDivElement | null => {
+    const firstId = tile.content.pairs[0]?.id;
+    return firstId ? (leftRefs.current[firstId] ?? null) : null;
+  }, [tile.content.pairs]);
+
+  useLayoutEffect(() => {
+    const el = getFirstLeftEl();
+    // rozsądny fallback zanim element się pojawi / fonty się załadują
+    if (!el) {
+      setItemHeight(64);
+      return;
+    }
+
+    const measure = () => {
+      const h = el.getBoundingClientRect().height;
+      setItemHeight(h > 0 ? h : 64);
+    };
+
+    measure();
+
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+
+    const content = contentRef.current;
+    const ro2 = content ? new ResizeObserver(measure) : null;
+    if (content && ro2) ro2.observe(content);
+
+    const raf = requestAnimationFrame(measure);
+
+    return () => {
+      ro.disconnect();
+      ro2?.disconnect();
+      cancelAnimationFrame(raf);
+    };
+  }, [getFirstLeftEl]);
+
 
   const {
     panelBackground,
@@ -165,14 +225,6 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
       const rect = headerElement.getBoundingClientRect();
       setHeaderHeight(rect.height);
     }
-
-    const template = templateRef.current;
-    if (template) {
-      const rect = template.getBoundingClientRect();
-      if (rect.height > 0) {
-        setItemHeight(rect.height);
-      }
-    }
   }, []);
 
   useLayoutEffect(() => {
@@ -224,6 +276,17 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
     }
     return null;
   }, []);
+
+  useEffect(() => {
+    const validIds = new Set(tile.content.pairs.map(p => p.id));
+    for (const key of Object.keys(leftRefs.current)) {
+      if (!validIds.has(key)) delete leftRefs.current[key];
+    }
+    for (const key of Object.keys(rightRefs.current)) {
+      if (!validIds.has(key)) delete rightRefs.current[key];
+    }
+  }, [tile.content.pairs]);
+
 
   useEffect(() => {
     if (!drag.active || !drag.leftId || !canInteract) {
@@ -427,9 +490,12 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
                   connections={connections}
                   getLineColor={getLineColor}
                   temp={drag}
+                  curve={0.32}
+                  outline={{ width: 4, color: textColor, opacity: 0.95 }}
+                  colorForLeftId={(leftId) => seededFunColor(leftId)}
                 />
-                <div className="relative z-10 flex h-full gap-6 overflow-hidden">
-                  <div className="flex-1 flex flex-col gap-3 overflow-hidden">
+                <div className="relative z-10 flex h-full overflow-hidden" style={{ columnGap: 56 }}>
+                <div className="flex-1 flex flex-col gap-3 overflow-hidden">
                     {tile.content.pairs.map((pair, index) => {
                       const isActive = drag.active && drag.leftId === pair.id;
                       return (
@@ -506,38 +572,6 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
                         </div>
                       );
                     })}
-                  </div>
-                </div>
-                <div className="pointer-events-none absolute inset-0 opacity-0">
-                  <div className="flex h-full gap-6">
-                    <div className="flex-1 flex flex-col gap-3">
-                      <div
-                        ref={templateRef}
-                        className="flex items-start gap-3 rounded-xl border px-4 py-3 shadow-sm"
-                        style={{
-                          backgroundColor: itemBackground,
-                          borderColor: itemBorder,
-                          color: textColor
-                        }}
-                      >
-                        <span
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border text-sm font-semibold"
-                          style={{
-                            backgroundColor: badgeBackground,
-                            borderColor: badgeBorder,
-                            color: textColor
-                          }}
-                        >
-                          1
-                        </span>
-                        <span
-                          className="text-sm font-medium leading-snug break-words"
-                          style={{ color: textColor }}
-                        >
-                          {tile.content.pairs[0]?.left ?? ''}
-                        </span>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </>

@@ -17,6 +17,13 @@ interface Props {
   connections: Map<string, string>;
   getLineColor: LineColorResolver;
   temp?: Temp;
+  curve?: number;
+  outline?: {
+    width?: number;
+    color?: string;
+    opacity?: number;
+  };
+  colorForLeftId?: (leftId: string) => string;
 }
 
 interface LineDefinition {
@@ -25,7 +32,21 @@ interface LineDefinition {
   color: string;
 }
 
-const strokeWidth = 3;
+const strokeWidth = 4;
+
+const cubicPath = (
+    x1: number, y1: number,
+    x2: number, y2: number,
+    k: number
+) => {
+  const dx = x2 - x1;
+  const cx1 = x1 + dx * k;
+  const cy1 = y1;
+  const cx2 = x2 - dx * k;
+  const cy2 = y2;
+  return `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
+};
+
 
 const calculateAnchor = (
   element: HTMLDivElement,
@@ -58,7 +79,10 @@ export const PairConnectionLayer: React.FC<Props> = ({
   rightRefs,
   connections,
   getLineColor,
-  temp
+  temp,
+  curve=0.33,
+  outline,
+  colorForLeftId,
 }) => {
   const container = containerRef.current;
   if (!container) {
@@ -66,6 +90,9 @@ export const PairConnectionLayer: React.FC<Props> = ({
   }
 
   const containerRect = container.getBoundingClientRect();
+  const ow = outline?.width ?? 3;
+  const oc = outline?.color ?? '#fff';
+  const oo = outline?.opacity ?? 0.95;
 
   const lines = Array.from(connections.entries()).reduce<LineDefinition[]>((acc, [leftId, rightId]) => {
     const leftElement = leftRefs[leftId];
@@ -80,7 +107,7 @@ export const PairConnectionLayer: React.FC<Props> = ({
 
     acc.push({
       leftId,
-      path: `M ${start.x} ${start.y} L ${end.x} ${end.y}`,
+      path: cubicPath(start.x, start.y, end.x, end.y, curve),
       color
     });
 
@@ -100,7 +127,7 @@ export const PairConnectionLayer: React.FC<Props> = ({
 
       tempLine = {
         leftId: temp.leftId,
-        path: `M ${start.x} ${start.y} L ${end.x} ${end.y}`,
+        path: cubicPath(start.x, start.y, end.x, end.y, curve),
         color: getLineColor(temp.leftId)
       };
     }
@@ -111,28 +138,49 @@ export const PairConnectionLayer: React.FC<Props> = ({
   }
 
   return (
+
+
     <svg className="absolute inset-0 pointer-events-none" width="100%" height="100%">
       {lines.map(line => (
-        <path
-          key={line.leftId}
+        <>
+          <path
+              d={line.path}
+              fill="none"
+              stroke={oc}
+              strokeOpacity={oo}
+              strokeWidth={strokeWidth + ow}
+              strokeLinecap="round"
+          />
+          <path
           d={line.path}
-          stroke={line.color}
+          fill="none"
+          stroke={colorForLeftId ? colorForLeftId(line.leftId) : line.color}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
-          fill="none"
-          data-testid={`pair-line-${line.leftId}`}
-        />
+          />
+        </>
       ))}
       {tempLine && (
-        <path
-          d={tempLine.path}
-          stroke={tempLine.color}
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          fill="none"
-          data-testid="pair-temp-line"
-        />
+          <>
+            <path
+                d={tempLine.path}
+                fill="none"
+                stroke={oc}
+                strokeOpacity={oo}
+                strokeWidth={strokeWidth + Math.max(ow - 1, 2)}
+                strokeLinecap="round"
+            />
+            <path
+                d={tempLine.path}
+                fill="none"
+                stroke={colorForLeftId ? colorForLeftId(tempLine.leftId) : tempLine.color}
+                strokeWidth={strokeWidth}
+                strokeLinecap="round"
+                strokeDasharray="4 4"
+            />
+          </>
       )}
+
     </svg>
   );
 };
