@@ -63,13 +63,6 @@ const ensureDifferentOrder = (originalIds: string[], items: ShuffledItem[]): Shu
   return [...rest, first];
 };
 
-const findRightIdFromEvent = (event: MouseEvent): string | null => {
-  const target = (event.target as HTMLElement | null)?.closest('[data-right-id]') as
-    | HTMLElement
-    | null;
-  return target?.dataset.rightId ?? null;
-};
-
 const VERTICAL_GAP = 12; // px, matches gap-3
 
 const initialDragState: Temp = { active: false, x: 0, y: 0, leftId: null };
@@ -219,6 +212,19 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
     [canInteract]
   );
 
+  // Geometry-based hit test for right cards
+  const hitTestRightId = useCallback((clientX: number, clientY: number): string | null => {
+    const entries = Object.entries(rightRefs.current) as Array<[string, HTMLDivElement | null]>;
+    for (const [rightId, el] of entries) {
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
+        return rightId;
+      }
+    }
+    return null;
+  }, []);
+
   useEffect(() => {
     if (!drag.active || !drag.leftId || !canInteract) {
       return;
@@ -237,7 +243,7 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
           return initialDragState;
         }
 
-        const rightId = findRightIdFromEvent(event);
+        const rightId = hitTestRightId(event.clientX, event.clientY);
         if (rightId) {
           connectPair(prev.leftId, rightId);
         }
@@ -253,7 +259,7 @@ export const PairingInteractive: React.FC<PairingInteractiveProps> = ({
       window.removeEventListener('mousemove', handleMouseMove, true);
       window.removeEventListener('mouseup', handleMouseUp, true);
     };
-  }, [drag.active, drag.leftId, canInteract, connectPair]);
+  }, [drag.active, drag.leftId, canInteract, connectPair, hitTestRightId]);
 
   useEffect(() => {
     if (!onAnswerChange) return;
