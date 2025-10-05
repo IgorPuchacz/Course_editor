@@ -148,12 +148,6 @@ export const TileFrame: React.FC<TileFrameProps> = ({
         </div>
       )}
 
-      {showGrid && showSelectionChrome && (
-        <div className="absolute -bottom-6 left-0 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
-          {tile.gridPosition.col},{tile.gridPosition.row}({tile.gridPosition.colSpan}×{tile.gridPosition.rowSpan})
-        </div>
-      )}
-
       {showSelectionChrome && (
         <>
           {RESIZE_HANDLES.map(({ handle, position, cursor }) => (
