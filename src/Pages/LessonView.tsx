@@ -51,6 +51,79 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, course, onBack }
     return lessonContent.tiles.filter(tile => (tile.page ?? 1) === activePage);
   }, [lessonContent, activePage]);
 
+  const PaginationSection = ({ position }: { position: 'top' | 'bottom' }) => {
+    const handlePrevious = () => {
+      setActivePage(prev => Math.max(1, prev - 1));
+    };
+
+    const handleNext = () => {
+      setActivePage(prev => Math.min(totalPages, prev + 1));
+    };
+
+    const isDisabled = totalPages <= 1 || isLoading;
+
+    return (
+      <div
+        className={`bg-white border border-slate-200 rounded-3xl shadow-sm p-4 sm:p-6 ${
+          position === 'top' ? 'mt-0' : ''
+        }`}
+      >
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+              Nawigacja
+            </span>
+            <span className="text-sm text-slate-600">Strona {activePage} z {totalPages}</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handlePrevious}
+              disabled={isDisabled || activePage === 1}
+              className={`px-4 py-2 text-sm font-medium rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed ${
+                activePage === 1 || isDisabled
+                  ? 'bg-white text-slate-400 border-slate-200'
+                  : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+              }`}
+            >
+              Poprzednia
+            </button>
+
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map(page => (
+              <button
+                key={page}
+                type="button"
+                onClick={() => setActivePage(page)}
+                disabled={isDisabled}
+                className={`px-4 py-2 text-sm font-medium rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1 disabled:cursor-not-allowed ${
+                  page === activePage
+                    ? 'bg-slate-900 text-white border-slate-900'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={isDisabled || activePage === totalPages}
+              className={`px-4 py-2 text-sm font-medium rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed ${
+                activePage === totalPages || isDisabled
+                  ? 'bg-white text-slate-400 border-slate-200'
+                  : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+              }`}
+            >
+              Następna
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-slate-100">
       <div className="bg-white border-b border-slate-200">
@@ -85,6 +158,8 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, course, onBack }
           </div>
         </div>
 
+        <PaginationSection position="top" />
+
         {isLoading ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="w-8 h-8 animate-spin text-slate-400" aria-hidden="true" />
@@ -101,24 +176,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ lesson, course, onBack }
           />
         )}
 
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2">
-            {Array.from({ length: totalPages }, (_, index) => index + 1).map(page => (
-              <button
-                key={page}
-                type="button"
-                onClick={() => setActivePage(page)}
-                className={`px-4 py-2 text-sm font-medium rounded-full border transition-colors ${
-                  page === activePage
-                    ? 'bg-slate-900 text-white border-slate-900'
-                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
-                }`}
-              >
-                Strona {page}
-              </button>
-            ))}
-          </div>
-        )}
+        <PaginationSection position="bottom" />
       </div>
     </div>
   );
