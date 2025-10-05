@@ -87,6 +87,7 @@ export const TileFrame: React.FC<TileFrameProps> = ({
   }, [tile.id]);
 
   const allowMouseDown = !isDraggingImage;
+  const showHandles = showSelectionChrome && !isEditingText && !isImageEditing;
 
   return (
     <div
@@ -154,28 +155,31 @@ export const TileFrame: React.FC<TileFrameProps> = ({
         </div>
       )}
 
-      {showSelectionChrome && (
-        <>
-          {RESIZE_HANDLES.map(({ handle, position, cursor }) => (
-            <div
-              key={handle}
-              className={`absolute w-3 h-3 rounded-full transition-colors ${
-                isFramelessTextTile
+      <>
+        {RESIZE_HANDLES.map(({ handle, position, cursor }) => (
+          <div
+            key={handle}
+            className={`absolute w-3 h-3 rounded-full transition-opacity transition-colors duration-150 ${
+              showHandles ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+            } ${
+              isFramelessTextTile
+                ? showHandles
                   ? 'bg-blue-500 border-2 border-white shadow-lg hover:bg-blue-600 opacity-90 hover:opacity-100'
-                  : 'bg-blue-500 border-2 border-white shadow-md hover:bg-blue-600'
-              }`}
-              style={{
-                left: `${position.x * 100}%`,
-                top: `${position.y * 100}%`,
-                transform: 'translate(-50%, -50%)',
-                cursor,
-                zIndex: 10
-              }}
-              onMouseDown={(e) => handleResizeStart(e, handle)}
-            />
-          ))}
-        </>
-      )}
+                  : 'bg-blue-500 border-2 border-white shadow-lg'
+                : 'bg-blue-500 border-2 border-white shadow-md hover:bg-blue-600'
+            }`}
+            style={{
+              left: `${position.x * 100}%`,
+              top: `${position.y * 100}%`,
+              transform: 'translate3d(-50%, -50%, 0)',
+              cursor,
+              zIndex: 10,
+              willChange: 'opacity, transform'
+            }}
+            onMouseDown={showHandles ? (e) => handleResizeStart(e, handle) : undefined}
+          />
+        ))}
+      </>
     </div>
   );
 };
