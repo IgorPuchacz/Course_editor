@@ -110,7 +110,7 @@ export const LessonCanvas = forwardRef<HTMLDivElement, LessonCanvasProps>(({
     <div className="relative">
       <div
         ref={ref}
-        className="relative bg-white border-2 border-gray-300 border-dashed rounded-lg mx-auto"
+        className="relative bg-white border-2 border-gray-300 border-dashed rounded-3xl mx-auto"
         style={canvasStyle}
         onClick={handleCanvasClick}
         onDrop={handleDrop}
